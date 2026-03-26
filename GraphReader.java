@@ -75,27 +75,37 @@ public class GraphReader {
    * @param vertex The target vertex Id to analyze.
    */
   static void printDetails(Graph graph, int target) {
-    long startProcessing = Instant.now().toEpochMilli();
+    long start = Instant.now().toEpochMilli();
 
     int[] successors = graph.getSuccessors(target);
     int[] predecessors = graph.getPredecessors(target);
 
-    long finishProcessing = Instant.now().toEpochMilli();
-    System.out.printf("Finished Processing Graph in %d ms.\n", finishProcessing - startProcessing);
+    long finish = Instant.now().toEpochMilli();
+    System.out.printf("Finished Processing Graph in %d ms.\n", finish - start);
 
-    System.out.print("\nTarget vertex Id: ");
-    System.out.print(target);
-    System.out.print("\nVertex out degree: ");
-    System.out.print(successors.length);
-    System.out.print("\nVertex in degree: ");
-    System.out.print(predecessors.length);
-    System.out.print("\nVertex successors:");
-    System.out.print(Arrays.toString(successors));
-    System.out.print("\nVertex predecessors:");
-    System.out.print(Arrays.toString(predecessors));
+    System.out.printf("\nTarget vertex Id: %d", target);
+    System.out.printf("\nVertex out degree: %d", successors.length);
+    System.out.printf("\nVertex in degree: ", predecessors.length);
+    System.out.printf("\nVertex successors: %s", Arrays.toString(successors));
+    System.out.printf("\nVertex predecessors: %s", Arrays.toString(predecessors));
 
-    System.out.print("\n\nGraph Trees:");
-    graph.printTreeEdges();
+    start = Instant.now().toEpochMilli();
+    System.out.print("\n\nDepth First Search Edges:");
+    graph.classifyGraph(target);
+    finish = Instant.now().toEpochMilli();
+    System.out.printf("\n\nFinished DFS in %d ms.", finish - start);
+
+    start = Instant.now().toEpochMilli();
+    Graph[] components = graph.getComponents();
+    finish = Instant.now().toEpochMilli();
+    System.out.printf("\n\nFinished Kosaraju Algorithm in %d ms.", finish - start);
+
+    System.out.print("\n\nComponents Trees:");
+    for (int c = 0; c < components.length; c++) {
+      System.out.printf("\nComponent: %d", c + 1);
+      System.out.printf("\n\tVertices: %s", Arrays.toString(components[c].getVertices()));
+      System.out.printf("\n\tEdges: %s", components[c].getEdgesSet());
+    }
   }
 
   /**

@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * Concrete implementation of the GraphBuilder for the Forward Star structure.
  */
@@ -11,6 +13,7 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
 
   private int[] sources;
   private int[] targets;
+  private int[] vertices;
 
   /**
    * Controls the index for filling both the {@link #sources} and
@@ -26,6 +29,19 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.n = n;
     this.m = m;
 
+    this.vertices = null;
+    head = 0;
+  }
+
+  @Override
+  public void initialize(int n, int m, int[] vertices) {
+    this.sources = new int[m];
+    this.targets = new int[m];
+
+    this.n = n;
+    this.m = m;
+    this.vertices = vertices;
+
     head = 0;
   }
 
@@ -38,17 +54,34 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
 
   @Override
   public Graph build() {
-    Sort.quick(sources, targets);
+    if (head != sources.length) {
+      sources = Arrays.copyOf(sources, head);
+      targets = Arrays.copyOf(targets, head);
+      m = head;
+    }
+
+    if (m > 0) {
+      Sort.quick(sources, targets);
+
+      for (int i = 0; i < m; i++) {
+        if (sources[i] > n) {
+          n = sources[i];
+        }
+        if (targets[i] > n) {
+          n = targets[i];
+        }
+      }
+    }
 
     int[] pointers = new int[n + 1];
     pointers[0] = 0;
 
-    // Count the exact out-degree of each vertex
-    for (int i = 0; i < m; i++) {
-      pointers[sources[i]]++;
+    if (m > 0) {
+      for (int i = 0; i < m; i++) {
+        pointers[sources[i]]++;
+      }
     }
 
-    // Accumulate degrees to create contiguous boundaries (Prefix Sums)
     for (int i = 1; i <= n; i++) {
       pointers[i] += pointers[i - 1];
     }
@@ -59,7 +92,6 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.sources = null;
     this.targets = null;
 
-    // Pass the finalized arrays to the immutable graph
-    return new ForwardStarGraph(n, m, finalTargets, pointers);
+    return new ForwardStarGraph(n, m, finalTargets, pointers, vertices);
   }
 }

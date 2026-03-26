@@ -19,6 +19,16 @@ public class Sort {
    * @param array The array to be sorted.
    */
   public static void quick(int[] array) {
+    quick(array, true);
+  }
+
+  /**
+   * Sorts a single array in the specified order using Quicksort.
+   *
+   * @param array     The array to be sorted.
+   * @param ascending True to sort in ascending order, false for descending.
+   */
+  public static void quick(int[] array, boolean ascending) {
     if (array == null || array.length <= 1) {
       return;
     }
@@ -32,7 +42,7 @@ public class Sort {
       }
     };
 
-    quicksort(array, 0, array.length - 1, singleSwapper);
+    quicksort(array, 0, array.length - 1, singleSwapper, ascending);
   }
 
   /**
@@ -45,6 +55,24 @@ public class Sort {
    *                                  the same length.
    */
   public static void quick(int[] primary, int[] secondary) throws IllegalArgumentException {
+    quick(primary, secondary, true);
+  }
+
+  /**
+   * Sorts the primary array in the specified order using Quicksort, while
+   * simultaneously applying the exact same swaps to the secondary array.
+   *
+   * @param primary   The array guiding the sort.
+   * @param secondary The array mirroring the swaps.
+   * @param ascending True to sort in ascending order, false for descending.
+   * @throws IllegalArgumentException If the primary and secondary arrays are not
+   *                                  the same length.
+   */
+  public static void quick(int[] primary, int[] secondary, boolean ascending) throws IllegalArgumentException {
+    if (primary == null || secondary == null) {
+      return;
+    }
+
     if (primary.length != secondary.length) {
       throw new IllegalArgumentException("Both arrays should have the same size.");
     }
@@ -68,7 +96,7 @@ public class Sort {
       }
     };
 
-    quicksort(primary, 0, primary.length - 1, dualSwapper);
+    quicksort(primary, 0, primary.length - 1, dualSwapper, ascending);
   }
 
   /**
@@ -76,21 +104,22 @@ public class Sort {
    * partitioning, but delegates the actual data mutation to the provided
    * {@link SortVisitor}.
    *
-   * @param primary The array guiding the sort comparisons.
-   * @param start   The starting index of the partition.
-   * @param end     The ending index of the partition.
-   * @param visitor The callback that handles the swapping mechanism.
+   * @param primary   The array guiding the sort comparisons.
+   * @param start     The starting index of the partition.
+   * @param end       The ending index of the partition.
+   * @param visitor   The callback that handles the swapping mechanism.
+   * @param ascending True to sort ascending, false to sort descending.
    */
-  private static void quicksort(int[] primary, int start, int end, SortVisitor visitor) {
+  private static void quicksort(int[] primary, int start, int end, SortVisitor visitor, boolean ascending) {
     int left = start, right = end;
     int pivot = primary[(start + end) / 2];
 
     while (left <= right) {
-      while (primary[left] < pivot) {
+      while (ascending ? primary[left] < pivot : primary[left] > pivot) {
         left++;
       }
 
-      while (primary[right] > pivot) {
+      while (ascending ? primary[right] > pivot : primary[right] < pivot) {
         right--;
       }
 
@@ -102,11 +131,11 @@ public class Sort {
     }
 
     if (start < right) {
-      quicksort(primary, start, right, visitor);
+      quicksort(primary, start, right, visitor, ascending);
     }
 
     if (end > left) {
-      quicksort(primary, left, end, visitor);
+      quicksort(primary, left, end, visitor, ascending);
     }
   }
 }

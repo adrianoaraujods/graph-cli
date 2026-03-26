@@ -11,6 +11,15 @@ public interface GraphBuilder {
   void initialize(int n, int m);
 
   /**
+   * Prepares the builder's internal temporary structures with explicit vertices.
+   *
+   * @param n The maximum vertex ID.
+   * @param m The total number of edges.
+   * @param vertices The array of vertex IDs included in the graph.
+   */
+  void initialize(int n, int m, int[] vertices);
+
+  /**
    * Registers a single directed edge into the builder's temporary state.
    *
    * @param source The origin vertex ID.

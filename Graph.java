@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Stack;
 
 /**
@@ -19,12 +20,15 @@ public abstract class Graph {
     this.m = m;
   }
 
-  /**
-   * Creates a new graph with all the edges reversed.
-   * 
-   * @return The {@link Graph} with the reversed edges.
-   */
-  public abstract Graph reverse();
+  protected interface IteratorVisitor {
+    default void examineVertex(int vertex) {
+    }
+
+    default void examineEdge(int source, int target) {
+    }
+  }
+
+  protected abstract void iterateGraph(IteratorVisitor visitor);
 
   /**
    * Calculates the in-degree (number of incoming archs) of a given vertex.
@@ -68,26 +72,47 @@ public abstract class Graph {
   public abstract int[] getSuccessors(int vertex);
 
   /**
-   * Prints all the edges in the graph.
+   * Creates a new graph with all the edges reversed.
+   * 
+   * @return The {@link Graph} with the reversed edges.
    */
-  public abstract void printAllEdges();
+  public Graph reverse() {
+    GraphBuilder builder = new ForwardStarGraphBuilder();
+    builder.initialize(n, m);
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target) {
+        builder.addEdge(target, source);
+      }
+    };
+
+    iterateGraph(iterator);
+    return builder.build();
+  }
 
   /**
-   * Prints one edge in the graph.
+   * Builds the induced subgraph based on the provided vertices.
+   * 
+   * @param vertices The vertices that are included in the subgraph.
    */
-  public void printEdge(int v, int w) {
-    System.out.print("\n{");
-    System.out.print(v);
-    System.out.print(", ");
-    System.out.print(w);
-    System.out.print("}");
-  };
+  public abstract Graph getInducedSubgraph(int[] vertices);
+
+  /**
+   * Returns all vertices in the graph.
+   * 
+   * @return An array containing all vertex IDs from 1 to n.
+   */
+  public abstract int[] getVertices();
 
   private interface DFSVisitor {
     default void examineRoot(int vertex) {
     }
 
     default void discoverVertex(int vertex) {
+    }
+
+    default void orderSucessors(int[] successors) {
     }
 
     default void finishVertex(int vertex) {
@@ -112,7 +137,25 @@ public abstract class Graph {
     }
   }
 
-  private void depthFirstSearch(DFSVisitor visitor) {
+  /**
+   * 
+   * @param rootsOrder An array of vertex IDs that will be used to pick the roots
+   *                   order. Uses lexicographical if null.
+   * @param visitor
+   * @throws IllegalArgumentException  if the rootsOrder length is greater than n.
+   * @throws IndexOutOfBoundsException if any of the roots in the rootsOrder is
+   *                                   outisde the possible vertex ID range.
+   */
+  private void depthFirstSearch(int[] rootsOrder, DFSVisitor visitor) {
+    if (rootsOrder == null) {
+      rootsOrder = new int[n];
+      for (int i = 1; i <= n; i++) {
+        rootsOrder[i - 1] = i;
+      }
+    } else if (rootsOrder.length > n) {
+      throw new IllegalArgumentException("The rootsOrder array has more elements than the number os possible roots.");
+    }
+
     int t = 0;
     int[] discoverTimes = new int[n];
     int[] finishTimes = new int[n];
@@ -121,7 +164,11 @@ public abstract class Graph {
 
     Stack<Integer> stack = new Stack<Integer>();
 
-    for (int root = 1; root <= n; root++) {
+    for (int root : rootsOrder) {
+      if (root < 1 || root > n) {
+        throw new IndexOutOfBoundsException("The root: '" + root + "' is outside the possible vertex ID range.");
+      }
+
       if (discoverTimes[root - 1] != 0) {
         continue;
       }
@@ -138,6 +185,8 @@ public abstract class Graph {
         }
 
         int[] successors = getSuccessors(v);
+        visitor.orderSucessors(successors);
+
         int successorIndex = successorsIndex[v - 1];
 
         if (successorIndex < successors.length) {
@@ -163,27 +212,150 @@ public abstract class Graph {
         }
       }
     }
+
     visitor.finish(discoverTimes, finishTimes, predecessors);
   }
 
   /**
-   * Prints all the DFS tree edges found.
+   * Uses the Kosaraju Algorithm
    */
-  public void printTreeEdges() {
-    DFSVisitor treePrinter = new DFSVisitor() {
+  public Graph[] getComponents() {
+    class FinishTimesOrder implements DFSVisitor {
+      public int[] rootsOrder;
+
+      @Override
+      public void finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
+        int[] vertices = new int[n];
+        for (int i = 1; i <= n; i++) {
+          vertices[i - 1] = i;
+        }
+
+        Sort.quick(finishTimes, vertices, false);
+        this.rootsOrder = vertices;
+      }
+    }
+
+    FinishTimesOrder finishTimesVisitor = new FinishTimesOrder();
+    depthFirstSearch(null, finishTimesVisitor);
+
+    Graph reversedGraph = reverse();
+
+    ArrayList<ArrayList<Integer>> componentsVerticesList = new ArrayList<>();
+
+    DFSVisitor getComponentsVisitor = new DFSVisitor() {
       @Override
       public void examineRoot(int vertex) {
-        System.out.println();
-        System.out.println();
-        System.out.print(vertex);
+        ArrayList<Integer> verticesList = new ArrayList<>();
+        verticesList.add(vertex);
+
+        componentsVerticesList.add(verticesList);
       }
 
       @Override
       public void treeEdge(int source, int target) {
-        System.out.print(" -> ");
-        System.out.print(target);
+        componentsVerticesList.get(componentsVerticesList.size() - 1).add(target);
       }
     };
-    depthFirstSearch(treePrinter);
+
+    reversedGraph.depthFirstSearch(
+        finishTimesVisitor.rootsOrder,
+        getComponentsVisitor);
+
+    Graph[] components = new Graph[componentsVerticesList.size()];
+
+    for (int i = 0; i < components.length; i++) {
+      int[] vertices = componentsVerticesList.get(i).stream().mapToInt(v -> v).toArray();
+      components[i] = getInducedSubgraph(vertices);
+    }
+
+    return components;
+  }
+
+  public void classifyGraph(int vertex) {
+    DFSVisitor treePrinter = new DFSVisitor() {
+      EdgeSet treeEdgesSet = new EdgeSet();
+      EdgeSet backEdgesSet = new EdgeSet();
+      EdgeSet crossEdgesSet = new EdgeSet();
+      EdgeSet forwardEdgesSet = new EdgeSet();
+
+      @Override
+      public void treeEdge(int source, int target) {
+        treeEdgesSet.append(source, target);
+      }
+
+      @Override
+      public void backEdge(int source, int target) {
+        if (source == vertex) {
+          backEdgesSet.append(source, target);
+        }
+      }
+
+      @Override
+      public void crossEdge(int source, int target) {
+        if (source == vertex) {
+          crossEdgesSet.append(source, target);
+        }
+      }
+
+      @Override
+      public void forwardEdge(int source, int target) {
+        if (source == vertex) {
+          forwardEdgesSet.append(source, target);
+        }
+      }
+
+      @Override
+      public void finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
+        System.out.printf("\n\nTree Edges: %s", treeEdgesSet.toString());
+        System.out.printf("\n\nBack Edges adjacent to vertex %d: %s", vertex, backEdgesSet.toString());
+        System.out.printf("\nCross Edges adjacent to vertex %d: %s", vertex, crossEdgesSet.toString());
+        System.out.printf("\nForward Edges adjacent to vertex %d: %s", vertex, forwardEdgesSet.toString());
+      }
+
+    };
+
+    depthFirstSearch(null, treePrinter);
+  }
+
+  // Graph to string methods
+  private class EdgeSet {
+    StringBuilder builder;
+
+    EdgeSet() {
+      builder = new StringBuilder("{");
+    };
+
+    public void append(int v, int w) {
+      builder.append("(");
+      builder.append(v);
+      builder.append(", ");
+      builder.append(w);
+      builder.append("), ");
+    }
+
+    public String toString() {
+      if (builder.length() > 1) {
+        // remove trailling `, `
+        builder.replace(builder.length() - 2, builder.length() - 1, "}");
+        return builder.toString();
+      }
+
+      return "{}";
+    };
+  }
+
+  public String getEdgesSet() {
+    EdgeSet allEdgesSet = new EdgeSet();
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target) {
+        allEdgesSet.append(source, target);
+      }
+    };
+
+    iterateGraph(iterator);
+
+    return allEdgesSet.toString();
   }
 }
