@@ -2,123 +2,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.time.Instant;
-import java.util.Arrays;
 
-/**
- * Utility class to read graph data from a text file and display structural
- * information about an specific vertex.
- * <p>
- * It uses buffered I/O channels for high-performance reading.
- */
 public class GraphReader {
   /** Size of the byte buffer used for reading files (64 KB). */
   static int CHUNK_SIZE = 64 * 1024;
 
-  /**
-   * Main entry point for the GraphReader program.
-   *
-   * @param args Command-line arguments. Requires exactly two arguments:
-   *             1. The path to the graph data file;
-   *             2. The target vertex Id to analyze.
-   */
-  public static void main(String[] args) {
-    if (args.length < 2) {
-      System.err.println(
-          "Missing argument.\n\t1. The path to the graph data file;\n\t2. The target vertex Id to analyze.");
-      return;
-    }
-
-    String pathName = args[0];
-    int target;
-
-    try {
-      target = Integer.parseInt(args[1]);
-    } catch (NumberFormatException e) {
-      System.err.println("The target vertex Id should be a valid integer.");
-      return;
-    }
-
-    GraphBuilder builder = new ForwardStarGraphBuilder();
-
-    try {
-      long startReading = Instant.now().toEpochMilli();
-
-      readGraph(pathName, builder);
-
-      long finishReading = Instant.now().toEpochMilli();
-      System.out.println("Finished Reading File in " + (finishReading - startReading) + " ms.");
-    } catch (Exception e) {
-      System.err.println(e);
-      return;
-    }
-
-    long startBuilding = Instant.now().toEpochMilli();
-
-    Graph graph = builder.build();
-
-    long finishBuilding = Instant.now().toEpochMilli();
-    System.out.println("Finished Building Graph in " + (finishBuilding - startBuilding) + " ms.");
-
-    if (target < 1 || target > graph.m) {
-      System.err.printf(
-          "The target vertex Id should be between 1 and %,d. Selected vertex: '%,d'.",
-          graph.m, target);
-      return;
-    }
-
-    printDetails(graph, target);
-  }
-
-  /**
-   * @param graph  The graph to analyze
-   * @param vertex The target vertex Id to analyze.
-   */
-  static void printDetails(Graph graph, int target) {
-    long start = Instant.now().toEpochMilli();
-
-    int[] successors = graph.getSuccessors(target);
-    int[] predecessors = graph.getPredecessors(target);
-
-    long finish = Instant.now().toEpochMilli();
-    System.out.printf("Finished Processing Graph in %d ms.\n", finish - start);
-
-    System.out.printf("\nTarget vertex Id: %d", target);
-    System.out.printf("\nVertex out degree: %d", successors.length);
-    System.out.printf("\nVertex in degree: ", predecessors.length);
-    System.out.printf("\nVertex successors: %s", Arrays.toString(successors));
-    System.out.printf("\nVertex predecessors: %s", Arrays.toString(predecessors));
-
-    start = Instant.now().toEpochMilli();
-    System.out.print("\n\nDepth First Search Edges:");
-    graph.classifyGraph(target);
-    finish = Instant.now().toEpochMilli();
-    System.out.printf("\n\nFinished DFS in %d ms.", finish - start);
-
-    start = Instant.now().toEpochMilli();
-    Graph[] components = graph.getComponents();
-    finish = Instant.now().toEpochMilli();
-    System.out.printf("\n\nFinished Kosaraju Algorithm in %d ms.", finish - start);
-
-    System.out.print("\n\nComponents Trees:");
-    for (int c = 0; c < components.length; c++) {
-      System.out.printf("\nComponent: %d", c + 1);
-      System.out.printf("\n\tVertices: %s", Arrays.toString(components[c].getVertices()));
-      System.out.printf("\n\tEdges: %s", components[c].getEdgesSet());
-    }
-  }
-
-  /**
-   * Reads the graph structure from the specified file. The file is expected to
-   * start with the number of vertices and edges, followed by pairs of source
-   * and target vertices representing edges.
-   *
-   * @param pathName The path to the text file containing the graph data.
-   * @param builder  The builder for the desired graph structure.
-   * @throws IOException If an I/O error occurs reading from the file.
-   * @throws Exception   If the file is empty or malformed.
-   */
-  static void readGraph(String pathName, GraphBuilder builder) throws IOException, Exception {
+  static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {
 

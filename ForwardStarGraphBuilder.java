@@ -94,4 +94,9 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
 
     return new ForwardStarGraph(n, m, finalTargets, pointers, vertices);
   }
+
+  @Override
+  public String getRepresentation() {
+    return "Forward Star";
+  }
 }

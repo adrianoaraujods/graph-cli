@@ -13,8 +13,8 @@ public interface GraphBuilder {
   /**
    * Prepares the builder's internal temporary structures with explicit vertices.
    *
-   * @param n The maximum vertex ID.
-   * @param m The total number of edges.
+   * @param n        The maximum vertex ID.
+   * @param m        The total number of edges.
    * @param vertices The array of vertex IDs included in the graph.
    */
   void initialize(int n, int m, int[] vertices);
@@ -33,4 +33,6 @@ public interface GraphBuilder {
    * @return The fully constructed Graph instance.
    */
   Graph build();
+
+  String getRepresentation();
 }

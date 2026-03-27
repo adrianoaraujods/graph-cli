@@ -271,13 +271,16 @@ public abstract class Graph {
     return components;
   }
 
-  public void classifyGraph(int vertex) {
-    DFSVisitor treePrinter = new DFSVisitor() {
-      EdgeSet treeEdgesSet = new EdgeSet();
-      EdgeSet backEdgesSet = new EdgeSet();
-      EdgeSet crossEdgesSet = new EdgeSet();
-      EdgeSet forwardEdgesSet = new EdgeSet();
+  public record ClassifiedEdges(String treeEdges, String backEdges, String crossEdges, String forwardEdges) {
+  }
 
+  public ClassifiedEdges classifyEdges(int vertex) {
+    EdgeSet treeEdgesSet = new EdgeSet();
+    EdgeSet backEdgesSet = new EdgeSet();
+    EdgeSet crossEdgesSet = new EdgeSet();
+    EdgeSet forwardEdgesSet = new EdgeSet();
+
+    DFSVisitor treePrinter = new DFSVisitor() {
       @Override
       public void treeEdge(int source, int target) {
         treeEdgesSet.append(source, target);
@@ -303,18 +306,15 @@ public abstract class Graph {
           forwardEdgesSet.append(source, target);
         }
       }
-
-      @Override
-      public void finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
-        System.out.printf("\n\nTree Edges: %s", treeEdgesSet.toString());
-        System.out.printf("\n\nBack Edges adjacent to vertex %d: %s", vertex, backEdgesSet.toString());
-        System.out.printf("\nCross Edges adjacent to vertex %d: %s", vertex, crossEdgesSet.toString());
-        System.out.printf("\nForward Edges adjacent to vertex %d: %s", vertex, forwardEdgesSet.toString());
-      }
-
     };
 
     depthFirstSearch(null, treePrinter);
+
+    return new ClassifiedEdges(
+        treeEdgesSet.toString(),
+        backEdgesSet.toString(),
+        crossEdgesSet.toString(),
+        forwardEdgesSet.toString());
   }
 
   // Graph to string methods
