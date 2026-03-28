@@ -1,5 +1,10 @@
+package src.api;
+
 import java.util.ArrayList;
 import java.util.Stack;
+
+import src.representations.forwardstar.ForwardStarGraphBuilder;
+import src.util.Sort;
 
 /**
  * Abstract base class defining the read-only algorithms for a directed graph.
@@ -7,7 +12,7 @@ import java.util.Stack;
 public abstract class StaticGraph implements Graph {
 
   /** If the graph has directed edges. */
-  private boolean isDirected;
+  protected boolean isDirected;
 
   /** Total number of vertices in the graph. */
   public final int n;
@@ -130,8 +135,7 @@ public abstract class StaticGraph implements Graph {
    * 
    * @return The {@link StaticGraph} with the reversed edges.
    */
-  public StaticGraph getReversed() {
-    GraphBuilder builder = new ForwardStarGraphBuilder();
+  protected StaticGraph getReversed(GraphBuilder builder) {
     builder.initialize(n, m);
 
     IteratorVisitor iterator = new IteratorVisitor() {
@@ -144,6 +148,8 @@ public abstract class StaticGraph implements Graph {
     iterateGraph(iterator);
     return builder.build();
   }
+
+  public abstract StaticGraph getReversed();
 
   /**
    * Uses the Kosaraju Algorithm

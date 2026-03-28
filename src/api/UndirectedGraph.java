@@ -1,3 +1,5 @@
+package src.api;
+
 public interface UndirectedGraph extends Graph {
 
   /**

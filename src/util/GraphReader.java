@@ -1,13 +1,17 @@
+package src.util;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+import src.api.GraphBuilder;
+
 public class GraphReader {
   /** Size of the byte buffer used for reading files (64 KB). */
   static int CHUNK_SIZE = 64 * 1024;
 
-  static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
+  public static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {
 
@@ -50,7 +54,7 @@ public class GraphReader {
    *         reached.
    * @throws IOException If an I/O error occurs reading the chunk.
    */
-  public static Integer readNextInt(FileChannel channel, ByteBuffer buffer) throws IOException {
+  private static Integer readNextInt(FileChannel channel, ByteBuffer buffer) throws IOException {
     int result = 0;
     boolean foundDigit = false;
 

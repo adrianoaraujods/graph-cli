@@ -1,3 +1,5 @@
+package src.api;
+
 /**
  * Interface defining the contract for constructing a Graph.
  */

@@ -2,6 +2,13 @@ import java.security.InvalidAlgorithmParameterException;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
+import src.api.DirectedGraph;
+import src.api.GraphBuilder;
+import src.api.StaticGraph;
+import src.api.UndirectedGraph;
+import src.representations.forwardstar.ForwardStarGraphBuilder;
+import src.util.GraphReader;
+
 public class GraphCLI {
   static StaticGraph graph = null;
 
@@ -11,7 +18,7 @@ public class GraphCLI {
   static int target = -1;
 
   static void printUsage() {
-    System.out.println("Usage: java GraphReader [options] <input-file> <target-vertex>");
+    System.out.println("Usage: java GraphCLI [options] <input-file> <target-vertex>");
     System.out.println();
     System.out.println("Options:");
     System.out.println("  --directed            Treat graph as directed (default)");
@@ -29,9 +36,9 @@ public class GraphCLI {
     System.out.println("  <target-vertex>       Target vertex Id to analyze");
     System.out.println();
     System.out.println("Examples:");
-    System.out.println("  java GraphReader input.txt 5");
-    System.out.println("  java GraphReader --undirected --adjacency-list input.txt 5");
-    System.out.println("  java GraphReader input.txt 5 --forward-star");
+    System.out.println("  java GraphCLI input.txt 5");
+    System.out.println("  java GraphCLI --undirected --adjacency-list input.txt 5");
+    System.out.println("  java GraphCLI input.txt 5 --forward-star");
   }
 
   static void processArguments(String[] args) throws InvalidAlgorithmParameterException {

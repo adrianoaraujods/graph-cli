@@ -1,4 +1,10 @@
+package src.representations.forwardstar;
+
 import java.util.Arrays;
+
+import src.api.GraphBuilder;
+import src.api.StaticGraph;
+import src.util.Sort;
 
 /**
  * Concrete implementation of the GraphBuilder for the Forward Star structure.
@@ -18,11 +24,11 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   private int[] targets;
   private int[] vertices;
 
-  ForwardStarGraphBuilder(boolean isDirected) {
+  public ForwardStarGraphBuilder(boolean isDirected) {
     this.isDirected = isDirected;
   }
 
-  ForwardStarGraphBuilder() {
+  public ForwardStarGraphBuilder() {
     this(true);
   }
 

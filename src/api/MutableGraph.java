@@ -1,3 +1,5 @@
+package src.api;
+
 public interface MutableGraph {
 
   public abstract void removeEdge(int source, int target);

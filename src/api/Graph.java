@@ -1,3 +1,5 @@
+package src.api;
+
 public interface Graph {
 
   /**

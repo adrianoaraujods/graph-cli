@@ -1,3 +1,5 @@
+package src.api;
+
 public abstract class StaticDirectedGraph extends StaticGraph implements DirectedGraph {
 
   StaticDirectedGraph(boolean isDirected, int n, int m) {

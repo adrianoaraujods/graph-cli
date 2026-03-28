@@ -1,7 +1,15 @@
+package src.representations.forwardstar;
+
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import src.api.DirectedGraph;
+import src.api.GraphBuilder;
+import src.api.StaticGraph;
+import src.api.UndirectedGraph;
+import src.util.Sort;
 
 /**
  * Concrete and static (immutable) implementation of the Graph using the Forward
@@ -152,5 +160,10 @@ public class ForwardStarGraph extends StaticGraph implements UndirectedGraph, Di
   @Override
   public int[] getNeighbors(int vertex) {
     return getSuccessors(vertex);
+  }
+
+  @Override
+  public StaticGraph getReversed() {
+    return getReversed(new ForwardStarGraphBuilder(isDirected));
   }
 }
