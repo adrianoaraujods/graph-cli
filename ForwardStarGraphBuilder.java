@@ -5,6 +5,9 @@ import java.util.Arrays;
  */
 public class ForwardStarGraphBuilder implements GraphBuilder {
 
+  /** If the graph has directed edges. */
+  private boolean isDirected;
+
   /** Total number of vertices in the graph. */
   private int n;
 
@@ -14,6 +17,14 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   private int[] sources;
   private int[] targets;
   private int[] vertices;
+
+  ForwardStarGraphBuilder(boolean isDirected) {
+    this.isDirected = isDirected;
+  }
+
+  ForwardStarGraphBuilder() {
+    this(true);
+  }
 
   /**
    * Controls the index for filling both the {@link #sources} and
@@ -53,7 +64,7 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   }
 
   @Override
-  public Graph build() {
+  public StaticGraph build() {
     if (head != sources.length) {
       sources = Arrays.copyOf(sources, head);
       targets = Arrays.copyOf(targets, head);
@@ -71,6 +82,26 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
           n = targets[i];
         }
       }
+    }
+
+    if (!isDirected) {
+      int originalM = m;
+      int[] newSources = new int[m * 2];
+      int[] newTargets = new int[m * 2];
+
+      System.arraycopy(sources, 0, newSources, 0, m);
+      System.arraycopy(targets, 0, newTargets, 0, m);
+
+      for (int i = 0; i < originalM; i++) {
+        newSources[m + i] = targets[i];
+        newTargets[m + i] = sources[i];
+      }
+
+      sources = newSources;
+      targets = newTargets;
+      m = m * 2;
+
+      Sort.quick(sources, targets);
     }
 
     int[] pointers = new int[n + 1];
@@ -92,7 +123,7 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.sources = null;
     this.targets = null;
 
-    return new ForwardStarGraph(n, m, finalTargets, pointers, vertices);
+    return new ForwardStarGraph(isDirected, n, m, finalTargets, pointers, vertices);
   }
 
   @Override

@@ -2,6 +2,7 @@
  * Interface defining the contract for constructing a Graph.
  */
 public interface GraphBuilder {
+
   /**
    * Prepares the builder's internal temporary structures.
    *
@@ -32,7 +33,7 @@ public interface GraphBuilder {
    *
    * @return The fully constructed Graph instance.
    */
-  Graph build();
+  StaticGraph build();
 
   String getRepresentation();
 }

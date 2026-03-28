@@ -3,10 +3,10 @@ import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class GraphCLI {
-  static Graph graph = null;
+  static StaticGraph graph = null;
 
   static boolean isDirected = true;
-  static GraphBuilder builder = new ForwardStarGraphBuilder();;
+  static GraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
   static String pathName = null;
   static int target = -1;
 
@@ -49,7 +49,7 @@ public class GraphCLI {
         isDirected = false;
 
       } else if (arg.equals("--forward-star")) {
-        builder = new ForwardStarGraphBuilder();
+        builder = new ForwardStarGraphBuilder(isDirected);
 
       } else if (arg.equals("--incidence-matrix")) {
         throw new InvalidAlgorithmParameterException("Invalid argument: Incidence Matrix not implement yet.");
@@ -100,16 +100,18 @@ public class GraphCLI {
   }
 
   public static void main(String[] args) {
+    int step = 0;
+
     try {
       processArguments(args);
 
-      System.out.printf("Graph Configuration:\n");
+      System.out.printf("\nGraph Configuration:\n");
       System.out.printf("  Directed: %s\n", isDirected);
       System.out.printf("  Representation: %s\n", builder.getRepresentation());
       System.out.printf("  Input File: %s\n", pathName);
       System.out.printf("  Target Vertex: %d\n", target);
 
-      System.out.printf("\n[1/00] Reading File...");
+      System.out.printf("\n[%d/00] Reading File...", ++step);
       logTime(() -> {
         try {
           GraphReader.readFile(pathName, builder);
@@ -118,7 +120,7 @@ public class GraphCLI {
         }
       });
 
-      System.out.printf("[2/00] Building Graph...");
+      System.out.printf("[%d/00] Building Graph...", ++step);
       logTime(() -> {
         graph = builder.build();
       });
@@ -128,23 +130,40 @@ public class GraphCLI {
             "Invalid argument: target vertex Id should be between 1 and " + graph.m + ".");
       }
 
-      System.out.printf("[3/00] Processing target vertex predecessors...");
-      int[] predecessors = logTime(() -> graph.getPredecessors(target));
+      int[] neighbors = null;
+      int[] predecessors = null;
+      int[] successors = null;
+      if (isDirected) {
+        System.out.printf("[%d/00] Processing target vertex predecessors...", ++step);
+        predecessors = logTime(() -> ((DirectedGraph) graph).getPredecessors(target));
 
-      System.out.printf("[4/00] Processing target vertex successors...");
-      int[] successors = logTime(() -> graph.getSuccessors(target));
+        System.out.printf("[%d/00] Processing target vertex successors...", ++step);
+        successors = logTime(() -> ((DirectedGraph) graph).getSuccessors(target));
 
-      System.out.printf("[5/00] Running DFS Classifying edges...");
-      Graph.ClassifiedEdges classifiedEdges = logTime(() -> graph.classifyEdges(target));
+      } else {
+        System.out.printf("[%d/00] Processing target vertex neighbors...", ++step);
+        neighbors = logTime(() -> ((UndirectedGraph) graph).getNeighbors(target));
+      }
 
-      System.out.printf("[6/00] Finding maximal connected components...");
-      Graph[] components = logTime(() -> graph.getComponents());
+      System.out.printf("[%d/00] Running DFS Classifying edges...", ++step);
+      StaticGraph.ClassifiedEdges classifiedEdges = logTime(() -> graph.classifyEdges(target));
+
+      StaticGraph[] components = null;
+      if (isDirected) {
+        System.out.printf("[%d/00] Finding maximal connected components...", ++step);
+        components = logTime(() -> graph.getMaximalComponents());
+      }
 
       System.out.printf("\nTarget vertex %d details:\n", target);
-      System.out.printf("  Out degree: %d\n", successors.length);
-      System.out.printf("  In degree: %d\n", predecessors.length);
-      System.out.printf("  Successors: %s\n", Arrays.toString(successors));
-      System.out.printf("  Predecessors: %s\n", Arrays.toString(predecessors));
+      if (isDirected) {
+        System.out.printf("  Out degree: %d\n", successors.length);
+        System.out.printf("  In degree: %d\n", predecessors.length);
+        System.out.printf("  Successors: %s\n", Arrays.toString(successors));
+        System.out.printf("  Predecessors: %s\n", Arrays.toString(predecessors));
+      } else {
+        System.out.printf("  Degree: %d\n", neighbors.length);
+        System.out.printf("  Neighbors: %s\n", Arrays.toString(neighbors));
+      }
 
       System.out.print("\nDepth First Search Edges:");
       System.out.printf("\n\nTree Edges: %s", classifiedEdges.treeEdges());
@@ -152,11 +171,13 @@ public class GraphCLI {
       System.out.printf("\nCross Edges adjacent to vertex %d: %s", target, classifiedEdges.crossEdges());
       System.out.printf("\nForward Edges adjacent to vertex %d: %s", target, classifiedEdges.forwardEdges());
 
-      System.out.print("\nComponents Trees:");
-      for (int c = 0; c < components.length; c++) {
-        System.out.printf("\nComponent: %d", c + 1);
-        System.out.printf("\n\tVertices: %s", Arrays.toString(components[c].getVertices()));
-        System.out.printf("\n\tEdges: %s", components[c].getEdgesSet());
+      if (isDirected) {
+        System.out.print("\n\nComponents Trees:");
+        for (int c = 0; c < components.length; c++) {
+          System.out.printf("\nComponent: %d", c + 1);
+          System.out.printf("\n\tVertices: %s", Arrays.toString(components[c].getVertices()));
+          System.out.printf("\n\tEdges: %s", components[c].getEdgesSet());
+        }
       }
     } catch (Exception e) {
       System.err.println(e.getMessage());

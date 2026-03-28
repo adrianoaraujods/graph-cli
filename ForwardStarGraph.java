@@ -4,10 +4,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * Concrete and immutable implementation of the Graph using the Forward Star
- * structure.
+ * Concrete and static (immutable) implementation of the Graph using the Forward
+ * Star structure.
  */
-public class ForwardStarGraph extends Graph {
+public class ForwardStarGraph extends StaticGraph implements UndirectedGraph, DirectedGraph {
   private final int[] targets;
   private final int[] pointers;
   private final int[] vertices;
@@ -16,8 +16,8 @@ public class ForwardStarGraph extends Graph {
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  ForwardStarGraph(int n, int m, int[] targets, int[] pointers, int[] vertices) {
-    super(n, m);
+  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, int[] vertices) {
+    super(isDirected, n, m);
     this.targets = targets;
     this.pointers = pointers;
     this.vertices = vertices;
@@ -27,8 +27,8 @@ public class ForwardStarGraph extends Graph {
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  ForwardStarGraph(int n, int m, int[] targets, int[] pointers) {
-    super(n, m);
+  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers) {
+    super(isDirected, n, m);
     this.targets = targets;
     this.pointers = pointers;
     this.vertices = null;
@@ -56,7 +56,7 @@ public class ForwardStarGraph extends Graph {
   }
 
   @Override
-  public Graph getInducedSubgraph(int[] vertices) {
+  public StaticGraph getInducedSubgraph(int[] vertices) {
     int maxVertex = Arrays.stream(vertices).max().orElse(0);
 
     GraphBuilder builder = new ForwardStarGraphBuilder();
@@ -75,6 +75,15 @@ public class ForwardStarGraph extends Graph {
 
     iterateGraph(iterator);
     return builder.build();
+  }
+
+  @Override
+  public int getDegree(int vertex) {
+    if (vertex < 1 || vertex > n) {
+      throw new IllegalArgumentException();
+    }
+
+    return pointers[vertex] - pointers[vertex - 1];
   }
 
   @Override
@@ -110,7 +119,7 @@ public class ForwardStarGraph extends Graph {
 
     IntStream.Builder builder = IntStream.builder();
 
-    Graph.IteratorVisitor iterator = new IteratorVisitor() {
+    StaticGraph.IteratorVisitor iterator = new IteratorVisitor() {
       @Override
       public void examineEdge(int source, int target) {
         if (target == vertex) {
@@ -133,5 +142,15 @@ public class ForwardStarGraph extends Graph {
     Sort.quick(successors);
 
     return successors;
+  }
+
+  @Override
+  public int[] getAdjacency(int vertex) {
+    return getSuccessors(vertex);
+  }
+
+  @Override
+  public int[] getNeighbors(int vertex) {
+    return getSuccessors(vertex);
   }
 }
