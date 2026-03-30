@@ -3,7 +3,6 @@ package src.api;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import src.representations.forwardstar.ForwardStarGraphBuilder;
 import src.util.Sort;
 
 /**
@@ -12,7 +11,7 @@ import src.util.Sort;
 public abstract class StaticGraph implements Graph {
 
   /** If the graph has directed edges. */
-  protected boolean isDirected;
+  public final boolean isDirected;
 
   /** Total number of vertices in the graph. */
   public final int n;
@@ -60,7 +59,7 @@ public abstract class StaticGraph implements Graph {
    */
   public abstract int[] getVertices();
 
-  public void depthFirstSearch(int[] rootsOrder, Graph.DFSVisitor visitor) {
+  public DFSResult depthFirstSearch(int[] rootsOrder, Graph.DFSVisitor visitor) {
     if (rootsOrder == null) {
       rootsOrder = new int[n];
       for (int i = 1; i <= n; i++) {
@@ -127,7 +126,7 @@ public abstract class StaticGraph implements Graph {
       }
     }
 
-    visitor.finish(discoverTimes, finishTimes, parents);
+    return visitor.finish(discoverTimes, finishTimes, adjacencyIndex);
   }
 
   /**
@@ -154,24 +153,9 @@ public abstract class StaticGraph implements Graph {
   /**
    * Uses the Kosaraju Algorithm
    */
-  public StaticGraph[] getMaximalComponents() {
-    class FinishTimesOrder implements Graph.DFSVisitor {
-      public int[] rootsOrder;
-
-      @Override
-      public void finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
-        int[] vertices = new int[n];
-        for (int i = 1; i <= n; i++) {
-          vertices[i - 1] = i;
-        }
-
-        Sort.quick(finishTimes, vertices, false);
-        this.rootsOrder = vertices;
-      }
-    }
-
-    FinishTimesOrder finishTimesVisitor = new FinishTimesOrder();
-    depthFirstSearch(null, finishTimesVisitor);
+  public StaticGraph[] getMaximalComponents(int[] finishTimes) {
+    int[] rootsOrder = getVertices();
+    Sort.quick(finishTimes, rootsOrder, false);
 
     StaticGraph reversedGraph = getReversed();
 
@@ -192,9 +176,7 @@ public abstract class StaticGraph implements Graph {
       }
     };
 
-    reversedGraph.depthFirstSearch(
-        finishTimesVisitor.rootsOrder,
-        getComponentsVisitor);
+    reversedGraph.depthFirstSearch(rootsOrder, getComponentsVisitor);
 
     StaticGraph[] components = new StaticGraph[componentsVerticesList.size()];
 
@@ -204,6 +186,20 @@ public abstract class StaticGraph implements Graph {
     }
 
     return components;
+  }
+
+  public StaticGraph[] getMaximalComponents() {
+    class DFSFinishTimes implements Graph.DFSVisitor {
+      @Override
+      public DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
+        return new DFSResult(null, finishTimes, null);
+      }
+    }
+
+    DFSFinishTimes visitor = new DFSFinishTimes();
+    DFSResult dfsResult = depthFirstSearch(visitor);
+
+    return getMaximalComponents(dfsResult.finishTimes());
   }
 
   public record ClassifiedEdges(String treeEdges, String backEdges, String crossEdges, String forwardEdges) {
@@ -243,7 +239,7 @@ public abstract class StaticGraph implements Graph {
       }
     };
 
-    depthFirstSearch(null, treePrinter);
+    depthFirstSearch(treePrinter);
 
     return new ClassifiedEdges(
         treeEdgesSet.toString(),
@@ -253,7 +249,7 @@ public abstract class StaticGraph implements Graph {
   }
 
   // Graph to string methods
-  private class EdgeSet {
+  protected class EdgeSet {
     StringBuilder builder;
 
     EdgeSet() {

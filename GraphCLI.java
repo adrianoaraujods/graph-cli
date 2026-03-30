@@ -4,8 +4,10 @@ import java.util.function.Supplier;
 
 import src.api.DirectedGraph;
 import src.api.GraphBuilder;
+import src.api.StaticDirectedGraph;
 import src.api.StaticGraph;
 import src.api.UndirectedGraph;
+import src.api.Graph.DFSResult;
 import src.representations.forwardstar.ForwardStarGraphBuilder;
 import src.util.GraphReader;
 
@@ -152,13 +154,16 @@ public class GraphCLI {
         neighbors = logTime(() -> ((UndirectedGraph) graph).getNeighbors(target));
       }
 
+      System.out.printf("[%d/00] Running Depth First Search in the graph...", ++step);
+      DFSResult dfsResult = logTime(() -> graph.depthFirstSearch());
+
       System.out.printf("[%d/00] Running DFS Classifying edges...", ++step);
       StaticGraph.ClassifiedEdges classifiedEdges = logTime(() -> graph.classifyEdges(target));
 
       StaticGraph[] components = null;
       if (isDirected) {
         System.out.printf("[%d/00] Finding maximal connected components...", ++step);
-        components = logTime(() -> graph.getMaximalComponents());
+        components = logTime(() -> graph.getMaximalComponents(dfsResult.finishTimes()));
       }
 
       System.out.printf("\nTarget vertex %d details:\n", target);
@@ -182,7 +187,8 @@ public class GraphCLI {
         System.out.print("\n\nComponents Trees:");
         for (int c = 0; c < components.length; c++) {
           System.out.printf("\nComponent: %d", c + 1);
-          System.out.printf("\n\tVertices: %s", Arrays.toString(components[c].getVertices()));
+          System.out.printf("\n\tVertices: %s",
+              Arrays.toString(components[c].getVertices()));
           System.out.printf("\n\tEdges: %s", components[c].getEdgesSet());
         }
       }

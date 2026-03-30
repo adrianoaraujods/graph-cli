@@ -26,6 +26,9 @@ public interface Graph {
    */
   abstract StaticGraph getInducedSubgraph(int[] vertices);
 
+  public record DFSResult(int[] discoverTimes, int[] finishTimes, int[] parents) {
+  }
+
   interface DFSVisitor {
     default void examineRoot(int vertex) {
     }
@@ -42,7 +45,8 @@ public interface Graph {
     default void examineEdge(int source, int target) {
     }
 
-    default void finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
+    default DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
+      return new DFSResult(discoverTimes, finishTimes, predecessors);
     }
 
     default void treeEdge(int source, int target) {
@@ -58,9 +62,6 @@ public interface Graph {
     }
   }
 
-  record DFSResult() {
-  }
-
   /**
    * 
    * @param rootsOrder An array of vertex IDs that will be used to pick the roots
@@ -70,5 +71,19 @@ public interface Graph {
    * @throws IndexOutOfBoundsException if any of the roots in the rootsOrder is
    *                                   outisde the possible vertex ID range.
    */
-  abstract void depthFirstSearch(int[] rootsOrder, DFSVisitor visitor);
+  public abstract DFSResult depthFirstSearch(int[] rootsOrder, Graph.DFSVisitor visitor);
+
+  public default DFSResult depthFirstSearch(Graph.DFSVisitor visitor) {
+    return depthFirstSearch(null, visitor);
+  }
+
+  public default DFSResult depthFirstSearch(int[] rootsOrder) {
+    return depthFirstSearch(rootsOrder, new DFSVisitor() {
+    });
+  }
+
+  public default DFSResult depthFirstSearch() {
+    return depthFirstSearch(null, new DFSVisitor() {
+    });
+  }
 }
