@@ -18,40 +18,6 @@ public class GraphGenerator {
   /** The time interval for logging the current progress (2 seconds). */
   private static final int LOGGING_INTERVAL = 2000;
 
-  private static long n;
-  private static long m;
-
-  public static void main(String[] args) {
-    if (args.length < 3) {
-      System.err.println(
-          "Missing argument.\n\t1. The output path for the graph data;\n\t2. The amount of vertices.\n\t3. The amount of edges.");
-      return;
-    }
-
-    String outputPath = args[0];
-
-    try {
-      n = Long.parseLong(args[1]);
-      m = Long.parseLong(args[2]);
-    } catch (NumberFormatException e) {
-      System.err.println("Vertices and edges must be valid 64-bit integers.");
-      return;
-    }
-
-    if (n <= 0 || m < 0) {
-      System.err.println("Vertices must be > 0 and edges must be >= 0.");
-      return;
-    }
-
-    long maxEdges = n * (n - 1);
-    if (m > maxEdges) {
-      System.err.printf("Error: A simple directed graph with %,d vertices can have at most %,d edges.\n", n, maxEdges);
-      return;
-    }
-
-    generateAndWriteGraph(outputPath, n, m, maxEdges);
-  }
-
   /**
    * Generates and writes the random graph to disk using a geometric jump
    * distribution.
