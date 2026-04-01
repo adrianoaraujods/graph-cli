@@ -5,5 +5,4 @@ public abstract class StaticDirectedGraph extends StaticGraph implements Directe
   StaticDirectedGraph(boolean isDirected, int n, int m) {
     super(isDirected, n, m);
   };
-
 }

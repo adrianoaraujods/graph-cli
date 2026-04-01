@@ -2,29 +2,29 @@ package src.api;
 
 public interface Graph {
 
-  /**
-   * Retrieves all adjacent vertices that the given vertex points to.
-   *
-   * @param vertex The target vertex to analyze.
-   * @return An array of integers representing the successor vertices.
-   * @throws IllegalArgumentException if the vertex is less than 1 or greater than
-   *                                  total number of vertices (n).
-   */
-  abstract int[] getAdjacency(int vertex);
+  public interface IteratorVisitor {
+    default void examineVertex(int vertex) {
+    }
+
+    default void examineEdge(int source, int target) {
+    }
+  }
+
+  public abstract void iterateGraph(IteratorVisitor visitor);
 
   /**
    * Returns all vertices in the graph.
    * 
    * @return An array containing all vertex IDs from 1 to n.
    */
-  abstract int[] getVertices();
+  public abstract int[] getVertices();
 
   /**
    * Builds the induced subgraph based on the provided vertices.
    * 
    * @param vertices The vertices that are included in the subgraph.
    */
-  abstract StaticGraph getInducedSubgraph(int[] vertices);
+  public abstract StaticGraph getInducedSubgraph(int[] vertices);
 
   public record DFSResult(int[] discoverTimes, int[] finishTimes, int[] parents) {
   }
@@ -85,5 +85,31 @@ public interface Graph {
   public default DFSResult depthFirstSearch() {
     return depthFirstSearch(null, new DFSVisitor() {
     });
+  }
+
+  public abstract EdgeSet getDFSTreeEdges(int vertex, int[] parents);
+
+  public record ClassifiedDFSEdges(EdgeSet treeEdges, EdgeSet backEdges, EdgeSet crossEdges, EdgeSet forwardEdges) {
+  }
+
+  public abstract ClassifiedDFSEdges classifyVertexDFSEdges(int vertex, Graph.DFSResult dfsResult);
+
+  public default EdgeSet getEdgesSet(boolean isDirected, int n) {
+    EdgeSet set = new EdgeSet(isDirected, n);
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target) {
+        set.add(source, target);
+      }
+    };
+
+    iterateGraph(iterator);
+
+    return set;
+  }
+
+  public default EdgeSet getEdgesSet(boolean isDirected) {
+    return getEdgesSet(isDirected, 4);
   }
 }

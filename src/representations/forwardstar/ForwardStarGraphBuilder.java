@@ -28,10 +28,6 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.isDirected = isDirected;
   }
 
-  public ForwardStarGraphBuilder() {
-    this(true);
-  }
-
   /**
    * Controls the index for filling both the {@link #sources} and
    * {@link #targets} arrays in the {@link #addEdge}.
@@ -130,10 +126,5 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.targets = null;
 
     return new ForwardStarGraph(isDirected, n, m, finalTargets, pointers, vertices);
-  }
-
-  @Override
-  public String getRepresentation() {
-    return "Forward Star";
   }
 }

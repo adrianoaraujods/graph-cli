@@ -36,6 +36,4 @@ public interface GraphBuilder {
    * @return The fully constructed Graph instance.
    */
   StaticGraph build();
-
-  String getRepresentation();
 }

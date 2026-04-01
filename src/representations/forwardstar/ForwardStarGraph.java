@@ -5,17 +5,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import src.api.DirectedGraph;
 import src.api.GraphBuilder;
+import src.api.GraphRepresentation;
 import src.api.StaticGraph;
-import src.api.UndirectedGraph;
 import src.util.Sort;
 
 /**
  * Concrete and static (immutable) implementation of the Graph using the Forward
  * Star structure.
  */
-public class ForwardStarGraph extends StaticGraph implements UndirectedGraph, DirectedGraph {
+public class ForwardStarGraph extends GraphRepresentation {
   private final int[] targets;
   private final int[] pointers;
   private final int[] vertices;
@@ -52,7 +51,7 @@ public class ForwardStarGraph extends StaticGraph implements UndirectedGraph, Di
   }
 
   @Override
-  protected void iterateGraph(IteratorVisitor visitor) {
+  public void iterateGraph(IteratorVisitor visitor) {
     for (int p = 0; p < pointers.length - 1; p++) {
       visitor.examineVertex(p + 1);
 
@@ -67,7 +66,7 @@ public class ForwardStarGraph extends StaticGraph implements UndirectedGraph, Di
   public StaticGraph getInducedSubgraph(int[] vertices) {
     int maxVertex = Arrays.stream(vertices).max().orElse(0);
 
-    GraphBuilder builder = new ForwardStarGraphBuilder();
+    GraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
     builder.initialize(maxVertex, m, vertices);
 
     Set<Integer> uniqueVertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
@@ -150,11 +149,6 @@ public class ForwardStarGraph extends StaticGraph implements UndirectedGraph, Di
     Sort.quick(successors);
 
     return successors;
-  }
-
-  @Override
-  public int[] getAdjacency(int vertex) {
-    return getSuccessors(vertex);
   }
 
   @Override
