@@ -234,6 +234,9 @@ public class GraphGenerator {
       if (vertices <= 0) {
         throw new IllegalStateException("Vertices must be specified and > 0");
       }
+      if (vertices == 1 && edges > 0) {
+        throw new IllegalArgumentException("Single vertex graph can only have 0 edges");
+      }
       if (outputPath == null || outputPath.isEmpty()) {
         throw new IllegalStateException("Output path must be specified");
       }
@@ -250,6 +253,20 @@ public class GraphGenerator {
       if (density >= 0 && (density < 0.0 || density > 1.0)) {
         throw new IllegalStateException("Density must be between 0.0 and 1.0");
       }
+
+      // Compute max edges and resolve edges from density if needed for validation
+      long maxEdges = directed ? (long) vertices * (vertices - 1) : (long) vertices * (vertices - 1) / 2;
+      long resolvedEdges = (edges >= 0) ? edges : Math.round(maxEdges * density);
+
+      if (connectivity == ConnectivityType.EULERIAN && !directed && resolvedEdges < vertices) {
+        throw new IllegalArgumentException(
+            "Eulerian graph requires at least " + vertices + " edges (one per vertex for cycle)");
+      }
+      if (connectivity == ConnectivityType.SEMI_EULERIAN && !directed && resolvedEdges < vertices - 1) {
+        throw new IllegalArgumentException(
+            "Semi-Eulerian graph requires at least " + (vertices - 1) + " edges (n-1 for path)");
+      }
+
       return new GraphConfig(vertices, directed, connectivity, edges, density, outputPath);
     }
   }
@@ -300,7 +317,7 @@ public class GraphGenerator {
       int[] degree = new int[n + 1]; // Degree array tracks vertex degrees
       Random random = new Random(); // Random for edge selection
 
-      int[] specialVertices = initGraph(writer, degree, n, m, connectivity, random,
+      int[] specialVertices = initGraph(writer, degree, n, connectivity, random,
           isDirected);
       generated = countEdges(degree, n);
 
@@ -374,7 +391,7 @@ public class GraphGenerator {
     }
   }
 
-  private static int[] initGraph(BufferedWriter writer, int[] degree, int n, long m,
+  private static int[] initGraph(BufferedWriter writer, int[] degree, int n,
       ConnectivityType connectivity, Random random, boolean isDirected) throws IOException {
     if (connectivity == ConnectivityType.EULERIAN) {
       initEulerianCycle(writer, degree, n, random);
