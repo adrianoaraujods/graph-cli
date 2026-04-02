@@ -1,4 +1,4 @@
-package src.api;
+package graph.api;
 
 public abstract class MutableDirectedGraph extends StaticDirectedGraph implements MutableGraph {
   MutableDirectedGraph(boolean isDirected, int n, int m) {

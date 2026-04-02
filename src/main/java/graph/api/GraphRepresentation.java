@@ -1,6 +1,8 @@
-package src.api;
+package graph.api;
 
 import java.util.Stack;
+
+import graph.representations.GraphBuilder;
 
 public abstract class GraphRepresentation extends StaticGraph implements DirectedGraph, UndirectedGraph {
 

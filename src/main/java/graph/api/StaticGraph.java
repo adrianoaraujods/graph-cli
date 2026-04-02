@@ -1,4 +1,4 @@
-package src.api;
+package graph.api;
 
 /**
  * Abstract base class defining the read-only algorithms for a directed graph.

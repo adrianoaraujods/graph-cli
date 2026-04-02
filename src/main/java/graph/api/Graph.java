@@ -1,4 +1,4 @@
-package src.api;
+package graph.api;
 
 public interface Graph {
 

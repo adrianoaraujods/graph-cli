@@ -1,8 +1,8 @@
-package src.api;
+package graph.api;
 
 import java.util.ArrayList;
 
-import src.util.Sort;
+import graph.util.Sort;
 
 public interface DirectedGraph extends Graph {
 

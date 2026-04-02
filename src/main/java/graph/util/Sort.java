@@ -1,4 +1,4 @@
-package src.util;
+package graph.util;
 
 /**
  * A utility class providing high-performance sorting algorithms.

@@ -1,11 +1,11 @@
-package src.util;
+package graph.cli;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import src.api.GraphBuilder;
+import graph.representations.GraphBuilder;
 
 public class GraphReader {
   /** Size of the byte buffer used for reading files (64 KB). */

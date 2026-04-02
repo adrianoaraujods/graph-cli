@@ -1,4 +1,4 @@
-package src.util;
+package graph.cli;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
-import src.api.DirectedGraph;
-import src.api.EdgeSet;
-import src.api.StaticGraph;
-import src.api.UndirectedGraph;
-import src.api.Graph.ClassifiedDFSEdges;
-import src.api.Graph.DFSResult;
+import graph.api.DirectedGraph;
+import graph.api.EdgeSet;
+import graph.api.StaticGraph;
+import graph.api.UndirectedGraph;
+import graph.api.Graph.ClassifiedDFSEdges;
+import graph.api.Graph.DFSResult;
 
 public class GraphLogger {
 

@@ -1,14 +1,14 @@
-package src.representations.forwardstar;
+package graph.representations.forwardstar;
 
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import src.api.GraphBuilder;
-import src.api.GraphRepresentation;
-import src.api.StaticGraph;
-import src.util.Sort;
+import graph.representations.GraphBuilder;
+import graph.api.GraphRepresentation;
+import graph.api.StaticGraph;
+import graph.util.Sort;
 
 /**
  * Concrete and static (immutable) implementation of the Graph using the Forward

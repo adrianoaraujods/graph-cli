@@ -1,4 +1,4 @@
-package src.util;
+package graph.cli;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

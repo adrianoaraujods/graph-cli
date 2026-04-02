@@ -38,50 +38,56 @@ The tools expect and generate plain text files representing a directed graph.
 
 > _Note: The white spaces don't matter, the `GraphReader` ignores them automatically._
 
-## Usage Instructions
+## Usage
 
 ### Prerequisites
 
-- Java Development Kit (JDK) 8 or higher.
+- Java Development Kit (JDK) 25 or higher
 
-### Compilation
-
-Compile all Java files in the directory:
+### Build
 
 ```bash
-javac *.java
+# Run tests
+mvn test
+
+# Package as JAR
+mvn package
 ```
 
-### 1. Generating a Random Graph
-
-Use the `GraphGenerator` to create a random, simple directed graph (no self-loops). The geometric jump algorithm ensures uniform distribution.
-
-**Syntax:**
+### Run
 
 ```bash
-java GraphGenerator <output_path> <number_of_vertices> <number_of_edges>
+# Using packaged JAR
+java -jar target/graph-cli-0.1.0.jar [options] <arguments>
+
+# Commands (use --help for full list)
+--create, -c          Generate a new graph file
+--read, -r            Read and analyze an existing graph file
 ```
 
-**Example:** (Generate a graph with 1 million vertices and 50 million edges)
+### Without Maven
+
+If you don't have Maven installed, compile and run directly:
 
 ```bash
-java GraphGenerator my_huge_graph.txt 1000000 50000000
+# Compile
+javac -d target/classes --release 25 $(find src/main/java -name "*.java")
+
+# Run
+java -cp target/classes graph.GraphCLI --help
 ```
 
-### 2. Reading and Analyzing a Graph
-
-Use the `GraphReader` to load a graph into the Forward Star memory structure and analyze a specific target vertex. It will output the vertex's degree details, its immediate neighbors, the full edge list, and the transposed (reversed) edge list.
-
-**Syntax:**
+### Examples
 
 ```bash
-java GraphReader <file_path> <target_vertex_id>
-```
+# Generate a graph with 1k vertices with 20% desity
+java -jar target/graph-cli-0.1.0.jar -create graph.txt 1000 0.2
 
-**Example:** (Read the graph and analyze vertex ID 3)
+# Read and analyze a graph
+java -jar target/graph-cli-0.1.0.jar -read graph.txt 1
 
-```bash
-java GraphReader my_huge_graph.txt 3
+# Show help
+java -jar target/graph-cli-0.1.0.jar --help
 ```
 
 ## Architecture & Core Components

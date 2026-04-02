@@ -1,4 +1,6 @@
-package src.api;
+package graph.representations;
+
+import graph.api.StaticGraph;
 
 /**
  * Interface defining the contract for constructing a Graph.

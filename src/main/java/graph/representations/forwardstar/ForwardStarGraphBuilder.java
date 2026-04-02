@@ -1,10 +1,10 @@
-package src.representations.forwardstar;
+package graph.representations.forwardstar;
 
 import java.util.Arrays;
 
-import src.api.GraphBuilder;
-import src.api.StaticGraph;
-import src.util.Sort;
+import graph.representations.GraphBuilder;
+import graph.api.StaticGraph;
+import graph.util.Sort;
 
 /**
  * Concrete implementation of the GraphBuilder for the Forward Star structure.
