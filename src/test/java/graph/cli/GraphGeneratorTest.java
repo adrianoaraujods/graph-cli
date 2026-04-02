@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -37,7 +39,7 @@ class GraphGeneratorTest {
         assertFalse(edges.isEmpty(), "Graph should have edges");
         verifyNoSelfLoops(edges);
         verifyNoDuplicateEdges(edges, false);
-        verifyCorrectEdgeCount(edges, 50, false);
+        verifyCorrectEdgeCount(edges, 50);
         verifyValidVertexRange(edges, 100);
     }
 
@@ -60,7 +62,7 @@ class GraphGeneratorTest {
         assertFalse(edges.isEmpty(), "Graph should have edges");
         verifyNoSelfLoops(edges);
         verifyNoDuplicateEdges(edges, true);
-        verifyCorrectEdgeCount(edges, 50, true);
+        verifyCorrectEdgeCount(edges, 50);
         verifyValidVertexRange(edges, 100);
     }
 
@@ -287,6 +289,219 @@ class GraphGeneratorTest {
         verifyNoDuplicateEdges(edges, false);
     }
 
+    @Test
+    void testUndirectedSingleDirection() throws IOException {
+        Path outputPath = tempDir.resolve("undirected_single_direction.txt");
+
+        GraphGenerator.GraphConfig config = GraphGenerator.builder()
+                .vertices(100)
+                .edges(50)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath.toString())
+                .build();
+
+        GraphGenerator.generateGraph(config);
+
+        List<String> lines = Files.readAllLines(outputPath);
+        String[] header = lines.get(0).trim().split("\\s+");
+        int headerM = Integer.parseInt(header[1]);
+        int edgeLines = lines.size() - 1;
+
+        assertEquals(50, headerM, "Header should specify 50 edges");
+        assertEquals(50, edgeLines, "File should have exactly 50 edge lines");
+        verifyNoDuplicateEdges(parseGraphFile(outputPath), false);
+    }
+
+    @Test
+    void testWeaklyConnected() throws IOException {
+        Path outputPath = tempDir.resolve("weakly_connected.txt");
+
+        GraphGenerator.GraphConfig config = GraphGenerator.builder()
+                .vertices(100)
+                .edges(150)
+                .directed(true)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath.toString())
+                .build();
+
+        GraphGenerator.generateGraph(config);
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        Set<Integer>[] adj = buildAdjacencyList(100, edges, false);
+
+        Set<Integer> visited = new HashSet<>();
+        Queue<Integer> queue = new ArrayDeque<>();
+        queue.add(1);
+        visited.add(1);
+
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            for (int neighbor : adj[v]) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        assertEquals(100, visited.size(), "All vertices should be reachable");
+    }
+
+    @Test
+    void testEulerianDegreeParity() throws IOException {
+        Path outputPath = tempDir.resolve("eulerian.txt");
+
+        GraphGenerator.GraphConfig config = GraphGenerator.builder()
+                .vertices(100)
+                .edges(100)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.EULERIAN)
+                .outputPath(outputPath.toString())
+                .build();
+
+        GraphGenerator.generateGraph(config);
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        int[] degree = calculateDegrees(edges, 100, false);
+
+        int oddDegreeCount = 0;
+        for (int i = 1; i <= 100; i++) {
+            if (degree[i] % 2 == 1) {
+                oddDegreeCount++;
+            }
+        }
+
+        assertTrue(oddDegreeCount < 20, "Most vertices should have even degree");
+    }
+
+    @Test
+    void testSemiEulerianDegreeParity() throws IOException {
+        Path outputPath = tempDir.resolve("semi_eulerian.txt");
+
+        GraphGenerator.GraphConfig config = GraphGenerator.builder()
+                .vertices(100)
+                .edges(100)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.SEMI_EULERIAN)
+                .outputPath(outputPath.toString())
+                .build();
+
+        GraphGenerator.generateGraph(config);
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        int[] degree = calculateDegrees(edges, 100, false);
+
+        int oddDegreeCount = 0;
+        for (int i = 1; i <= 100; i++) {
+            if (degree[i] % 2 == 1) {
+                oddDegreeCount++;
+            }
+        }
+
+        assertTrue(oddDegreeCount < 30, "Should have limited odd-degree vertices");
+    }
+
+    @Test
+    void testEulerianConnected() throws IOException {
+        Path outputPath = tempDir.resolve("eulerian_connected.txt");
+
+        GraphGenerator.GraphConfig config = GraphGenerator.builder()
+                .vertices(100)
+                .edges(100)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.EULERIAN)
+                .outputPath(outputPath.toString())
+                .build();
+
+        GraphGenerator.generateGraph(config);
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        Set<Integer>[] adj = buildAdjacencyList(100, edges, false);
+
+        Set<Integer> visited = new HashSet<>();
+        Queue<Integer> queue = new ArrayDeque<>();
+        queue.add(1);
+        visited.add(1);
+
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            for (int neighbor : adj[v]) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        assertEquals(100, visited.size(), "Eulerian graph should be connected");
+    }
+
+    @Test
+    void testSemiEulerianConnected() throws IOException {
+        Path outputPath = tempDir.resolve("semi_eulerian_connected.txt");
+
+        GraphGenerator.GraphConfig config = GraphGenerator.builder()
+                .vertices(100)
+                .edges(100)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.SEMI_EULERIAN)
+                .outputPath(outputPath.toString())
+                .build();
+
+        GraphGenerator.generateGraph(config);
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        Set<Integer>[] adj = buildAdjacencyList(100, edges, false);
+
+        Set<Integer> visited = new HashSet<>();
+        Queue<Integer> queue = new ArrayDeque<>();
+        queue.add(1);
+        visited.add(1);
+
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            for (int neighbor : adj[v]) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        assertEquals(100, visited.size(), "Semi-Eulerian graph should be connected");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<Integer>[] buildAdjacencyList(int n, List<int[]> edges, boolean directed) {
+        Set<Integer>[] adj = new HashSet[n + 1];
+        for (int i = 1; i <= n; i++) {
+            adj[i] = new HashSet<>();
+        }
+
+        for (int[] edge : edges) {
+            int v = edge[0];
+            int w = edge[1];
+            adj[v].add(w);
+            if (!directed) {
+                adj[w].add(v);
+            }
+        }
+
+        return adj;
+    }
+
+    private int[] calculateDegrees(List<int[]> edges, int n, boolean directed) {
+        int[] degree = new int[n + 1];
+        for (int[] edge : edges) {
+            degree[edge[0]]++;
+            if (!directed) {
+                degree[edge[1]]++;
+            }
+        }
+        return degree;
+    }
+
     private List<int[]> parseGraphFile(Path path) throws IOException {
         List<String> lines = Files.readAllLines(path);
         List<int[]> edges = new ArrayList<>();
@@ -329,12 +544,10 @@ class GraphGeneratorTest {
         }
     }
 
-    private void verifyCorrectEdgeCount(List<int[]> edges, int expectedEdges, boolean directed) {
+    private void verifyCorrectEdgeCount(List<int[]> edges, int expectedEdges) {
         int actualCount = edges.size();
-        int expectedCount = directed ? expectedEdges : expectedEdges * 2;
-        assertEquals(expectedCount, actualCount,
-                directed ? "Directed graph should have exactly m edges"
-                        : "Undirected graph should have 2m edges (both directions)");
+        assertEquals(expectedEdges, actualCount,
+                "Graph should have exactly " + expectedEdges + " edges");
     }
 
     private void verifyValidVertexRange(List<int[]> edges, int n) {

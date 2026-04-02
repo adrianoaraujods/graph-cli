@@ -2,7 +2,6 @@ package graph;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.util.Map;
 
 import graph.api.StaticGraph;
 import graph.cli.GraphGenerator;
