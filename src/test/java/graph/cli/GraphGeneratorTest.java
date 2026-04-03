@@ -472,6 +472,117 @@ class GraphGeneratorTest {
         assertEquals(100, visited.size(), "Semi-Eulerian graph should be connected");
     }
 
+    @Test
+    void testSeedReproducibility() throws IOException {
+        Path outputPath1 = tempDir.resolve("seed_test_1.txt");
+        Path outputPath2 = tempDir.resolve("seed_test_2.txt");
+
+        GraphGenerator.GraphConfig config1 = GraphGenerator.builder()
+                .vertices(100)
+                .edges(50)
+                .directed(true)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath1.toString())
+                .seed(42L)
+                .build();
+
+        GraphGenerator.GraphConfig config2 = GraphGenerator.builder()
+                .vertices(100)
+                .edges(50)
+                .directed(true)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath2.toString())
+                .seed(42L)
+                .build();
+
+        GraphGenerator.generateGraph(config1);
+        GraphGenerator.generateGraph(config2);
+
+        List<int[]> edges1 = parseGraphFile(outputPath1);
+        List<int[]> edges2 = parseGraphFile(outputPath2);
+
+        assertEquals(edges1.size(), edges2.size(), "Same seed should produce same edge count");
+        for (int i = 0; i < edges1.size(); i++) {
+            assertArrayEquals(edges1.get(i), edges2.get(i),
+                    "Edge at index " + i + " should be identical with same seed");
+        }
+    }
+
+    @Test
+    void testDifferentSeedsProduceDifferentGraphs() throws IOException {
+        Path outputPath1 = tempDir.resolve("diff_seed_1.txt");
+        Path outputPath2 = tempDir.resolve("diff_seed_2.txt");
+
+        GraphGenerator.GraphConfig config1 = GraphGenerator.builder()
+                .vertices(100)
+                .edges(50)
+                .directed(true)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath1.toString())
+                .seed(42L)
+                .build();
+
+        GraphGenerator.GraphConfig config2 = GraphGenerator.builder()
+                .vertices(100)
+                .edges(50)
+                .directed(true)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath2.toString())
+                .seed(123L)
+                .build();
+
+        GraphGenerator.generateGraph(config1);
+        GraphGenerator.generateGraph(config2);
+
+        List<int[]> edges1 = parseGraphFile(outputPath1);
+        List<int[]> edges2 = parseGraphFile(outputPath2);
+
+        boolean different = false;
+        for (int i = 0; i < edges1.size(); i++) {
+            if (edges1.get(i)[0] != edges2.get(i)[0] || edges1.get(i)[1] != edges2.get(i)[1]) {
+                different = true;
+                break;
+            }
+        }
+        assertTrue(different, "Different seeds should produce different graphs");
+    }
+
+    @Test
+    void testSeedWithUndirectedGraph() throws IOException {
+        Path outputPath1 = tempDir.resolve("undirected_seed_1.txt");
+        Path outputPath2 = tempDir.resolve("undirected_seed_2.txt");
+
+        GraphGenerator.GraphConfig config1 = GraphGenerator.builder()
+                .vertices(50)
+                .edges(25)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath1.toString())
+                .seed(999L)
+                .build();
+
+        GraphGenerator.GraphConfig config2 = GraphGenerator.builder()
+                .vertices(50)
+                .edges(25)
+                .directed(false)
+                .connectivity(GraphGenerator.ConnectivityType.WEAKLY)
+                .outputPath(outputPath2.toString())
+                .seed(999L)
+                .build();
+
+        GraphGenerator.generateGraph(config1);
+        GraphGenerator.generateGraph(config2);
+
+        List<int[]> edges1 = parseGraphFile(outputPath1);
+        List<int[]> edges2 = parseGraphFile(outputPath2);
+
+        assertEquals(edges1.size(), edges2.size());
+        for (int i = 0; i < edges1.size(); i++) {
+            assertArrayEquals(edges1.get(i), edges2.get(i),
+                    "Undirected edge at index " + i + " should be identical with same seed");
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private Set<Integer>[] buildAdjacencyList(int n, List<int[]> edges, boolean directed) {
         Set<Integer>[] adj = new HashSet[n + 1];
