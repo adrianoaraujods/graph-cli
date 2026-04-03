@@ -11,34 +11,6 @@ import graph.cli.GraphGenerator.ConnectivityType;
 import graph.representations.GraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
-/**
- * Command-line interface for generating and analyzing graphs.
- * 
- * <p>
- * This CLI provides tools for:
- * <ul>
- * <li>Generating random simple graphs with configurable properties</li>
- * <li>Reading and analyzing existing graph files</li>
- * <li>Logging analysis results for specific target vertices</li>
- * </ul>
- * 
- * <p>
- * Usage examples:
- * 
- * <pre>{@code
- * # Generate a directed weakly connected graph with 50% density
- * java GraphCLI -c graph.txt 1000 0.5
- * 
- * # Generate an undirected Eulerian graph with specific edge count
- * java GraphCLI -c --eulerian --undirected graph.txt 1000 --edges 450
- * 
- * # Read and analyze an existing graph
- * java GraphCLI -r graph.txt 5
- * 
- * # Generate and then analyze a graph
- * java GraphCLI -c -r graph.txt 1000 0.5 5
- * }</pre>
- */
 public class GraphCLI {
     static StaticGraph graph = null;
     static GraphBuilder builder;
@@ -53,59 +25,43 @@ public class GraphCLI {
     static double density = -1.0;
     static long edges = -1;
     static int target = -1;
+    static Long seed = null;
     static String representation = "Forward Star";
 
-    /**
-     * Prints the usage information and help message to stdout.
-     */
     static void printUsage() {
         System.out.println("Usage:");
-        System.out.println("  java GraphCLI -c [options] <graph-path> <vertices> <density>");
-        System.out.println("  java GraphCLI -c [options] <graph-path> <vertices> --edges <count>");
-        System.out.println("  java GraphCLI -r [options] <graph-path> <target-vertex>");
-        System.out.println("  java GraphCLI -c -r [options] <graph-path> <vertices> <density> <target-vertex>");
+        System.out.println("  java GraphCLI -c -f <file> -n <vertices> -d <density>");
+        System.out.println("  java GraphCLI -c -f <file> -n <vertices> -m <edges>");
+        System.out.println("  java GraphCLI -c -f <file> -n <vertices> -d <density> -s <seed>");
+        System.out.println("  java GraphCLI -r -f <file> -t <target>");
+        System.out.println("  java GraphCLI -c -r -f <file> -n <vertices> -d <density> -t <target>");
         System.out.println();
         System.out.println("Options:");
-        System.out.println("  --create, -c          Generate a new graph file");
-        System.out.println("  --read, -r            Read and analyze an existing graph file (default)");
-        System.out.println("  --directed            Treat graph as directed (default)");
-        System.out.println("  -d                    Short for --directed");
-        System.out.println("  --undirected          Treat graph as undirected");
-        System.out.println("  -u                    Short for --undirected");
-        System.out.println("  --connected           Graph is weakly connected (default)");
-        System.out.println("  --disconnected        Graph may be disconnected");
-        System.out.println("  --eulerian            Graph has all vertices with even degree");
-        System.out.println("  --semi-eulerian       Graph has exactly two vertices of odd degree");
-        System.out.println("  --edges <count>       Number of edges (alternative to density)");
-        System.out.println("  --density <value>     Edge density as a decimal (0.0 to 1.0)");
-        System.out.println("  --forward-star        Use Forward Star representation (default)");
-        System.out.println("  --incidence-matrix    Use Incidence Matrix representation");
-        System.out.println("  --adjacency-matrix    Use Adjacency Matrix representation");
-        System.out.println("  --adjacency-list      Use Adjacency List representation");
-        System.out.println("  --help, -h            Show this help message");
-        System.out.println();
-        System.out.println("Arguments:");
-        System.out.println("  <graph-path>          Path for the graph (input/output) data file");
-        System.out.println("  <vertices>            Number of vertices (positive integer)");
-        System.out.println("  <density>             Edge density as a decimal (0.0 to 1.0)");
-        System.out.println("  <target-vertex>       Target vertex Id to analyze");
+        System.out.println("  --create, -c           Generate a new graph file");
+        System.out.println("  --read, -r             Read and analyze an existing graph file");
+        System.out.println("  --file, -f <path>      Graph file path (required)");
+        System.out.println("  --vertices, -n <n>     Number of vertices (required for create)");
+        System.out.println("  --edges, -m <count>    Number of edges (alternative to density)");
+        System.out.println("  --density, -d <val>    Edge density 0.0-1.0 (alternative to edges)");
+        System.out.println("  --seed, -s <n>         Random seed for reproducible graphs");
+        System.out.println("  --directed             Treat graph as directed (default)");
+        System.out.println("  --undirected, -u       Treat graph as undirected");
+        System.out.println("  --connected            Graph is weakly connected (default)");
+        System.out.println("  --disconnected         Graph may be disconnected");
+        System.out.println("  --eulerian             Graph has all vertices with even degree");
+        System.out.println("  --semi-eulerian        Graph has exactly two vertices of odd degree");
+        System.out.println("  --target, -t <n>       Target vertex for analysis (required for read)");
+        System.out.println("  --forward-star         Use Forward Star representation (default)");
+        System.out.println("  --help, -h             Show this help message");
         System.out.println();
         System.out.println("Examples:");
-        System.out.println("  java GraphCLI -c graph.txt 1000 0.5");
-        System.out.println("  java GraphCLI -c graph.txt 1000 --edges 500");
-        System.out.println("  java GraphCLI -r graph.txt 5");
-        System.out.println("  java GraphCLI -c -r graph.txt 1000 0.5 5");
-        System.out.println("  java GraphCLI -c --undirected graph.txt 1000 0.5");
-        System.out.println("  java GraphCLI -c --eulerian graph.txt 1000 0.5");
+        System.out.println("  java GraphCLI -c -f graph.txt -n 1000 -d 0.5");
+        System.out.println("  java GraphCLI -c -f graph.txt -n 1000 -m 500");
+        System.out.println("  java GraphCLI -c -f graph.txt -n 1000 -d 0.5 -s 42");
+        System.out.println("  java GraphCLI -r -f graph.txt -t 5");
+        System.out.println("  java GraphCLI -c -r -f graph.txt -n 1000 -d 0.5 -t 5");
     }
 
-    /**
-     * Parses and processes command-line arguments.
-     * 
-     * @param args the command-line arguments
-     * @throws InvalidAlgorithmParameterException if arguments are invalid or
-     *                                            missing
-     */
     static void processArguments(String[] args) throws InvalidAlgorithmParameterException {
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
@@ -121,7 +77,63 @@ public class GraphCLI {
             } else if (arg.equals("--read") || arg.equals("-r")) {
                 isRead = true;
 
-            } else if (arg.equals("--directed") || arg.equals("-d")) {
+            } else if (arg.equals("--file") || arg.equals("-f")) {
+                if (i + 1 >= args.length) {
+                    throw new InvalidAlgorithmParameterException("Missing argument: -f/--file requires a path.");
+                }
+                graphPath = args[++i];
+
+            } else if (arg.equals("--vertices") || arg.equals("-n")) {
+                if (i + 1 >= args.length) {
+                    throw new InvalidAlgorithmParameterException("Missing argument: -n/--vertices requires a value.");
+                }
+                try {
+                    vertices = Integer.parseInt(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Vertices should be a valid integer: " + args[i]);
+                }
+
+            } else if (arg.equals("--edges") || arg.equals("-m")) {
+                if (i + 1 >= args.length) {
+                    throw new InvalidAlgorithmParameterException("Missing argument: -m/--edges requires a value.");
+                }
+                try {
+                    edges = Long.parseLong(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Edges should be a valid integer: " + args[i]);
+                }
+
+            } else if (arg.equals("--density") || arg.equals("-d")) {
+                if (i + 1 >= args.length) {
+                    throw new InvalidAlgorithmParameterException("Missing argument: -d/--density requires a value.");
+                }
+                try {
+                    density = Double.parseDouble(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Density should be a valid decimal: " + args[i]);
+                }
+
+            } else if (arg.equals("--seed") || arg.equals("-s")) {
+                if (i + 1 >= args.length) {
+                    throw new InvalidAlgorithmParameterException("Missing argument: -s/--seed requires a value.");
+                }
+                try {
+                    seed = Long.parseLong(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Seed should be a valid integer: " + args[i]);
+                }
+
+            } else if (arg.equals("--target") || arg.equals("-t")) {
+                if (i + 1 >= args.length) {
+                    throw new InvalidAlgorithmParameterException("Missing argument: -t/--target requires a value.");
+                }
+                try {
+                    target = Integer.parseInt(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Target should be a valid integer: " + args[i]);
+                }
+
+            } else if (arg.equals("--directed")) {
                 isDirected = true;
 
             } else if (arg.equals("--undirected") || arg.equals("-u")) {
@@ -139,70 +151,20 @@ public class GraphCLI {
             } else if (arg.equals("--semi-eulerian")) {
                 connectivity = ConnectivityType.SEMI_EULERIAN;
 
-            } else if (arg.equals("--edges")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: --edges requires a value.");
-                }
-                try {
-                    edges = Long.parseLong(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Edges should be a valid integer: " + args[i]);
-                }
-
-            } else if (arg.equals("--density")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: --density requires a value.");
-                }
-                try {
-                    density = Double.parseDouble(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Density should be a valid decimal: " + args[i]);
-                }
-
             } else if (arg.equals("--forward-star")) {
                 representation = "Forward Star";
 
             } else if (arg.equals("--incidence-matrix")) {
-                throw new InvalidAlgorithmParameterException("Invalid argument: Incidence Matrix not implement yet.");
+                throw new InvalidAlgorithmParameterException("Invalid argument: Incidence Matrix not implemented yet.");
 
             } else if (arg.equals("--adjacency-matrix")) {
-                throw new InvalidAlgorithmParameterException("Invalid argument: Adjidence Matrix not implement yet.");
+                throw new InvalidAlgorithmParameterException("Invalid argument: Adjacency Matrix not implemented yet.");
 
             } else if (arg.equals("--adjacency-list")) {
-                throw new InvalidAlgorithmParameterException("Invalid argument: Adjacency List not implement yet.");
+                throw new InvalidAlgorithmParameterException("Invalid argument: Adjacency List not implemented yet.");
 
-            } else if (!arg.startsWith("-")) {
-                if (isCreate && graphPath == null) {
-                    graphPath = arg;
-
-                } else if (isCreate && vertices == -1) {
-                    try {
-                        vertices = Integer.parseInt(arg);
-                    } catch (NumberFormatException e) {
-                        throw new InvalidAlgorithmParameterException("Vertices should be a valid integer: " + arg);
-                    }
-
-                } else if (isCreate && density < 0 && edges < 0) {
-                    try {
-                        density = Double.parseDouble(arg);
-                    } catch (NumberFormatException e) {
-                        throw new InvalidAlgorithmParameterException("Density should be a valid decimal: " + arg);
-                    }
-
-                } else if (isRead && graphPath == null) {
-                    graphPath = arg;
-
-                } else if (isRead && target == -1) {
-                    try {
-                        target = Integer.parseInt(arg);
-                    } catch (NumberFormatException e) {
-                        throw new InvalidAlgorithmParameterException(
-                                "The target vertex Id should be a valid integer: " + arg);
-                    }
-
-                } else {
-                    throw new InvalidAlgorithmParameterException("Unexpected extra argument: " + arg);
-                }
+            } else {
+                throw new InvalidAlgorithmParameterException("Unknown argument: " + arg);
             }
         }
 
@@ -213,44 +175,38 @@ public class GraphCLI {
         }
 
         if (isRead && target == -1) {
-            throw new InvalidAlgorithmParameterException("Missing argument: target vertex Id to analyze.");
+            throw new InvalidAlgorithmParameterException("Missing argument: -t/--target is required for read mode.");
         }
 
         if (isCreate) {
             if (graphPath == null) {
-                throw new InvalidAlgorithmParameterException("Missing argument: output file path.");
+                throw new InvalidAlgorithmParameterException(
+                        "Missing argument: -f/--file is required for create mode.");
             }
 
             if (vertices <= 0) {
-                throw new InvalidAlgorithmParameterException("Missing or invalid argument: vertices must be > 0.");
+                throw new InvalidAlgorithmParameterException("Missing or invalid argument: -n/--vertices must be > 0.");
             }
 
             if (edges >= 0 && density >= 0) {
-                throw new InvalidAlgorithmParameterException("Cannot specify both --edges and density.");
+                throw new InvalidAlgorithmParameterException("Cannot specify both -m/--edges and -d/--density.");
             }
 
             if (edges < 0 && density < 0) {
-                throw new InvalidAlgorithmParameterException(
-                        "Must specify either --edges or density (positional argument).");
+                throw new InvalidAlgorithmParameterException("Must specify either -m/--edges or -d/--density.");
             }
 
             if (density >= 0 && (density < 0.0 || density > 1.0)) {
                 throw new InvalidAlgorithmParameterException("Density must be between 0.0 and 1.0.");
             }
 
-            long maxEdges = isDirected ? vertices * (vertices - 1) : vertices * (vertices - 1) / 2;
+            long maxEdges = isDirected ? (long) vertices * (vertices - 1) : (long) vertices * (vertices - 1) / 2;
             if (edges >= 0 && edges > maxEdges) {
                 throw new InvalidAlgorithmParameterException("Edges must be between 0 and " + maxEdges + ".");
             }
         }
-
     }
 
-    /**
-     * Main entry point for the Graph CLI application.
-     * 
-     * @param args command-line arguments
-     */
     public static void main(String[] args) {
         int step = 0;
 
@@ -283,6 +239,7 @@ public class GraphCLI {
                             .vertices(vertices)
                             .edges(edges)
                             .outputPath(graphPath)
+                            .seed(seed != null ? seed : null)
                             .build();
                 } else {
                     config = GraphGenerator.builder()
@@ -291,6 +248,7 @@ public class GraphCLI {
                             .vertices(vertices)
                             .density(density)
                             .outputPath(graphPath)
+                            .seed(seed != null ? seed : null)
                             .build();
                 }
 
@@ -298,6 +256,9 @@ public class GraphCLI {
                 System.out.printf("  Vertices: %,d\n", vertices);
                 if (density >= 0) {
                     System.out.printf("  Density: %.2f\n", density);
+                }
+                if (seed != null) {
+                    System.out.printf("  Seed: %d\n", seed);
                 }
                 System.out.printf("  Edges: %,d / %,d\n", config.resolvedEdges(), maxEdges);
 

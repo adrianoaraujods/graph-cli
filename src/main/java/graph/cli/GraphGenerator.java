@@ -29,7 +29,8 @@ public class GraphGenerator {
       ConnectivityType connectivity,
       long edges,
       double density,
-      String outputPath) {
+      String outputPath,
+      Long seed) {
 
     public long maxEdges() {
       return directed ? (long) vertices * (vertices - 1) : (long) vertices * (vertices - 1) / 2;
@@ -63,6 +64,7 @@ public class GraphGenerator {
     private long edges = -1;
     private double density = -1;
     private String outputPath = null;
+    private Long seed = null;
 
     public Builder directed(boolean directed) {
       this.directed = directed;
@@ -96,6 +98,16 @@ public class GraphGenerator {
 
     public Builder outputPath(String outputPath) {
       this.outputPath = outputPath;
+      return this;
+    }
+
+    public Builder seed(long seed) {
+      this.seed = seed;
+      return this;
+    }
+
+    public Builder seed(Long seed) {
+      this.seed = seed;
       return this;
     }
 
@@ -135,7 +147,7 @@ public class GraphGenerator {
             "Semi-Eulerian graph requires at least " + (vertices - 1) + " edges");
       }
 
-      return new GraphConfig(vertices, directed, connectivity, edges, density, outputPath);
+      return new GraphConfig(vertices, directed, connectivity, edges, density, outputPath, seed);
     }
   }
 
@@ -151,6 +163,8 @@ public class GraphGenerator {
     ConnectivityType connectivity = config.connectivity();
     String outputPath = config.outputPath();
 
+    Random random = config.seed() != null ? new Random(config.seed()) : new Random();
+
     long startTime = System.currentTimeMillis();
 
     System.out.printf("Starting %s graph generation for %,d edges...%n",
@@ -161,14 +175,14 @@ public class GraphGenerator {
       writer.newLine();
 
       if (connectivity == ConnectivityType.EULERIAN) {
-        generateEulerianGraph(writer, n, m, isDirected);
+        generateEulerianGraph(writer, n, m, isDirected, random, startTime);
       } else if (connectivity == ConnectivityType.SEMI_EULERIAN) {
-        generateSemiEulerianGraph(writer, n, m);
+        generateSemiEulerianGraph(writer, n, m, random, startTime);
       } else {
         if (density > DENSE_THRESHOLD) {
-          generateDenseGraph(writer, n, m, isDirected, startTime);
+          generateDenseGraph(writer, n, m, isDirected, random, startTime);
         } else {
-          generateSparseGraph(writer, n, m, isDirected, connectivity, startTime);
+          generateSparseGraph(writer, n, m, isDirected, connectivity, random, startTime);
         }
       }
 
@@ -180,9 +194,8 @@ public class GraphGenerator {
     }
   }
 
-  private static void generateSparseGraph(BufferedWriter writer, int n, long m, boolean isDirected, ConnectivityType connectivity, long startTime)
+  private static void generateSparseGraph(BufferedWriter writer, int n, long m, boolean isDirected, ConnectivityType connectivity, Random random, long startTime)
       throws IOException {
-    Random random = new Random();
     Set<Long> edgeSet = new HashSet<>();
 
     if (connectivity == ConnectivityType.WEAKLY && m >= n - 1) {
@@ -265,10 +278,8 @@ public class GraphGenerator {
     }
   }
 
-  private static void generateDenseGraph(BufferedWriter writer, int n, long m, boolean isDirected, long startTime)
+  private static void generateDenseGraph(BufferedWriter writer, int n, long m, boolean isDirected, Random random, long startTime)
       throws IOException {
-    Random random = new Random();
-
     long maxEdges = isDirected ? (long) n * (n - 1) : (long) n * (n - 1) / 2;
     if (maxEdges > Integer.MAX_VALUE) {
       throw new IllegalArgumentException("Graph too dense for available memory");
@@ -327,10 +338,8 @@ public class GraphGenerator {
     ensureConnectivity(writer, edgeSet, n, random, startTime);
   }
 
-  private static void generateEulerianGraph(BufferedWriter writer, int n, long m, boolean isDirected)
+  private static void generateEulerianGraph(BufferedWriter writer, int n, long m, boolean isDirected, Random random, long startTime)
       throws IOException {
-    Random random = new Random();
-    long startTime = System.currentTimeMillis();
     long lastLogTime = startTime;
 
     if (m < n - 1) {
@@ -420,10 +429,8 @@ public class GraphGenerator {
     ensureConnectivity(writer, writtenEdges, n, random, startTime);
   }
 
-  private static void generateSemiEulerianGraph(BufferedWriter writer, int n, long m)
+  private static void generateSemiEulerianGraph(BufferedWriter writer, int n, long m, Random random, long startTime)
       throws IOException {
-    Random random = new Random();
-    long startTime = System.currentTimeMillis();
     long lastLogTime = startTime;
 
     if (m < n - 1) {

@@ -80,11 +80,26 @@ java -cp target/classes graph.GraphCLI --help
 ### Examples
 
 ```bash
-# Generate a graph with 1k vertices with 20% desity
-java -jar target/graph-cli-0.1.0.jar -create graph.txt 1000 0.2
+# Generate a graph with 1k vertices and 20% density
+java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2
 
-# Read and analyze a graph
-java -jar target/graph-cli-0.1.0.jar -read graph.txt 1
+# Generate a graph with 1k vertices and 500 edges
+java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -m 500
+
+# Generate a reproducible graph with a seed
+java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2 -s 42
+
+# Generate and analyze a graph (create + read combined)
+java -jar target/graph-cli-0.1.0.jar -c -r -f graph.txt -n 1000 -d 0.2 -t 5
+
+# Read and analyze an existing graph
+java -jar target/graph-cli-0.1.0.jar -r -f graph.txt -t 5
+
+# Generate an undirected graph
+java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2 -u
+
+# Generate a Eulerian graph (all vertices have even degree)
+java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2 --eulerian
 
 # Show help
 java -jar target/graph-cli-0.1.0.jar --help
