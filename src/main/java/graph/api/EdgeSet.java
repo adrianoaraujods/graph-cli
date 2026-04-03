@@ -27,6 +27,14 @@ public class EdgeSet {
     edges.add(new Edge(v, w));
   }
 
+  public ArrayList<Edge> edges() {
+    return edges;
+  }
+
+  public int size() {
+    return edges.size();
+  }
+
   public record Edge(int v, int w) {
     public final String toString(boolean isDirected) {
       StringBuilder builder = new StringBuilder(isDirected ? "(" : "{");
