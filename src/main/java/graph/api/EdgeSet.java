@@ -6,20 +6,20 @@ public class EdgeSet {
   private boolean isDirected;
   private ArrayList<Edge> edges;
 
-  EdgeSet(boolean isDirected, int n) {
+  public EdgeSet(boolean isDirected, int n) {
     this.isDirected = isDirected;
     edges = new ArrayList<Edge>(n);
   }
 
-  EdgeSet(boolean isDirected) {
+  public EdgeSet(boolean isDirected) {
     this(isDirected, 4);
   }
 
-  EdgeSet(int n) {
+  public EdgeSet(int n) {
     this(true, n);
   }
 
-  EdgeSet() {
+  public EdgeSet() {
     this(true);
   }
 

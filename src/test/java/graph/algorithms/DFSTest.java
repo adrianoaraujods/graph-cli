@@ -4,27 +4,28 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-import graph.api.Graph.ClassifiedDFSEdges;
+import graph.algorithms.DFS.ClassifiedDFSEdges;
+import graph.algorithms.DFS.DFSResult;
+import graph.algorithms.DFS.DFSVisitor;
 import graph.api.EdgeSet;
 import graph.api.Graph;
-import graph.api.Graph.DFSResult;
-import graph.api.GraphRepresentation;
+import graph.api.StaticGraph;
 import graph.representations.GraphBuilderHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class DepthFirstSearchTest {
+class DFSTest {
 
     @Test
     void testDFSDiscoverTimes() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         int[] discoverTimes = result.discoverTimes();
         assertNotNull(discoverTimes);
@@ -38,12 +39,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSFinishTimes() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         int[] discoverTimes = result.discoverTimes();
         int[] finishTimes = result.finishTimes();
@@ -56,27 +57,28 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSTreeEdges() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
         int[] parents = result.parents();
 
-        EdgeSet treeEdges = graph.getDFSTreeEdges(1, parents);
+        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, parents);
+
         assertNotNull(treeEdges);
     }
 
     @Test
     void testDFSWithCustomRootsOrder() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 3, 4 }, { 2, 3 } });
 
         int[] customOrder = { 3, 1 };
-        DFSResult result = graph.depthFirstSearch(customOrder);
+        DFSResult result = DFS.search(graph, customOrder);
 
         assertNotNull(result.discoverTimes());
         assertNotNull(result.finishTimes());
@@ -84,12 +86,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSEmptyGraph() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 0,
                 new int[][] {});
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         assertNotNull(result.discoverTimes());
         assertEquals(5, result.discoverTimes().length);
@@ -97,12 +99,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSDisconnectedGraph() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 6, 3,
                 new int[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         int[] discoverTimes = result.discoverTimes();
         for (int i = 0; i < discoverTimes.length; i++) {
@@ -113,12 +115,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSParentsAssignment() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
         int[] parents = result.parents();
 
         assertNotNull(parents);
@@ -134,12 +136,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSWithCycle() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         int[] discoverTimes = result.discoverTimes();
         int[] finishTimes = result.finishTimes();
@@ -150,13 +152,13 @@ class DepthFirstSearchTest {
 
     @Test
     void testClassifyVertexEdges() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 5,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 4, 5 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        ClassifiedDFSEdges classified = graph.classifyVertexDFSEdges(1, result);
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         assertNotNull(classified);
         assertNotNull(classified.treeEdges());
@@ -167,13 +169,13 @@ class DepthFirstSearchTest {
 
     @Test
     void testClassifyVertexTreeEdges() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        ClassifiedDFSEdges classified = graph.classifyVertexDFSEdges(1, result);
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         EdgeSet treeEdges = classified.treeEdges();
         assertTrue(treeEdges.edges().size() > 0,
@@ -182,59 +184,59 @@ class DepthFirstSearchTest {
 
     @Test
     void testClassifyVertexWithBackEdge() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        ClassifiedDFSEdges classified = graph.classifyVertexDFSEdges(2, result);
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 2, result);
 
         assertNotNull(classified.backEdges());
     }
 
     @Test
     void testClassifyVertexForwardEdge() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 3, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        ClassifiedDFSEdges classified = graph.classifyVertexDFSEdges(1, result);
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         assertNotNull(classified.forwardEdges());
     }
 
     @Test
     void testDFSLexicographicOrder() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 4,
                 new int[][] { { 1, 3 }, { 1, 2 }, { 3, 4 }, { 2, 4 } });
 
         final List<Integer> discoverOrder = new ArrayList<>();
 
-        Graph.DFSVisitor visitor = new Graph.DFSVisitor() {
+        DFSVisitor visitor = new DFSVisitor() {
             @Override
             public void discoverVertex(int vertex) {
                 discoverOrder.add(vertex);
             }
         };
 
-        graph.depthFirstSearch(visitor);
+        DFS.search(graph, visitor);
 
         assertEquals(4, discoverOrder.size());
     }
 
     @Test
     void testDFSAllVerticesVisited() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 7, 6,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 4, 5 }, { 5, 6 }, { 6, 7 }, { 3, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
         int[] discoverTimes = result.discoverTimes();
 
         for (int i = 0; i < discoverTimes.length; i++) {
@@ -244,21 +246,8 @@ class DepthFirstSearchTest {
     }
 
     @Test
-    void testGetDFSTreeEdgesForSpecificVertex() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
-                () -> new ForwardStarGraphBuilder(true),
-                5, 4,
-                new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 3, 5 } });
-
-        DFSResult result = graph.depthFirstSearch();
-        EdgeSet treeEdges = graph.getDFSTreeEdges(1, result.parents());
-
-        assertNotNull(treeEdges);
-    }
-
-    @Test
     void testDFSInvalidRootOrderThrowsException() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 2,
                 new int[][] { { 1, 2 }, { 3, 4 } });
@@ -266,13 +255,13 @@ class DepthFirstSearchTest {
         int[] invalidOrder = { 1, 2, 5, 6 };
 
         assertThrows(IndexOutOfBoundsException.class, () -> {
-            graph.depthFirstSearch(invalidOrder);
+            DFS.search(graph, invalidOrder);
         });
     }
 
     @Test
     void testDFSVisitorCallbacks() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 2,
                 new int[][] { { 1, 2 }, { 2, 3 } });
@@ -280,7 +269,7 @@ class DepthFirstSearchTest {
         final int[] vertexCount = { 0 };
         final int[] edgeCount = { 0 };
 
-        Graph.DFSVisitor visitor = new Graph.DFSVisitor() {
+        DFSVisitor visitor = new DFSVisitor() {
             @Override
             public void discoverVertex(int vertex) {
                 vertexCount[0]++;
@@ -292,7 +281,7 @@ class DepthFirstSearchTest {
             }
         };
 
-        graph.depthFirstSearch(visitor);
+        DFS.search(graph, visitor);
 
         assertEquals(3, vertexCount[0]);
         assertTrue(edgeCount[0] >= 2);
@@ -300,13 +289,13 @@ class DepthFirstSearchTest {
 
     @Test
     void testClassifyVertexEdgesEmptyGraph() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 0,
                 new int[][] {});
 
-        DFSResult result = graph.depthFirstSearch();
-        ClassifiedDFSEdges classified = graph.classifyVertexDFSEdges(1, result);
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         assertNotNull(classified);
         assertEquals(0, classified.treeEdges().edges().size());
@@ -319,12 +308,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSUndirectedBasic() {
-        GraphRepresentation graph = GraphBuilderHelper.buildUndirected(
+        StaticGraph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 3, 2,
                 new int[][] { { 1, 2 }, { 2, 3 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         int[] discoverTimes = result.discoverTimes();
         for (int i = 0; i < discoverTimes.length; i++) {
@@ -334,12 +323,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSUndirectedWithCycles() {
-        GraphRepresentation graph = GraphBuilderHelper.buildUndirected(
+        StaticGraph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
 
         int[] discoverTimes = result.discoverTimes();
         assertNotNull(discoverTimes);
@@ -348,25 +337,25 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSUndirectedTreeEdges() {
-        GraphRepresentation graph = GraphBuilderHelper.buildUndirected(
+        StaticGraph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        EdgeSet treeEdges = graph.getDFSTreeEdges(1, result.parents());
+        DFSResult result = DFS.search(graph);
+        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
 
         assertNotNull(treeEdges);
     }
 
     @Test
     void testDFSUndirectedDisconnected() {
-        GraphRepresentation graph = GraphBuilderHelper.buildUndirected(
+        StaticGraph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 6, 4,
                 new int[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
         int[] discoverTimes = result.discoverTimes();
 
         for (int i = 0; i < discoverTimes.length; i++) {
@@ -378,12 +367,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSDiscoverTimesExact() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
         int[] discoverTimes = result.discoverTimes();
 
         assertEquals(1, discoverTimes[0]);
@@ -394,12 +383,12 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSFinishTimesExact() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
+        DFSResult result = DFS.search(graph);
         int[] finishTimes = result.finishTimes();
 
         assertEquals(8, finishTimes[0]);
@@ -410,26 +399,26 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSTreeEdgesExact() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        EdgeSet treeEdges = graph.getDFSTreeEdges(1, result.parents());
+        DFSResult result = DFS.search(graph);
+        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
 
         assertEquals(3, treeEdges.edges().size());
     }
 
     @Test
     void testClassifyEdgesExactCounts() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 6,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 3, 4 }, { 4, 5 } });
 
-        DFSResult result = graph.depthFirstSearch();
-        ClassifiedDFSEdges classified = graph.classifyVertexDFSEdges(1, result);
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         assertTrue(classified.treeEdges().edges().size() >= 0);
         assertTrue(classified.backEdges().edges().size() >= 0);
@@ -441,63 +430,63 @@ class DepthFirstSearchTest {
 
     @Test
     void testDFSVisitorDiscoverVertex() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         final int[] discoverCount = { 0 };
 
-        Graph.DFSVisitor visitor = new Graph.DFSVisitor() {
+        DFSVisitor visitor = new DFSVisitor() {
             @Override
             public void discoverVertex(int vertex) {
                 discoverCount[0]++;
             }
         };
 
-        graph.depthFirstSearch(visitor);
+        DFS.search(graph, visitor);
 
         assertEquals(4, discoverCount[0]);
     }
 
     @Test
     void testDFSVisitorFinishVertex() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         final int[] finishCount = { 0 };
 
-        Graph.DFSVisitor visitor = new Graph.DFSVisitor() {
+        DFSVisitor visitor = new DFSVisitor() {
             @Override
             public void finishVertex(int vertex) {
                 finishCount[0]++;
             }
         };
 
-        graph.depthFirstSearch(visitor);
+        DFS.search(graph, visitor);
 
         assertEquals(4, finishCount[0]);
     }
 
     @Test
     void testDFSVisitorTreeEdge() {
-        GraphRepresentation graph = GraphBuilderHelper.build(
+        StaticGraph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         final int[] treeEdgeCount = { 0 };
 
-        Graph.DFSVisitor visitor = new Graph.DFSVisitor() {
+        DFSVisitor visitor = new DFSVisitor() {
             @Override
             public void treeEdge(int source, int target) {
                 treeEdgeCount[0]++;
             }
         };
 
-        graph.depthFirstSearch(visitor);
+        DFS.search(graph, visitor);
 
         assertEquals(3, treeEdgeCount[0]);
     }

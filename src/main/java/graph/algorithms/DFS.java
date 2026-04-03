@@ -1,44 +1,71 @@
-package graph.api;
+package graph.algorithms;
 
 import java.util.Stack;
 
-import graph.representations.GraphBuilder;
+import graph.api.DirectedGraph;
+import graph.api.EdgeSet;
+import graph.api.Graph;
+import graph.api.UndirectedGraph;
 
-public abstract class GraphRepresentation extends StaticGraph implements DirectedGraph, UndirectedGraph {
+public class DFS {
+  public record DFSResult(int[] discoverTimes, int[] finishTimes, int[] parents) {
+  }
 
-  protected GraphRepresentation(boolean isDirected, int n, int m) {
-    super(isDirected, n, m);
+  public interface DFSVisitor {
+    default void examineRoot(int vertex) {
+    }
+
+    default void discoverVertex(int vertex) {
+    }
+
+    default void orderAdjacency(int[] adjacency) {
+    }
+
+    default void finishVertex(int vertex) {
+    }
+
+    default void examineEdge(int source, int target) {
+    }
+
+    default DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
+      return new DFSResult(discoverTimes, finishTimes, predecessors);
+    }
+
+    default void treeEdge(int source, int target) {
+    }
+
+    default void backEdge(int source, int target) {
+    }
+
+    default void forwardEdge(int source, int target) {
+    }
+
+    default void crossEdge(int source, int target) {
+    }
   }
 
   /**
-   * Creates a new graph with all the edges reversed.
    * 
-   * @return The {@link StaticGraph} with the reversed edges.
+   * @param rootsOrder An array of vertex IDs that will be used to pick the roots
+   *                   order. Uses lexicographical if null.
+   * @param visitor
+   * @throws IllegalArgumentException  if the rootsOrder length is greater than n.
+   * @throws IndexOutOfBoundsException if any of the roots in the rootsOrder is
+   *                                   outisde the possible vertex ID range.
    */
-  protected StaticGraph getReversed(GraphBuilder builder) {
-    builder.initialize(n, m);
+  public static DFSResult search(Graph graph, int[] rootsOrder, DFSVisitor visitor) {
+    int n = graph.getVertices().length;
 
-    IteratorVisitor iterator = new IteratorVisitor() {
-      @Override
-      public void examineEdge(int source, int target) {
-        builder.addEdge(target, source);
-      }
-    };
-
-    iterateGraph(iterator);
-    return builder.build();
-  }
-
-  @Override
-  public DFSResult depthFirstSearch(int[] rootsOrder, Graph.DFSVisitor visitor) {
     if (rootsOrder == null) {
       rootsOrder = new int[n];
       for (int i = 1; i <= n; i++) {
         rootsOrder[i - 1] = i;
       }
     } else if (rootsOrder.length > n) {
-      throw new IllegalArgumentException("The rootsOrder array has more elements than the number os possible roots.");
+      throw new IllegalArgumentException("The rootsOrder array has more elements than the number of possible roots.");
     }
+
+    boolean isDirected = graph instanceof DirectedGraph;
 
     int t = 0;
     int[] discoverTimes = new int[n];
@@ -68,7 +95,12 @@ public abstract class GraphRepresentation extends StaticGraph implements Directe
           visitor.discoverVertex(v);
         }
 
-        int[] adjacency = isDirected ? getSuccessors(v) : getNeighbors(v);
+        int[] adjacency;
+        if (isDirected) {
+          adjacency = ((DirectedGraph) graph).getSuccessors(v);
+        } else {
+          adjacency = ((UndirectedGraph) graph).getNeighbors(v);
+        }
         visitor.orderAdjacency(adjacency);
 
         int index = adjacencyIndex[v - 1];
@@ -100,8 +132,21 @@ public abstract class GraphRepresentation extends StaticGraph implements Directe
     return visitor.finish(discoverTimes, finishTimes, parents);
   }
 
-  @Override
-  public EdgeSet getDFSTreeEdges(int vertex, int[] parents) {
+  public static DFSResult search(Graph graph, DFSVisitor visitor) {
+    return search(graph, null, visitor);
+  }
+
+  public static DFSResult search(Graph graph, int[] rootsOrder) {
+    return search(graph, rootsOrder, new DFSVisitor() {
+    });
+  }
+
+  public static DFSResult search(Graph graph) {
+    return search(graph, null, new DFSVisitor() {
+    });
+  }
+
+  public static EdgeSet getDFSTreeEdges(Graph graph, int[] parents) {
     EdgeSet treeEdges = new EdgeSet(parents.length - 1);
 
     for (int v = 1; v <= parents.length; v++) {
@@ -113,8 +158,12 @@ public abstract class GraphRepresentation extends StaticGraph implements Directe
     return treeEdges;
   }
 
-  @Override
-  public ClassifiedDFSEdges classifyVertexDFSEdges(int v, Graph.DFSResult dfsResult) {
+  public record ClassifiedDFSEdges(EdgeSet treeEdges, EdgeSet backEdges, EdgeSet crossEdges, EdgeSet forwardEdges) {
+  }
+
+  public static ClassifiedDFSEdges classifyVertexDFSEdges(Graph graph, int v, DFSResult dfsResult) {
+    boolean isDirected = graph instanceof DirectedGraph;
+
     int[] discoverTimes = dfsResult.discoverTimes();
     int[] finishTimes = dfsResult.finishTimes();
     int[] parents = dfsResult.parents();
@@ -124,18 +173,20 @@ public abstract class GraphRepresentation extends StaticGraph implements Directe
     EdgeSet crossEdgesSet = new EdgeSet();
     EdgeSet forwardEdgesSet = new EdgeSet();
 
-    int[] adjacency = isDirected ? getSuccessors(v) : getNeighbors(v);
+    int[] adjacency;
+    if (isDirected) {
+      adjacency = ((DirectedGraph) graph).getSuccessors(v);
+    } else {
+      adjacency = ((UndirectedGraph) graph).getNeighbors(v);
+    }
 
     for (int w : adjacency) {
       if (parents[w - 1] == v) {
         treeEdgesSet.add(v, w);
-
       } else if (finishTimes[v - 1] > finishTimes[w - 1]) {
         crossEdgesSet.add(v, w);
-
       } else if (discoverTimes[v - 1] < discoverTimes[w - 1]) {
         forwardEdgesSet.add(v, w);
-
       } else {
         backEdgesSet.add(v, w);
       }

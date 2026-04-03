@@ -6,15 +6,16 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import graph.representations.GraphBuilder;
-import graph.api.GraphRepresentation;
+import graph.api.DirectedGraph;
 import graph.api.StaticGraph;
+import graph.api.UndirectedGraph;
 import graph.util.Sort;
 
 /**
  * Concrete and static (immutable) implementation of the Graph using the Forward
  * Star structure.
  */
-public class ForwardStarGraph extends GraphRepresentation {
+public class ForwardStarGraph extends StaticGraph implements DirectedGraph, UndirectedGraph {
   private final int[] targets;
   private final int[] pointers;
   private final int[] vertices;

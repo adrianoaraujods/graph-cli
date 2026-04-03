@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Supplier;
 
+import graph.algorithms.DFS;
+import graph.algorithms.Kosaraju;
+import graph.algorithms.DFS.ClassifiedDFSEdges;
+import graph.algorithms.DFS.DFSResult;
 import graph.api.DirectedGraph;
 import graph.api.EdgeSet;
 import graph.api.StaticGraph;
 import graph.api.UndirectedGraph;
-import graph.api.Graph.ClassifiedDFSEdges;
-import graph.api.Graph.DFSResult;
 
 public class GraphLogger {
 
@@ -47,11 +49,11 @@ public class GraphLogger {
             neighbors = ((UndirectedGraph) graph).getNeighbors(target);
         }
 
-        DFSResult dfsResult = graph.depthFirstSearch();
+        DFSResult dfsResult = DFS.search(graph);
 
         StaticGraph[] components = null;
         if (graph.isDirected) {
-            components = ((DirectedGraph) graph).getMaximalComponents(dfsResult.finishTimes());
+            components = Kosaraju.findSCCs((DirectedGraph) graph, dfsResult.finishTimes());
         }
 
         StringBuilder logContent = new StringBuilder();
@@ -67,8 +69,8 @@ public class GraphLogger {
             logContent.append(String.format("  Neighbors: %s\n", Arrays.toString(neighbors)));
         }
 
-        ClassifiedDFSEdges classifiedEdges = graph.classifyVertexDFSEdges(target, dfsResult);
-        EdgeSet treeEdges = graph.getDFSTreeEdges(target, dfsResult.parents());
+        ClassifiedDFSEdges classifiedEdges = DFS.classifyVertexDFSEdges(graph, target, dfsResult);
+        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, dfsResult.parents());
 
         logContent.append("\nDepth First Search:\n");
         logContent.append(String.format("  Tree Edges: %s\n", treeEdges.toString()));
