@@ -26,22 +26,25 @@ public interface Graph {
    */
   public abstract StaticGraph getInducedSubgraph(int[] vertices);
 
-  public default EdgeSet getEdgesSet(boolean isDirected, int n) {
-    EdgeSet set = new EdgeSet(isDirected, n);
+  public default int[][] getEdgesSet(boolean isDirected, int n) {
+    int[][] edges = new int[n][2];
+    final int[] index = { 0 };
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
       public void examineEdge(int source, int target) {
-        set.add(source, target);
+        edges[index[0]][0] = source;
+        edges[index[0]][1] = target;
+        index[0]++;
       }
     };
 
     iterateGraph(iterator);
 
-    return set;
+    return java.util.Arrays.copyOf(edges, index[0]);
   }
 
-  public default EdgeSet getEdgesSet(boolean isDirected) {
-    return getEdgesSet(isDirected, 4);
+  public default int[][] getEdgesSet(boolean isDirected) {
+    return getEdgesSet(isDirected, 10);
   }
 }

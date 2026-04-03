@@ -11,9 +11,9 @@ import graph.algorithms.Kosaraju;
 import graph.algorithms.DFS.ClassifiedDFSEdges;
 import graph.algorithms.DFS.DFSResult;
 import graph.api.DirectedGraph;
-import graph.api.EdgeSet;
 import graph.api.StaticGraph;
 import graph.api.UndirectedGraph;
+import graph.util.EdgeFormatter;
 
 public class GraphLogger {
 
@@ -70,16 +70,20 @@ public class GraphLogger {
         }
 
         ClassifiedDFSEdges classifiedEdges = DFS.classifyVertexDFSEdges(graph, target, dfsResult);
-        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, dfsResult.parents());
+        int[][] treeEdges = DFS.getDFSTreeEdges(graph, dfsResult.parents());
 
         logContent.append("\nDepth First Search:\n");
-        logContent.append(String.format("  Tree Edges: %s\n", treeEdges.toString()));
+        logContent.append(String.format("  Tree Edges: %s\n", EdgeFormatter.toString(treeEdges, graph.isDirected)));
         logContent.append("\n");
         logContent.append(String.format("  Edges adjacent to vertex %d:\n", target));
-        logContent.append(String.format("    Tree Edges: %s\n", classifiedEdges.treeEdges()));
-        logContent.append(String.format("    Back Edges: %s\n", classifiedEdges.backEdges()));
-        logContent.append(String.format("    Cross Edges: %s\n", classifiedEdges.crossEdges()));
-        logContent.append(String.format("    Forward Edges: %s\n", classifiedEdges.forwardEdges()));
+        logContent.append(String.format("    Tree Edges: %s\n",
+                EdgeFormatter.toString(classifiedEdges.treeEdges(), graph.isDirected)));
+        logContent.append(String.format("    Back Edges: %s\n",
+                EdgeFormatter.toString(classifiedEdges.backEdges(), graph.isDirected)));
+        logContent.append(String.format("    Cross Edges: %s\n",
+                EdgeFormatter.toString(classifiedEdges.crossEdges(), graph.isDirected)));
+        logContent.append(String.format("    Forward Edges: %s\n",
+                EdgeFormatter.toString(classifiedEdges.forwardEdges(), graph.isDirected)));
 
         if (graph.isDirected) {
             logContent.append("\nComponents Trees:\n");
@@ -87,7 +91,7 @@ public class GraphLogger {
                 logContent.append(String.format("[%d/%d] Component:\n", c + 1, components.length));
                 logContent.append(String.format("  Vertices: %s\n", Arrays.toString(components[c].getVertices())));
                 logContent.append(String.format("  Edges: %s\n\n",
-                        components[c].getEdgesSet(graph.isDirected, components[c].n).toString()));
+                        EdgeFormatter.toString(components[c].getEdgesSet(graph.isDirected), graph.isDirected)));
             }
         }
 

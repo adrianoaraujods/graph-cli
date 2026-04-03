@@ -3,7 +3,6 @@ package graph.algorithms;
 import java.util.Stack;
 
 import graph.api.DirectedGraph;
-import graph.api.EdgeSet;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 
@@ -44,15 +43,6 @@ public class DFS {
     }
   }
 
-  /**
-   * 
-   * @param rootsOrder An array of vertex IDs that will be used to pick the roots
-   *                   order. Uses lexicographical if null.
-   * @param visitor
-   * @throws IllegalArgumentException  if the rootsOrder length is greater than n.
-   * @throws IndexOutOfBoundsException if any of the roots in the rootsOrder is
-   *                                   outisde the possible vertex ID range.
-   */
   public static DFSResult search(Graph graph, int[] rootsOrder, DFSVisitor visitor) {
     int n = graph.getVertices().length;
 
@@ -146,19 +136,26 @@ public class DFS {
     });
   }
 
-  public static EdgeSet getDFSTreeEdges(Graph graph, int[] parents) {
-    EdgeSet treeEdges = new EdgeSet(parents.length - 1);
+  public static int[][] getDFSTreeEdges(Graph graph, int[] parents) {
+    int count = 0;
+    for (int p : parents) {
+      if (p != 0) count++;
+    }
 
+    int[][] treeEdges = new int[count][2];
+    int index = 0;
     for (int v = 1; v <= parents.length; v++) {
       if (parents[v - 1] != 0) {
-        treeEdges.add(parents[v - 1], v);
+        treeEdges[index][0] = parents[v - 1];
+        treeEdges[index][1] = v;
+        index++;
       }
     }
 
     return treeEdges;
   }
 
-  public record ClassifiedDFSEdges(EdgeSet treeEdges, EdgeSet backEdges, EdgeSet crossEdges, EdgeSet forwardEdges) {
+  public record ClassifiedDFSEdges(int[][] treeEdges, int[][] backEdges, int[][] crossEdges, int[][] forwardEdges) {
   }
 
   public static ClassifiedDFSEdges classifyVertexDFSEdges(Graph graph, int v, DFSResult dfsResult) {
@@ -168,10 +165,12 @@ public class DFS {
     int[] finishTimes = dfsResult.finishTimes();
     int[] parents = dfsResult.parents();
 
-    EdgeSet treeEdgesSet = new EdgeSet();
-    EdgeSet backEdgesSet = new EdgeSet();
-    EdgeSet crossEdgesSet = new EdgeSet();
-    EdgeSet forwardEdgesSet = new EdgeSet();
+    int[][] treeEdges = new int[parents.length][2];
+    int[][] backEdges = new int[parents.length][2];
+    int[][] crossEdges = new int[parents.length][2];
+    int[][] forwardEdges = new int[parents.length][2];
+
+    int treeIdx = 0, backIdx = 0, crossIdx = 0, forwardIdx = 0;
 
     int[] adjacency;
     if (isDirected) {
@@ -182,16 +181,29 @@ public class DFS {
 
     for (int w : adjacency) {
       if (parents[w - 1] == v) {
-        treeEdgesSet.add(v, w);
+        treeEdges[treeIdx][0] = v;
+        treeEdges[treeIdx][1] = w;
+        treeIdx++;
       } else if (finishTimes[v - 1] > finishTimes[w - 1]) {
-        crossEdgesSet.add(v, w);
+        crossEdges[crossIdx][0] = v;
+        crossEdges[crossIdx][1] = w;
+        crossIdx++;
       } else if (discoverTimes[v - 1] < discoverTimes[w - 1]) {
-        forwardEdgesSet.add(v, w);
+        forwardEdges[forwardIdx][0] = v;
+        forwardEdges[forwardIdx][1] = w;
+        forwardIdx++;
       } else {
-        backEdgesSet.add(v, w);
+        backEdges[backIdx][0] = v;
+        backEdges[backIdx][1] = w;
+        backIdx++;
       }
     }
 
-    return new ClassifiedDFSEdges(treeEdgesSet, backEdgesSet, crossEdgesSet, forwardEdgesSet);
+    return new ClassifiedDFSEdges(
+        java.util.Arrays.copyOf(treeEdges, treeIdx),
+        java.util.Arrays.copyOf(backEdges, backIdx),
+        java.util.Arrays.copyOf(crossEdges, crossIdx),
+        java.util.Arrays.copyOf(forwardEdges, forwardIdx)
+    );
   }
 }

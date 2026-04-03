@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import graph.algorithms.DFS.ClassifiedDFSEdges;
 import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.DFS.DFSVisitor;
-import graph.api.EdgeSet;
-import graph.api.Graph;
 import graph.api.StaticGraph;
 import graph.representations.GraphBuilderHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
@@ -65,7 +63,7 @@ class DFSTest {
         DFSResult result = DFS.search(graph);
         int[] parents = result.parents();
 
-        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, parents);
+        int[][] treeEdges = DFS.getDFSTreeEdges(graph, parents);
 
         assertNotNull(treeEdges);
     }
@@ -177,8 +175,8 @@ class DFSTest {
         DFSResult result = DFS.search(graph);
         ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
-        EdgeSet treeEdges = classified.treeEdges();
-        assertTrue(treeEdges.edges().size() > 0,
+        int[][] treeEdges = classified.treeEdges();
+        assertTrue(treeEdges.length > 0,
                 "Vertex 1 should have tree edges");
     }
 
@@ -298,10 +296,10 @@ class DFSTest {
         ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         assertNotNull(classified);
-        assertEquals(0, classified.treeEdges().edges().size());
-        assertEquals(0, classified.backEdges().edges().size());
-        assertEquals(0, classified.crossEdges().edges().size());
-        assertEquals(0, classified.forwardEdges().edges().size());
+        assertEquals(0, classified.treeEdges().length);
+        assertEquals(0, classified.backEdges().length);
+        assertEquals(0, classified.crossEdges().length);
+        assertEquals(0, classified.forwardEdges().length);
     }
 
     // Undirected Graph Tests
@@ -343,7 +341,7 @@ class DFSTest {
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         DFSResult result = DFS.search(graph);
-        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
+        int[][] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
 
         assertNotNull(treeEdges);
     }
@@ -405,9 +403,9 @@ class DFSTest {
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         DFSResult result = DFS.search(graph);
-        EdgeSet treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
+        int[][] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
 
-        assertEquals(3, treeEdges.edges().size());
+        assertEquals(3, treeEdges.length);
     }
 
     @Test
@@ -420,10 +418,10 @@ class DFSTest {
         DFSResult result = DFS.search(graph);
         ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
-        assertTrue(classified.treeEdges().edges().size() >= 0);
-        assertTrue(classified.backEdges().edges().size() >= 0);
-        assertTrue(classified.crossEdges().edges().size() >= 0);
-        assertTrue(classified.forwardEdges().edges().size() >= 0);
+        assertTrue(classified.treeEdges().length >= 0);
+        assertTrue(classified.backEdges().length >= 0);
+        assertTrue(classified.crossEdges().length >= 0);
+        assertTrue(classified.forwardEdges().length >= 0);
     }
 
     // Core Visitor Callback Tests
