@@ -155,6 +155,25 @@ public class GraphGenerator {
     return new Builder();
   }
 
+  private static final long LARGE_EDGE_THRESHOLD = 50_000_000L;
+
+  private static boolean confirmLargeGraph(long edges) {
+    if (edges <= LARGE_EDGE_THRESHOLD) {
+      return true;
+    }
+
+    System.out.printf("%nWARNING: You are about to generate %,d edges.%n", edges);
+    System.out.print("This may take a very long time and produce a very large file. Continue? [y/N] ");
+    java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+
+    try {
+      String line = reader.readLine();
+      return "y".equalsIgnoreCase(line) || "Y".equalsIgnoreCase(line);
+    } catch (java.io.IOException e) {
+      return false;
+    }
+  }
+
   public static void generateGraph(GraphConfig config) {
     int n = config.vertices();
     long m = config.resolvedEdges();
@@ -164,6 +183,11 @@ public class GraphGenerator {
     String outputPath = config.outputPath();
 
     Random random = config.seed() != null ? new Random(config.seed()) : new Random();
+
+    if (!confirmLargeGraph(m)) {
+      System.out.println("Graph generation cancelled.");
+      return;
+    }
 
     long startTime = System.currentTimeMillis();
 
@@ -194,7 +218,8 @@ public class GraphGenerator {
     }
   }
 
-  private static void generateSparseGraph(BufferedWriter writer, int n, long m, boolean isDirected, ConnectivityType connectivity, Random random, long startTime)
+  private static void generateSparseGraph(BufferedWriter writer, int n, long m, boolean isDirected,
+      ConnectivityType connectivity, Random random, long startTime)
       throws IOException {
     Set<Long> edgeSet = new HashSet<>();
 
@@ -244,13 +269,15 @@ public class GraphGenerator {
     }
 
     if (connectivity == ConnectivityType.WEAKLY && m >= n - 1 && generated >= n - 1) {
-      ensureConnectivity(writer, edgeSet, n, random, startTime);
+      ensureConnectivitySparse(writer, edgeSet, n, random, startTime);
     }
   }
 
-  private static void generateSpanningTreeLimited(BufferedWriter writer, Set<Long> edgeSet, int n, Random random, boolean isDirected, int targetEdges)
+  private static void generateSpanningTreeLimited(BufferedWriter writer, Set<Long> edgeSet, int n, Random random,
+      boolean isDirected, int targetEdges)
       throws IOException {
-    if (targetEdges <= 0) return;
+    if (targetEdges <= 0)
+      return;
 
     ArrayList<Integer> vertices = new ArrayList<>();
     for (int i = 1; i <= n; i++) {
@@ -278,7 +305,8 @@ public class GraphGenerator {
     }
   }
 
-  private static void generateDenseGraph(BufferedWriter writer, int n, long m, boolean isDirected, Random random, long startTime)
+  private static void generateDenseGraph(BufferedWriter writer, int n, long m, boolean isDirected, Random random,
+      long startTime)
       throws IOException {
     long maxEdges = isDirected ? (long) n * (n - 1) : (long) n * (n - 1) / 2;
     if (maxEdges > Integer.MAX_VALUE) {
@@ -308,7 +336,8 @@ public class GraphGenerator {
       if (isDirected) {
         v = edgeIdx / (n - 1) + 1;
         w = edgeIdx % (n - 1) + 1;
-        if (w >= v) w++;
+        if (w >= v)
+          w++;
       } else {
         long t = (long) Math.ceil((Math.sqrt(8.0 * edgeIdx + 1) - 1) / 2);
         long row = t * (t - 1) / 2;
@@ -335,10 +364,11 @@ public class GraphGenerator {
       System.err.printf("%nWarning: Target was %,d edges, but only %,d were generated.%n", m, written);
     }
 
-    ensureConnectivity(writer, edgeSet, n, random, startTime);
+    ensureConnectivitySparse(writer, edgeSet, n, random, startTime);
   }
 
-  private static void generateEulerianGraph(BufferedWriter writer, int n, long m, boolean isDirected, Random random, long startTime)
+  private static void generateEulerianGraph(BufferedWriter writer, int n, long m, boolean isDirected, Random random,
+      long startTime)
       throws IOException {
     long lastLogTime = startTime;
 
@@ -380,16 +410,20 @@ public class GraphGenerator {
           degree[w]++;
           generated++;
 
-          if (degree[v] % 2 == 1) oddVertices.add(v);
-          if (degree[w] % 2 == 1) oddVertices.add(w);
+          if (degree[v] % 2 == 1)
+            oddVertices.add(v);
+          if (degree[w] % 2 == 1)
+            oddVertices.add(w);
         }
       } else {
         int v = random.nextInt(n) + 1;
         int w = random.nextInt(n) + 1;
-        if (v == w) continue;
+        if (v == w)
+          continue;
 
         long key = edgeKey(v, w, false);
-        if (writtenEdges.contains(key)) continue;
+        if (writtenEdges.contains(key))
+          continue;
 
         writer.write(v + " " + w);
         writer.newLine();
@@ -398,8 +432,10 @@ public class GraphGenerator {
         degree[w]++;
         generated++;
 
-        if (degree[v] % 2 == 1) oddVertices.add(v);
-        if (degree[w] % 2 == 1) oddVertices.add(w);
+        if (degree[v] % 2 == 1)
+          oddVertices.add(v);
+        if (degree[w] % 2 == 1)
+          oddVertices.add(w);
       }
 
       if ((generated & 0xFFFF) == 0) {
@@ -426,7 +462,7 @@ public class GraphGenerator {
       }
     }
 
-    ensureConnectivity(writer, writtenEdges, n, random, startTime);
+    ensureConnectivitySparse(writer, writtenEdges, n, random, startTime);
   }
 
   private static void generateSemiEulerianGraph(BufferedWriter writer, int n, long m, Random random, long startTime)
@@ -456,7 +492,8 @@ public class GraphGenerator {
     int current = startVertex;
     for (int i = 0; i < vertices.size(); i++) {
       int next = vertices.get(i);
-      if (next == current || next == endVertex && current == endVertex) continue;
+      if (next == current || next == endVertex && current == endVertex)
+        continue;
 
       long key = edgeKey(Math.min(current, next), Math.max(current, next), false);
       if (!writtenEdges.contains(key)) {
@@ -490,10 +527,12 @@ public class GraphGenerator {
     while (generated < m) {
       int v = random.nextInt(n) + 1;
       int w = random.nextInt(n) + 1;
-      if (v == w) continue;
+      if (v == w)
+        continue;
 
       long edgeKey = edgeKey(v, w, false);
-      if (writtenEdges.contains(edgeKey)) continue;
+      if (writtenEdges.contains(edgeKey))
+        continue;
 
       writer.write(v + " " + w);
       writer.newLine();
@@ -502,8 +541,10 @@ public class GraphGenerator {
       degree[w]++;
       generated++;
 
-      if (degree[v] % 2 == 1 && !oddVertices.contains(v)) oddVertices.add(v);
-      if (degree[w] % 2 == 1 && !oddVertices.contains(w)) oddVertices.add(w);
+      if (degree[v] % 2 == 1 && !oddVertices.contains(v))
+        oddVertices.add(v);
+      if (degree[w] % 2 == 1 && !oddVertices.contains(w))
+        oddVertices.add(w);
 
       while (oddVertices.size() > 2) {
         int ov = oddVertices.remove(0);
@@ -528,123 +569,54 @@ public class GraphGenerator {
       }
     }
 
-    ensureConnectivity(writer, writtenEdges, n, random, startTime);
+    ensureConnectivitySparse(writer, writtenEdges, n, random, startTime);
   }
 
-  private static int[] generateDegreeSequence(int n, int targetDegreeSum, Random random, boolean semiEulerian, int startVertex, int endVertex) {
-    int[] degree = new int[n + 1];
-
-    if (semiEulerian) {
-      degree[startVertex] = 1 + random.nextInt(3) * 2;
-      degree[endVertex] = 1 + random.nextInt(3) * 2;
-
-      int remainingSum = targetDegreeSum - degree[startVertex] - degree[endVertex];
-      int perVertex = remainingSum / (n - 2);
-      int remainder = remainingSum % (n - 2);
-
-      for (int i = 1; i <= n; i++) {
-        if (i == startVertex || i == endVertex) continue;
-        degree[i] = Math.max(2, perVertex);
-        if (remainder > 0) {
-          degree[i] += 2;
-          remainder -= 2;
-        }
-        degree[i] = degree[i] / 2 * 2;
-      }
-    } else {
-      int perVertex = targetDegreeSum / n;
-      int remainder = targetDegreeSum % n;
-
-      for (int i = 1; i <= n; i++) {
-        degree[i] = Math.max(2, perVertex);
-        if (i <= remainder) {
-          degree[i] += 2;
-        }
-        degree[i] = degree[i] / 2 * 2;
-      }
-    }
-
-    int actualSum = 0;
-    for (int i = 1; i <= n; i++) {
-      actualSum += degree[i];
-    }
-
-    while (actualSum % 4 != 0) {
-      degree[random.nextInt(n) + 1] += 2;
-      actualSum += 2;
-    }
-
-    return degree;
-  }
-
-  private static int[] createStubs(int[] degree, int n) {
-    int totalStubs = 0;
-    for (int i = 1; i <= n; i++) {
-      totalStubs += degree[i];
-    }
-
-    int[] stubs = new int[totalStubs];
-    int idx = 0;
-    for (int i = 1; i <= n; i++) {
-      for (int j = 0; j < degree[i]; j++) {
-        stubs[idx++] = i;
-      }
-    }
-    return stubs;
-  }
-
-  private static void shuffleArray(int[] array, Random random) {
-    for (int i = array.length - 1; i > 0; i--) {
-      int j = random.nextInt(i + 1);
-      int temp = array[i];
-      array[i] = array[j];
-      array[j] = temp;
-    }
-  }
-
-  private static void ensureConnectivity(BufferedWriter writer, Set<Long> existingEdges, int n,
+  private static void ensureConnectivitySparse(BufferedWriter writer, Set<Long> existingEdges, int n,
       Random random, long startTime) throws IOException {
-    boolean[][] adj = new boolean[n + 1][n + 1];
-    for (long key : existingEdges) {
-      int v = (int) (key >> 32);
-      int w = (int) key;
-      if (v >= 1 && v <= n && w >= 1 && w <= n) {
-        adj[v][w] = true;
-        adj[w][v] = true;
-      }
-    }
-
-    int startVertex = -1;
-    for (int i = 1; i <= n; i++) {
-      for (int j = 1; j <= n; j++) {
-        if (adj[i][j]) {
-          startVertex = i;
-          break;
-        }
-      }
-      if (startVertex != -1) break;
-    }
-
-    if (startVertex == -1) return;
+    if (existingEdges.isEmpty())
+      return;
 
     boolean[] visited = new boolean[n + 1];
     ArrayDeque<Integer> queue = new ArrayDeque<>();
+
+    int startVertex = -1;
+    for (long key : existingEdges) {
+      int v = (int) (key >>> 32);
+      int w = (int) key;
+      if (v >= 1 && v <= n && w >= 1 && w <= n) {
+        startVertex = v;
+        break;
+      }
+    }
+    if (startVertex == -1)
+      return;
+
     queue.add(startVertex);
     visited[startVertex] = true;
-
     int visitedCount = 1;
+
     while (!queue.isEmpty()) {
       int v = queue.poll();
-      for (int w = 1; w <= n; w++) {
-        if (adj[v][w] && !visited[w]) {
-          visited[w] = true;
-          visitedCount++;
-          queue.add(w);
+      for (long key : existingEdges) {
+        int ev = (int) (key >>> 32);
+        int ew = (int) key;
+        if (ev >= 1 && ev <= n && ew >= 1 && ew <= n) {
+          if (ev == v && !visited[ew]) {
+            visited[ew] = true;
+            visitedCount++;
+            queue.add(ew);
+          } else if (ew == v && !visited[ev]) {
+            visited[ev] = true;
+            visitedCount++;
+            queue.add(ev);
+          }
         }
       }
     }
 
-    if (visitedCount == n) return;
+    if (visitedCount == n)
+      return;
 
     ArrayList<Integer> component = new ArrayList<>();
     ArrayList<Integer> other = new ArrayList<>();
@@ -666,8 +638,6 @@ public class GraphGenerator {
         writer.write(v + " " + w);
         writer.newLine();
         existingEdges.add(key);
-        adj[v][w] = true;
-        adj[w][v] = true;
       }
 
       visited[v] = true;
