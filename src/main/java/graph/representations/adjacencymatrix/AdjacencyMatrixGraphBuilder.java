@@ -1,0 +1,54 @@
+package graph.representations.adjacencymatrix;
+
+import graph.api.StaticGraph;
+import graph.representations.GraphBuilder;
+
+public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
+
+  /** If the graph has directed edges. */
+  private final boolean isDirected;
+
+  /** Total number of vertices in the graph. */
+  private int n;
+
+  /** Total number of edges in the graph. */
+  private int m;
+
+  // int[n columns][n rows]
+  private boolean[][] matrix;
+  private int[] vertices;
+
+  public AdjacencyMatrixGraphBuilder(boolean isDirected) {
+    this.isDirected = isDirected;
+  }
+
+  @Override
+  public void initialize(int n, int m, int[] vertices) {
+    this.n = n;
+    this.m = 0;
+    this.vertices = vertices;
+
+    matrix = new boolean[n][n];
+  }
+
+  @Override
+  public void initialize(int n, int m) {
+    initialize(n, m, null);
+  }
+
+  @Override
+  public void addEdge(int v, int w) {
+    m++;
+
+    matrix[w - 1][v - 1] = true;
+
+    if (!isDirected) {
+      matrix[v - 1][w - 1] = true;
+    }
+  }
+
+  @Override
+  public StaticGraph build() {
+    return new AdjacencyMatrixGraph(isDirected, n, m, matrix, vertices);
+  }
+}

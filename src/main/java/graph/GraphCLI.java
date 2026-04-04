@@ -9,6 +9,7 @@ import graph.cli.GraphLogger;
 import graph.cli.GraphReader;
 import graph.cli.GraphGenerator.ConnectivityType;
 import graph.representations.GraphBuilder;
+import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 public class GraphCLI {
@@ -158,7 +159,7 @@ public class GraphCLI {
                 throw new InvalidAlgorithmParameterException("Invalid argument: Incidence Matrix not implemented yet.");
 
             } else if (arg.equals("--adjacency-matrix")) {
-                throw new InvalidAlgorithmParameterException("Invalid argument: Adjacency Matrix not implemented yet.");
+                representation = "Adjacency Matrix";
 
             } else if (arg.equals("--adjacency-list")) {
                 throw new InvalidAlgorithmParameterException("Invalid argument: Adjacency List not implemented yet.");
@@ -169,9 +170,8 @@ public class GraphCLI {
         }
 
         switch (representation) {
-            default:
-                builder = new ForwardStarGraphBuilder(isDirected);
-                break;
+            case "Adjacency Matrix" -> builder = new AdjacencyMatrixGraphBuilder(isDirected);
+            default -> builder = new ForwardStarGraphBuilder(isDirected);
         }
 
         if (isRead && target == -1) {

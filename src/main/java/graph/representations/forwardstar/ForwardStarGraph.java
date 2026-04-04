@@ -65,24 +65,7 @@ public class ForwardStarGraph extends StaticGraph implements DirectedGraph, Undi
 
   @Override
   public StaticGraph getInducedSubgraph(int[] vertices) {
-    int maxVertex = Arrays.stream(vertices).max().orElse(0);
-
-    GraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
-    builder.initialize(maxVertex, m, vertices);
-
-    Set<Integer> uniqueVertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
-
-    IteratorVisitor iterator = new IteratorVisitor() {
-      @Override
-      public void examineEdge(int source, int target) {
-        if (uniqueVertices.contains(source) && uniqueVertices.contains(target)) {
-          builder.addEdge(source, target);
-        }
-      }
-    };
-
-    iterateGraph(iterator);
-    return builder.build();
+    return getInducedSubgraph(vertices, new ForwardStarGraphBuilder(isDirected));
   }
 
   @Override

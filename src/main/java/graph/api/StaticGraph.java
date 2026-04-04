@@ -1,5 +1,9 @@
 package graph.api;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import graph.representations.GraphBuilder;
 
 /**
@@ -37,6 +41,26 @@ public abstract class StaticGraph implements Graph {
       @Override
       public void examineEdge(int source, int target) {
         builder.addEdge(target, source);
+      }
+    };
+
+    iterateGraph(iterator);
+    return builder.build();
+  }
+
+  protected StaticGraph getInducedSubgraph(int[] vertices, GraphBuilder builder) {
+    int maxVertex = Arrays.stream(vertices).max().orElse(0);
+
+    builder.initialize(maxVertex, m, vertices);
+
+    Set<Integer> uniqueVertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target) {
+        if (uniqueVertices.contains(source) && uniqueVertices.contains(target)) {
+          builder.addEdge(source, target);
+        }
       }
     };
 
