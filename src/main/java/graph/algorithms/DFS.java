@@ -6,43 +6,136 @@ import graph.api.DirectedGraph;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 
+/**
+ * Provides Depth-First Search (DFS) algorithm implementations for graph
+ * traversal and analysis.
+ * <p>
+ * This class offers multiple variants of DFS including standard graph
+ * traversal, root-based traversal, and edge classification capabilities.
+ */
 public class DFS {
+  /**
+   * Represents the result of a Depth-First Search operation.
+   *
+   * @param discoverTimes Array storing the discovery time (visit order) for each
+   *                      vertex.
+   * @param finishTimes   Array storing the finish time for each vertex.
+   * @param parents       Array storing the parent vertex of each vertex in the
+   *                      DFS tree.
+   */
   public record DFSResult(int[] discoverTimes, int[] finishTimes, int[] parents) {
   }
 
+  /**
+   * Callback interface for receiving DFS traversal events.
+   * <p>
+   * Implementations can override any of the default methods to capture specific
+   * events during the DFS traversal. All methods are no-ops by default.
+   */
   public interface DFSVisitor {
-    default void examineRoot(int vertex) {
+    /**
+     * Called when a new DFS tree root is examined.
+     *
+     * @param v The root vertex being examined.
+     */
+    default void examineRoot(int v) {
     }
 
-    default void discoverVertex(int vertex) {
+    /**
+     * Called when a vertex is first discovered (visited for the first time).
+     *
+     * @param v The vertex being discovered.
+     */
+    default void discoverVertex(int v) {
     }
 
+    /**
+     * Called to provide the adjacency list for ordering during traversal.
+     *
+     * @param adjacency The array of adjacent vertices.
+     */
     default void orderAdjacency(int[] adjacency) {
     }
 
-    default void finishVertex(int vertex) {
+    /**
+     * Called when all adjacent vertices of a vertex have been processed.
+     *
+     * @param v The vertex being finished.
+     */
+    default void finishVertex(int v) {
     }
 
-    default void examineEdge(int source, int target) {
+    /**
+     * Called when an edge (v, w) is examined.
+     *
+     * @param v The source vertex.
+     * @param w The target vertex.
+     */
+    default void examineEdge(int v, int w) {
     }
 
+    /**
+     * Called at the end of DFS to construct the final result.
+     *
+     * @param discoverTimes The discovery times array.
+     * @param finishTimes   The finish times array.
+     * @param predecessors  The parents/predecessors array.
+     * @return The constructed DFSResult.
+     */
     default DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
       return new DFSResult(discoverTimes, finishTimes, predecessors);
     }
 
-    default void treeEdge(int source, int target) {
+    /**
+     * Called when a tree edge (v, w) is found (edge to an undiscovered vertex).
+     *
+     * @param v The source vertex.
+     * @param w The target vertex.
+     */
+    default void treeEdge(int v, int w) {
     }
 
-    default void backEdge(int source, int target) {
+    /**
+     * Called when a back edge (v, w) is found (edge to an ancestor in directed
+     * graph).
+     *
+     * @param v The source vertex.
+     * @param w The target vertex.
+     */
+    default void backEdge(int v, int w) {
     }
 
-    default void forwardEdge(int source, int target) {
+    /**
+     * Called when a forward edge (v, w) is found (edge to a descendant in directed
+     * graph).
+     *
+     * @param v The source vertex.
+     * @param w The target vertex.
+     */
+    default void forwardEdge(int v, int w) {
     }
 
-    default void crossEdge(int source, int target) {
+    /**
+     * Called when a cross edge (v, w) is found (edge to a vertex in another
+     * branch).
+     *
+     * @param v The source vertex.
+     * @param w The target vertex.
+     */
+    default void crossEdge(int v, int w) {
     }
   }
 
+  /**
+   * Performs a Depth-First Search traversal on the given graph.
+   *
+   * @param graph      The graph to traverse.
+   * @param rootsOrder The order in which to process root vertices (null for
+   *                   default 1..n).
+   * @param visitor    The visitor callback to receive DFS events.
+   * @return The DFSResult containing discover times, finish times, and parent
+   *         vertices.
+   */
   public static DFSResult search(Graph graph, int[] rootsOrder, DFSVisitor visitor) {
     int n = graph.getVertices().length;
 
@@ -120,20 +213,50 @@ public class DFS {
     return visitor.finish(discoverTimes, finishTimes, parents);
   }
 
+  /**
+   * Performs a Depth-First Search traversal with a custom visitor.
+   *
+   * @param graph   The graph to traverse.
+   * @param visitor The visitor callback to receive DFS events.
+   * @return The DFSResult containing discover times, finish times, and parent
+   *         vertices.
+   */
   public static DFSResult search(Graph graph, DFSVisitor visitor) {
     return search(graph, null, visitor);
   }
 
+  /**
+   * Performs a Depth-First Search traversal on the graph with custom root order.
+   *
+   * @param graph      The graph to traverse.
+   * @param rootsOrder The order in which to process root vertices.
+   * @return The DFSResult containing discover times, finish times, and parent
+   *         vertices.
+   */
   public static DFSResult search(Graph graph, int[] rootsOrder) {
     return search(graph, rootsOrder, new DFSVisitor() {
     });
   }
 
+  /**
+   * Performs a Depth-First Search traversal on the graph.
+   *
+   * @param graph The graph to traverse.
+   * @return The DFSResult containing discover times, finish times, and parent
+   *         vertices.
+   */
   public static DFSResult search(Graph graph) {
     return search(graph, null, new DFSVisitor() {
     });
   }
 
+  /**
+   * Extracts the tree edges from a DFS result using the parent array.
+   *
+   * @param graph   The graph (unused, kept for API consistency).
+   * @param parents The parent array from DFSResult.
+   * @return A 2D array of tree edges where each row is {parent, child}.
+   */
   public static int[][] getDFSTreeEdges(Graph graph, int[] parents) {
     int count = 0;
     for (int p : parents) {
@@ -154,9 +277,25 @@ public class DFS {
     return treeEdges;
   }
 
+  /**
+   * Represents the classification of edges from a vertex in a DFS traversal.
+   *
+   * @param treeEdges    Edges to undiscovered vertices (DFS tree edges).
+   * @param backEdges    Edges to ancestors (in directed graphs).
+   * @param crossEdges   Edges to vertices in other branches.
+   * @param forwardEdges Edges to descendants (in directed graphs).
+   */
   public record ClassifiedDFSEdges(int[][] treeEdges, int[][] backEdges, int[][] crossEdges, int[][] forwardEdges) {
   }
 
+  /**
+   * Classifies all edges from a given vertex based on DFS timing.
+   *
+   * @param graph     The graph to analyze.
+   * @param v         The source vertex.
+   * @param dfsResult The result of a previous DFS traversal.
+   * @return A ClassifiedDFSEdges containing all classified edge types.
+   */
   public static ClassifiedDFSEdges classifyVertexDFSEdges(Graph graph, int v, DFSResult dfsResult) {
     boolean isDirected = graph instanceof DirectedGraph;
 

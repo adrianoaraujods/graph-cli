@@ -2,24 +2,71 @@ package graph.api;
 
 public interface GraphBase {
 
+  /**
+   * Returns the total number of vertices in the graph.
+   *
+   * @return The number of vertices (n).
+   */
   public abstract long getVerticesCount();
 
+  /**
+   * Returns the total number of edges in the graph.
+   *
+   * @return The number of edges (m).
+   */
   public abstract long getEdgesCount();
 
+  /**
+   * Returns all edges in the graph as a 2D array.
+   *
+   * @return A 2D array where each row is an edge {v, w}.
+   */
   public abstract int[][] getEdgesSet();
 
-  public abstract void removeEdge(int source, int target);
+  /**
+   * Removes an edge from the graph.
+   *
+   * @param v The source vertex of the edge.
+   * @param w The target vertex of the edge.
+   */
+  public abstract void removeEdge(int v, int w);
 
-  public abstract void addEdge(int source, int target);
+  /**
+   * Adds an edge to the graph.
+   *
+   * @param v The source vertex of the edge.
+   * @param w The target vertex of the edge.
+   */
+  public abstract void addEdge(int v, int w);
 
+  /**
+   * Interface for visiting vertices and edges during graph traversal.
+   */
   public interface IteratorVisitor {
-    default void examineVertex(int vertex) {
+
+    /**
+     * Called when visiting a vertex.
+     *
+     * @param v The vertex being visited.
+     */
+    default void examineVertex(int v) {
     }
 
-    default void examineEdge(int source, int target) {
+    /**
+     * Called when visiting an edge.
+     *
+     * @param v The source vertex of the edge.
+     * @param w The target vertex of the edge.
+     */
+    default void examineEdge(int v, int w) {
     }
   }
 
+  /**
+   * Iterates over all vertices and edges in the graph using the provided visitor.
+   *
+   * @param visitor The visitor to use for traversing the graph.
+   */
   public abstract void iterateGraph(IteratorVisitor visitor);
 
   /**

@@ -10,19 +10,55 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Provides graph generation capabilities for creating synthetic graph data.
+ * <p>
+ * This class supports generating various graph types including random graphs,
+ * Eulerian graphs, semi-Eulerian graphs, and weakly connected graphs.
+ * Graphs can be specified by edge count or density.
+ */
 public class GraphGenerator {
   private static final int CHUNK_SIZE = 64 * 1024;
   private static final int LOGGING_INTERVAL = 5_000;
   private static final double DENSE_THRESHOLD = 0.3;
   private static final int MAX_SAMPLING_ATTEMPTS = 10;
 
+  /**
+   * Specifies the connectivity type for generated graphs.
+   */
   public enum ConnectivityType {
+
+    /** No connectivity requirement - simple random graph. */
     NONE,
+
+    /** Graph is weakly connected (one connected component). */
     WEAKLY,
+
+    /**
+     * Graph has an Eulerian circuit (all vertices have even degree).
+     * Requires at least n edges for n vertices.
+     */
     EULERIAN,
+
+    /**
+     * Graph has an Eulerian path but not circuit (exactly two vertices with odd
+     * degree).
+     * Requires at least n-1 edges for n vertices.
+     */
     SEMI_EULERIAN
   }
 
+  /**
+   * Immutable configuration for graph generation.
+   *
+   * @param vertices     The number of vertices in the graph.
+   * @param directed     Whether the graph is directed.
+   * @param connectivity The connectivity type requirement.
+   * @param edges        The target number of edges (-1 if using density).
+   * @param density      The target edge density (-1 if using edge count).
+   * @param outputPath   The file path to write the generated graph.
+   * @param seed         The random seed for reproducibility (null for random).
+   */
   public record GraphConfig(
       int vertices,
       boolean directed,
@@ -66,51 +102,112 @@ public class GraphGenerator {
     private String outputPath = null;
     private Long seed = null;
 
+    /**
+     * Sets whether the graph should be directed.
+     *
+     * @param directed True for directed graph, false for undirected.
+     * @return This builder for chaining.
+     */
     public Builder directed(boolean directed) {
       this.directed = directed;
       return this;
     }
 
+    /**
+     * Sets the graph as undirected (shorthand for directed(false)).
+     *
+     * @return This builder for chaining.
+     */
     public Builder undirected() {
       this.directed = false;
       return this;
     }
 
+    /**
+     * Sets the connectivity type.
+     *
+     * @param connectivity The desired connectivity type.
+     * @return This builder for chaining.
+     */
     public Builder connectivity(ConnectivityType connectivity) {
       this.connectivity = connectivity;
       return this;
     }
 
+    /**
+     * Sets the number of vertices.
+     *
+     * @param vertices The number of vertices (must be > 0).
+     * @return This builder for chaining.
+     */
     public Builder vertices(int vertices) {
       this.vertices = vertices;
       return this;
     }
 
+    /**
+     * Sets the exact number of edges to generate.
+     *
+     * @param edges The target edge count.
+     * @return This builder for chaining.
+     */
     public Builder edges(long edges) {
       this.edges = edges;
       return this;
     }
 
+    /**
+     * Sets the edge density for generation.
+     *
+     * @param density The edge density between 0.0 and 1.0.
+     * @return This builder for chaining.
+     */
     public Builder density(double density) {
       this.density = density;
       return this;
     }
 
+    /**
+     * Sets the output file path.
+     *
+     * @param outputPath The path where the graph will be written.
+     * @return This builder for chaining.
+     */
     public Builder outputPath(String outputPath) {
       this.outputPath = outputPath;
       return this;
     }
 
+    /**
+     * Sets the random seed for reproducible generation.
+     *
+     * @param seed The random seed value.
+     * @return This builder for chaining.
+     */
     public Builder seed(long seed) {
       this.seed = seed;
       return this;
     }
 
+    /**
+     * Sets the random seed for reproducible generation.
+     *
+     * @param seed The random seed value (can be null for random).
+     * @return This builder for chaining.
+     */
     public Builder seed(Long seed) {
       this.seed = seed;
       return this;
     }
 
+    /**
+     * Builds the GraphConfig from the current builder state.
+     *
+     * @return The constructed GraphConfig.
+     * @throws IllegalStateException    If required fields are missing or invalid.
+     * @throws IllegalArgumentException If edge/connectivity constraints are
+     *                                  violated.
+     */
     public GraphConfig build() {
       if (vertices <= 0) {
         throw new IllegalStateException("Vertices must be specified and > 0");
@@ -151,6 +248,11 @@ public class GraphGenerator {
     }
   }
 
+  /**
+   * Creates a new GraphGenerator builder.
+   *
+   * @return A new Builder instance.
+   */
   public static Builder builder() {
     return new Builder();
   }
@@ -174,6 +276,15 @@ public class GraphGenerator {
     }
   }
 
+  /**
+   * Generates a graph according to the provided configuration.
+   * <p>
+   * This method creates a graph file in the format: first line contains
+   * "n m" (vertices and edge count), followed by m lines of "source target"
+   * pairs.
+   *
+   * @param config The graph configuration specifying all generation parameters.
+   */
   public static void generateGraph(GraphConfig config) {
     int n = config.vertices();
     long m = config.resolvedEdges();

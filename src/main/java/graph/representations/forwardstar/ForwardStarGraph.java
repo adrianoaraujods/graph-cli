@@ -38,12 +38,12 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   }
 
   @Override
-  public void addEdge(int source, int target) {
+  public void addEdge(int v, int w) {
     // TODO Auto-generated method stub
   }
 
   @Override
-  public void removeEdge(int source, int target) {
+  public void removeEdge(int v, int w) {
     // TODO Auto-generated method stub
   }
 
@@ -76,14 +76,14 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   // Directed Methods
 
   @Override
-  public int getInDegree(int vertex) {
-    if (vertex < 1 || vertex > n) {
+  public int getInDegree(int v) {
+    if (v < 1 || v > n) {
       throw new IllegalArgumentException();
     }
 
     int degree = 0;
-    for (int v : targets) {
-      if (v == vertex) {
+    for (int w : targets) {
+      if (w == v) {
         degree++;
       }
     }
@@ -92,17 +92,17 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   }
 
   @Override
-  public int getOutDegree(int vertex) {
-    if (vertex < 1 || vertex > n) {
+  public int getOutDegree(int v) {
+    if (v < 1 || v > n) {
       throw new IllegalArgumentException();
     }
 
-    return pointers[vertex] - pointers[vertex - 1];
+    return pointers[v] - pointers[v - 1];
   }
 
   @Override
-  public int[] getPredecessors(int vertex) {
-    if (vertex < 1 || vertex > n) {
+  public int[] getPredecessors(int v) {
+    if (v < 1 || v > n) {
       throw new IllegalArgumentException();
     }
 
@@ -110,9 +110,9 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
     Graph.IteratorVisitor iterator = new IteratorVisitor() {
       @Override
-      public void examineEdge(int source, int target) {
-        if (target == vertex) {
-          builder.add(source);
+      public void examineEdge(int v, int w) {
+        if (w == v) {
+          builder.add(v);
         }
       }
     };
@@ -122,12 +122,12 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   }
 
   @Override
-  public int[] getSuccessors(int vertex) {
-    if (vertex < 1 || vertex > n) {
+  public int[] getSuccessors(int v) {
+    if (v < 1 || v > n) {
       throw new IllegalArgumentException();
     }
 
-    int[] successors = Arrays.copyOfRange(targets, pointers[vertex - 1], pointers[vertex]);
+    int[] successors = Arrays.copyOfRange(targets, pointers[v - 1], pointers[v]);
     Sort.quick(successors);
 
     return successors;
@@ -141,16 +141,16 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   // Undirected Methods
 
   @Override
-  public int getDegree(int vertex) {
-    if (vertex < 1 || vertex > n) {
+  public int getDegree(int v) {
+    if (v < 1 || v > n) {
       throw new IllegalArgumentException();
     }
 
-    return pointers[vertex] - pointers[vertex - 1];
+    return pointers[v] - pointers[v - 1];
   }
 
   @Override
-  public int[] getNeighbors(int vertex) {
-    return getSuccessors(vertex);
+  public int[] getNeighbors(int v) {
+    return getSuccessors(v);
   }
 }

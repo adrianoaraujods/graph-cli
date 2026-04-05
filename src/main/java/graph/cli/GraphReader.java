@@ -7,10 +7,28 @@ import java.nio.channels.FileChannel;
 
 import graph.representations.GraphBuilder;
 
+/**
+ * Provides graph file reading capabilities.
+ * <p>
+ * This class reads graph files in the standard format: first line contains
+ * "n m" (vertices and edge count), followed by m lines of "source target" pairs.
+ * Uses buffered I/O with direct ByteBuffer for efficient large file processing.
+ */
 public class GraphReader {
   /** Size of the byte buffer used for reading files (64 KB). */
   static int CHUNK_SIZE = 64 * 1024;
 
+  /**
+   * Reads a graph from a file and populates the provided builder.
+   * <p>
+   * The file format expects: first line with "n m" (number of vertices and edges),
+   * followed by m lines each containing "source target" edge pairs.
+   *
+   * @param pathName The path to the graph file.
+   * @param builder  The GraphBuilder to populate with edges.
+   * @throws IOException If the file cannot be read.
+   * @throws Exception    If the file format is invalid.
+   */
   public static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {

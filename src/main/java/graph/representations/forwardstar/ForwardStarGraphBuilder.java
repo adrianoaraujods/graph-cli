@@ -59,9 +59,9 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   }
 
   @Override
-  public void addEdge(int source, int target) {
-    sources[head] = source;
-    targets[head] = target;
+  public void addEdge(int v, int w) {
+    sources[head] = v;
+    targets[head] = w;
     head++;
   }
 

@@ -55,6 +55,13 @@ public abstract class Graph implements GraphBase {
     return (DirectedGraph) builder.build();
   }
 
+  /**
+   * Creates an induced subgraph containing only the specified vertices.
+   *
+   * @param vertices The array of vertex IDs to include in the subgraph.
+   * @param builder  The graph builder used to construct the subgraph.
+   * @return The induced {@link Graph} containing only the specified vertices.
+   */
   protected Graph getInducedSubgraph(int[] vertices, GraphBuilder builder) {
     int maxVertex = Arrays.stream(vertices).max().orElse(0);
 
@@ -64,9 +71,9 @@ public abstract class Graph implements GraphBase {
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
-      public void examineEdge(int source, int target) {
-        if (uniqueVertices.contains(source) && uniqueVertices.contains(target)) {
-          builder.addEdge(source, target);
+      public void examineEdge(int v, int w) {
+        if (uniqueVertices.contains(v) && uniqueVertices.contains(w)) {
+          builder.addEdge(v, w);
         }
       }
     };
@@ -82,9 +89,9 @@ public abstract class Graph implements GraphBase {
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
-      public void examineEdge(int source, int target) {
-        edges[index[0]][0] = source;
-        edges[index[0]][1] = target;
+      public void examineEdge(int v, int w) {
+        edges[index[0]][0] = v;
+        edges[index[0]][1] = w;
         index[0]++;
       }
     };
