@@ -3,7 +3,7 @@ package graph;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.cli.GraphGenerator;
 import graph.cli.GraphLogger;
 import graph.cli.GraphReader;
@@ -13,7 +13,7 @@ import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 public class GraphCLI {
-    static StaticGraph graph = null;
+    static Graph graph = null;
     static GraphBuilder builder;
 
     static boolean isCreate = false;
@@ -292,9 +292,10 @@ public class GraphCLI {
                     graph = builder.build();
                 });
 
-                if (target < 1 || target > graph.n) {
+                if (target < 1 || target > graph.getVerticesCount()) {
                     throw new InvalidAlgorithmParameterException(
-                            "Invalid argument: target vertex Id should be between 1 and " + graph.n + ".");
+                            "Invalid argument: target vertex Id should be between 1 and " + graph.getVerticesCount()
+                                    + ".");
                 }
 
                 System.out.printf("[%d/3] Analyzing Graph...", ++step);

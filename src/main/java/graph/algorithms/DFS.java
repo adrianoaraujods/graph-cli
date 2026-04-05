@@ -55,8 +55,6 @@ public class DFS {
       throw new IllegalArgumentException("The rootsOrder array has more elements than the number of possible roots.");
     }
 
-    boolean isDirected = graph instanceof DirectedGraph;
-
     int t = 0;
     int[] discoverTimes = new int[n];
     int[] finishTimes = new int[n];
@@ -86,7 +84,7 @@ public class DFS {
         }
 
         int[] adjacency;
-        if (isDirected) {
+        if (graph.isDirected) {
           adjacency = ((DirectedGraph) graph).getSuccessors(v);
         } else {
           adjacency = ((UndirectedGraph) graph).getNeighbors(v);
@@ -139,7 +137,8 @@ public class DFS {
   public static int[][] getDFSTreeEdges(Graph graph, int[] parents) {
     int count = 0;
     for (int p : parents) {
-      if (p != 0) count++;
+      if (p != 0)
+        count++;
     }
 
     int[][] treeEdges = new int[count][2];
@@ -203,7 +202,6 @@ public class DFS {
         java.util.Arrays.copyOf(treeEdges, treeIdx),
         java.util.Arrays.copyOf(backEdges, backIdx),
         java.util.Arrays.copyOf(crossEdges, crossIdx),
-        java.util.Arrays.copyOf(forwardEdges, forwardIdx)
-    );
+        java.util.Arrays.copyOf(forwardEdges, forwardIdx));
   }
 }

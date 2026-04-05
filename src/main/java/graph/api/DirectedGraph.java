@@ -1,6 +1,6 @@
 package graph.api;
 
-public interface DirectedGraph extends Graph {
+public interface DirectedGraph extends GraphBase {
 
   /**
    * Calculates the in-degree (number of incoming edges) of a given vertex.
@@ -43,5 +43,5 @@ public interface DirectedGraph extends Graph {
    */
   public abstract int[] getSuccessors(int vertex);
 
-  public abstract StaticGraph getReversed();
+  public abstract DirectedGraph getReversed();
 }

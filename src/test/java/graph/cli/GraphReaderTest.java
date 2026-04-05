@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class GraphReaderTest {
@@ -24,10 +24,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(5, graph.n);
-        assertEquals(3, graph.m);
+        assertEquals(5, graph.getVerticesCount());
+        assertEquals(3, graph.getEdgesCount());
         assertTrue(graph.isDirected);
     }
 
@@ -39,10 +39,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(4, graph.n);
-        assertEquals(4, graph.m);
+        assertEquals(4, graph.getVerticesCount());
+        assertEquals(4, graph.getEdgesCount());
         assertFalse(graph.isDirected);
     }
 
@@ -63,10 +63,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(5, graph.n);
-        assertEquals(2, graph.m);
+        assertEquals(5, graph.getVerticesCount());
+        assertEquals(2, graph.getEdgesCount());
     }
 
     @Test
@@ -81,10 +81,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(1000, graph.n);
-        assertEquals(500, graph.m);
+        assertEquals(1000, graph.getVerticesCount());
+        assertEquals(500, graph.getEdgesCount());
     }
 
     @Test
@@ -95,10 +95,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(5, graph.n);
-        assertEquals(0, graph.m);
+        assertEquals(5, graph.getVerticesCount());
+        assertEquals(0, graph.getEdgesCount());
     }
 
     @Test
@@ -109,10 +109,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(3, graph.n);
-        assertEquals(2, graph.m);
+        assertEquals(3, graph.getVerticesCount());
+        assertEquals(2, graph.getEdgesCount());
     }
 
     @Test
@@ -123,10 +123,10 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(10000, graph.n);
-        assertEquals(3, graph.m);
+        assertEquals(10000, graph.getVerticesCount());
+        assertEquals(3, graph.getEdgesCount());
     }
 
     @Test
@@ -137,9 +137,9 @@ class GraphReaderTest {
 
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
         GraphReader.readFile(inputPath.toString(), builder);
-        StaticGraph graph = builder.build();
+        Graph graph = builder.build();
 
-        assertEquals(4, graph.n);
-        assertEquals(3, graph.m);
+        assertEquals(4, graph.getVerticesCount());
+        assertEquals(3, graph.getEdgesCount());
     }
 }

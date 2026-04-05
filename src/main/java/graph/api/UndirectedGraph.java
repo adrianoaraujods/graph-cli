@@ -1,6 +1,6 @@
 package graph.api;
 
-public interface UndirectedGraph extends Graph {
+public interface UndirectedGraph extends GraphBase {
 
   /**
    * Calculates the degree (number of adjacent vertices) of a given vertex.

@@ -6,15 +6,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import graph.api.DirectedGraph;
-import graph.api.MutableGraph;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.api.UndirectedGraph;
 
 /**
  * Row: vertex successors
  * Column: vertex predecessors
  */
-public class AdjacencyMatrixGraph extends MutableGraph implements DirectedGraph, UndirectedGraph {
+public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, UndirectedGraph {
 
   // int[n columns][n rows]
   private boolean[][] matrix;
@@ -81,7 +80,7 @@ public class AdjacencyMatrixGraph extends MutableGraph implements DirectedGraph,
   }
 
   @Override
-  public StaticGraph getInducedSubgraph(int[] vertices) {
+  public Graph getInducedSubgraph(int[] vertices) {
     return getInducedSubgraph(vertices, new AdjacencyMatrixGraphBuilder(isDirected));
   }
 
@@ -193,7 +192,7 @@ public class AdjacencyMatrixGraph extends MutableGraph implements DirectedGraph,
   }
 
   @Override
-  public StaticGraph getReversed() {
+  public DirectedGraph getReversed() {
     return getReversed(new AdjacencyMatrixGraphBuilder(isDirected));
   }
 

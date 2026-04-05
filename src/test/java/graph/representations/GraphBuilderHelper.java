@@ -3,12 +3,12 @@ package graph.representations;
 import java.util.function.Supplier;
 
 import graph.api.DirectedGraph;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.api.UndirectedGraph;
 
 public class GraphBuilderHelper {
 
-    public static StaticGraph build(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges) {
+    public static Graph build(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges) {
         GraphBuilder builder = builderSupplier.get();
         builder.initialize(n, m);
 
@@ -19,7 +19,7 @@ public class GraphBuilderHelper {
         return builder.build();
     }
 
-    public static StaticGraph build(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges,
+    public static Graph build(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges,
             int[] vertices) {
         GraphBuilder builder = builderSupplier.get();
         builder.initialize(n, m, vertices);
@@ -31,7 +31,7 @@ public class GraphBuilderHelper {
         return builder.build();
     }
 
-    public static StaticGraph buildUndirected(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges) {
+    public static Graph buildUndirected(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges) {
         GraphBuilder builder = builderSupplier.get();
         builder.initialize(n, m);
 

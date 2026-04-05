@@ -3,7 +3,7 @@ package graph.representations.forwardstar;
 import java.util.Arrays;
 
 import graph.representations.GraphBuilder;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.util.Sort;
 
 /**
@@ -66,7 +66,7 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   }
 
   @Override
-  public StaticGraph build() {
+  public Graph build() {
     if (head != sources.length) {
       sources = Arrays.copyOf(sources, head);
       targets = Arrays.copyOf(targets, head);

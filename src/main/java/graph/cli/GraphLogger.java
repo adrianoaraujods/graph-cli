@@ -11,7 +11,7 @@ import graph.algorithms.Kosaraju;
 import graph.algorithms.DFS.ClassifiedDFSEdges;
 import graph.algorithms.DFS.DFSResult;
 import graph.api.DirectedGraph;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.util.EdgeFormatter;
 
@@ -38,7 +38,7 @@ public class GraphLogger {
         return graphPath + ".log";
     }
 
-    public static void writeLog(String path, StaticGraph graph, int target) throws IOException {
+    public static void writeLog(String path, Graph graph, int target) throws IOException {
         int[] neighbors = null;
         int[] predecessors = null;
         int[] successors = null;
@@ -51,7 +51,7 @@ public class GraphLogger {
 
         DFSResult dfsResult = DFS.search(graph);
 
-        StaticGraph[] components = null;
+        DirectedGraph[] components = null;
         if (graph.isDirected) {
             components = Kosaraju.findSCCs((DirectedGraph) graph, dfsResult.finishTimes());
         }
@@ -91,7 +91,7 @@ public class GraphLogger {
                 logContent.append(String.format("[%d/%d] Component:\n", c + 1, components.length));
                 logContent.append(String.format("  Vertices: %s\n", Arrays.toString(components[c].getVertices())));
                 logContent.append(String.format("  Edges: %s\n\n",
-                        EdgeFormatter.toString(components[c].getEdgesSet(graph.isDirected), graph.isDirected)));
+                        EdgeFormatter.toString(components[c].getEdgesSet(), graph.isDirected)));
             }
         }
 

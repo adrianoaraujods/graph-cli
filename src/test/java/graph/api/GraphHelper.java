@@ -5,17 +5,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class StaticGraphHelper {
+public class GraphHelper {
 
-    public static void assertN(StaticGraph graph, int expected) {
+    public static void assertN(Graph graph, int expected) {
         assertEquals(expected, graph.n);
     }
 
-    public static void assertM(StaticGraph graph, int expected) {
+    public static void assertM(Graph graph, int expected) {
         assertEquals(expected, graph.m);
     }
 
-    public static void assertVertices(StaticGraph graph, int... expected) {
+    public static void assertVertices(Graph graph, int... expected) {
         assertArrayEquals(expected, graph.getVertices());
     }
 
@@ -73,7 +73,7 @@ public class StaticGraphHelper {
         assertEquals(expectedSet, actualSet);
     }
 
-    public static void assertIterateVertexCount(StaticGraph graph, int expected) {
+    public static void assertIterateVertexCount(Graph graph, int expected) {
         final int[] count = { 0 };
         graph.iterateGraph(new graph.api.Graph.IteratorVisitor() {
             @Override
@@ -88,7 +88,7 @@ public class StaticGraphHelper {
         assertEquals(expected, count[0]);
     }
 
-    public static void assertIterateEdgeCount(StaticGraph graph, int expected) {
+    public static void assertIterateEdgeCount(Graph graph, int expected) {
         final int[] count = { 0 };
         graph.iterateGraph(new graph.api.Graph.IteratorVisitor() {
             @Override
@@ -107,23 +107,23 @@ public class StaticGraphHelper {
         assertThrows(IllegalArgumentException.class, executable);
     }
 
-    public static void assertInducedSubgraphN(StaticGraph graph, int[] vertices, int expectedN) {
-        StaticGraph subgraph = graph.getInducedSubgraph(vertices);
+    public static void assertInducedSubgraphN(Graph graph, int[] vertices, int expectedN) {
+        Graph subgraph = graph.getInducedSubgraph(vertices);
         assertEquals(expectedN, subgraph.n);
     }
 
-    public static void assertInducedSubgraphM(StaticGraph graph, int[] vertices, int expectedM) {
-        StaticGraph subgraph = graph.getInducedSubgraph(vertices);
+    public static void assertInducedSubgraphM(Graph graph, int[] vertices, int expectedM) {
+        Graph subgraph = graph.getInducedSubgraph(vertices);
         assertEquals(expectedM, subgraph.m);
     }
 
     public static void assertReversedM(DirectedGraph graph, int expectedM) {
-        StaticGraph reversed = graph.getReversed();
-        assertEquals(expectedM, reversed.m);
+        DirectedGraph reversed = graph.getReversed();
+        assertEquals(expectedM, reversed.getEdgesCount());
     }
 
     public static void assertReversedHasEdge(DirectedGraph graph, int source, int target) {
-        StaticGraph reversed = graph.getReversed();
+        DirectedGraph reversed = graph.getReversed();
         assertTrue(reversed instanceof DirectedGraph, "Reversed graph should implement DirectedGraph");
 
         DirectedGraph directedReversed = (DirectedGraph) reversed;

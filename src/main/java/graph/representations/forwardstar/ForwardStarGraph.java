@@ -1,13 +1,10 @@
 package graph.representations.forwardstar;
 
 import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import graph.representations.GraphBuilder;
 import graph.api.DirectedGraph;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.util.Sort;
 
@@ -15,7 +12,7 @@ import graph.util.Sort;
  * Concrete and static (immutable) implementation of the Graph using the Forward
  * Star structure.
  */
-public class ForwardStarGraph extends StaticGraph implements DirectedGraph, UndirectedGraph {
+public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph {
   private final int[] targets;
   private final int[] pointers;
   private final int[] vertices;
@@ -26,6 +23,7 @@ public class ForwardStarGraph extends StaticGraph implements DirectedGraph, Undi
    */
   ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, int[] vertices) {
     super(isDirected, n, m);
+
     this.targets = targets;
     this.pointers = pointers;
     this.vertices = vertices;
@@ -36,19 +34,17 @@ public class ForwardStarGraph extends StaticGraph implements DirectedGraph, Undi
    * {@link ForwardStarGraphBuilder}.
    */
   ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers) {
-    super(isDirected, n, m);
-    this.targets = targets;
-    this.pointers = pointers;
-    this.vertices = null;
+    this(isDirected, n, m, targets, pointers, null);
   }
 
   @Override
-  public int[] getVertices() {
-    if (vertices == null || vertices.length == 0) {
-      return IntStream.rangeClosed(1, n).toArray();
-    }
+  public void addEdge(int source, int target) {
+    // TODO Auto-generated method stub
+  }
 
-    return vertices;
+  @Override
+  public void removeEdge(int source, int target) {
+    // TODO Auto-generated method stub
   }
 
   @Override
@@ -64,18 +60,20 @@ public class ForwardStarGraph extends StaticGraph implements DirectedGraph, Undi
   }
 
   @Override
-  public StaticGraph getInducedSubgraph(int[] vertices) {
-    return getInducedSubgraph(vertices, new ForwardStarGraphBuilder(isDirected));
+  public int[] getVertices() {
+    if (vertices == null || vertices.length == 0) {
+      return IntStream.rangeClosed(1, n).toArray();
+    }
+
+    return vertices;
   }
 
   @Override
-  public int getDegree(int vertex) {
-    if (vertex < 1 || vertex > n) {
-      throw new IllegalArgumentException();
-    }
-
-    return pointers[vertex] - pointers[vertex - 1];
+  public Graph getInducedSubgraph(int[] vertices) {
+    return getInducedSubgraph(vertices, new ForwardStarGraphBuilder(isDirected));
   }
+
+  // Directed Methods
 
   @Override
   public int getInDegree(int vertex) {
@@ -110,7 +108,7 @@ public class ForwardStarGraph extends StaticGraph implements DirectedGraph, Undi
 
     IntStream.Builder builder = IntStream.builder();
 
-    StaticGraph.IteratorVisitor iterator = new IteratorVisitor() {
+    Graph.IteratorVisitor iterator = new IteratorVisitor() {
       @Override
       public void examineEdge(int source, int target) {
         if (target == vertex) {
@@ -136,12 +134,23 @@ public class ForwardStarGraph extends StaticGraph implements DirectedGraph, Undi
   }
 
   @Override
-  public int[] getNeighbors(int vertex) {
-    return getSuccessors(vertex);
+  public DirectedGraph getReversed() {
+    return getReversed(new ForwardStarGraphBuilder(isDirected));
+  }
+
+  // Undirected Methods
+
+  @Override
+  public int getDegree(int vertex) {
+    if (vertex < 1 || vertex > n) {
+      throw new IllegalArgumentException();
+    }
+
+    return pointers[vertex] - pointers[vertex - 1];
   }
 
   @Override
-  public StaticGraph getReversed() {
-    return getReversed(new ForwardStarGraphBuilder(isDirected));
+  public int[] getNeighbors(int vertex) {
+    return getSuccessors(vertex);
   }
 }

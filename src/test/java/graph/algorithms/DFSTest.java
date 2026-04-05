@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import graph.algorithms.DFS.ClassifiedDFSEdges;
 import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.DFS.DFSVisitor;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.representations.GraphBuilderHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
@@ -18,7 +18,7 @@ class DFSTest {
 
     @Test
     void testDFSDiscoverTimes() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
@@ -37,7 +37,7 @@ class DFSTest {
 
     @Test
     void testDFSFinishTimes() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
@@ -55,7 +55,7 @@ class DFSTest {
 
     @Test
     void testDFSTreeEdges() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
@@ -70,7 +70,7 @@ class DFSTest {
 
     @Test
     void testDFSWithCustomRootsOrder() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 3, 4 }, { 2, 3 } });
@@ -84,7 +84,7 @@ class DFSTest {
 
     @Test
     void testDFSEmptyGraph() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 0,
                 new int[][] {});
@@ -97,7 +97,7 @@ class DFSTest {
 
     @Test
     void testDFSDisconnectedGraph() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 6, 3,
                 new int[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } });
@@ -113,7 +113,7 @@ class DFSTest {
 
     @Test
     void testDFSParentsAssignment() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 } });
@@ -134,7 +134,7 @@ class DFSTest {
 
     @Test
     void testDFSWithCycle() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
@@ -150,7 +150,7 @@ class DFSTest {
 
     @Test
     void testClassifyVertexEdges() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 5,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 4, 5 } });
@@ -167,7 +167,7 @@ class DFSTest {
 
     @Test
     void testClassifyVertexTreeEdges() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
@@ -182,7 +182,7 @@ class DFSTest {
 
     @Test
     void testClassifyVertexWithBackEdge() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
@@ -195,7 +195,7 @@ class DFSTest {
 
     @Test
     void testClassifyVertexForwardEdge() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 3, 4 } });
@@ -208,7 +208,7 @@ class DFSTest {
 
     @Test
     void testDFSLexicographicOrder() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 4,
                 new int[][] { { 1, 3 }, { 1, 2 }, { 3, 4 }, { 2, 4 } });
@@ -229,7 +229,7 @@ class DFSTest {
 
     @Test
     void testDFSAllVerticesVisited() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 7, 6,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 4, 5 }, { 5, 6 }, { 6, 7 }, { 3, 4 } });
@@ -245,7 +245,7 @@ class DFSTest {
 
     @Test
     void testDFSInvalidRootOrderThrowsException() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 2,
                 new int[][] { { 1, 2 }, { 3, 4 } });
@@ -259,7 +259,7 @@ class DFSTest {
 
     @Test
     void testDFSVisitorCallbacks() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 2,
                 new int[][] { { 1, 2 }, { 2, 3 } });
@@ -287,7 +287,7 @@ class DFSTest {
 
     @Test
     void testClassifyVertexEdgesEmptyGraph() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3, 0,
                 new int[][] {});
@@ -306,7 +306,7 @@ class DFSTest {
 
     @Test
     void testDFSUndirectedBasic() {
-        StaticGraph graph = GraphBuilderHelper.buildUndirected(
+        Graph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 3, 2,
                 new int[][] { { 1, 2 }, { 2, 3 } });
@@ -321,7 +321,7 @@ class DFSTest {
 
     @Test
     void testDFSUndirectedWithCycles() {
-        StaticGraph graph = GraphBuilderHelper.buildUndirected(
+        Graph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
@@ -335,7 +335,7 @@ class DFSTest {
 
     @Test
     void testDFSUndirectedTreeEdges() {
-        StaticGraph graph = GraphBuilderHelper.buildUndirected(
+        Graph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
@@ -348,7 +348,7 @@ class DFSTest {
 
     @Test
     void testDFSUndirectedDisconnected() {
-        StaticGraph graph = GraphBuilderHelper.buildUndirected(
+        Graph graph = GraphBuilderHelper.buildUndirected(
                 () -> new ForwardStarGraphBuilder(false),
                 6, 4,
                 new int[][] { { 1, 2 }, { 3, 4 }, { 5, 6 } });
@@ -365,7 +365,7 @@ class DFSTest {
 
     @Test
     void testDFSDiscoverTimesExact() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
@@ -381,7 +381,7 @@ class DFSTest {
 
     @Test
     void testDFSFinishTimesExact() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
@@ -397,7 +397,7 @@ class DFSTest {
 
     @Test
     void testDFSTreeEdgesExact() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
@@ -410,7 +410,7 @@ class DFSTest {
 
     @Test
     void testClassifyEdgesExactCounts() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 5, 6,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 3, 4 }, { 4, 5 } });
@@ -428,7 +428,7 @@ class DFSTest {
 
     @Test
     void testDFSVisitorDiscoverVertex() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
@@ -449,7 +449,7 @@ class DFSTest {
 
     @Test
     void testDFSVisitorFinishVertex() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
@@ -470,7 +470,7 @@ class DFSTest {
 
     @Test
     void testDFSVisitorTreeEdge() {
-        StaticGraph graph = GraphBuilderHelper.build(
+        Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });

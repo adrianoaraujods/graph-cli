@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import graph.algorithms.DFS.DFSResult;
 import graph.api.DirectedGraph;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.representations.GraphBuilderHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
@@ -19,7 +19,7 @@ class KosarajuTest {
                 4, 4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(2, components.length);
     }
@@ -31,7 +31,7 @@ class KosarajuTest {
                 5, 4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 4, 5 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(3, components.length);
     }
@@ -43,10 +43,10 @@ class KosarajuTest {
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(1, components.length);
-        assertEquals(3, components[0].n);
+        assertEquals(3, components[0].getVerticesCount());
     }
 
     @Test
@@ -56,7 +56,7 @@ class KosarajuTest {
                 4, 1,
                 new int[][] { { 1, 2 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(4, components.length);
     }
@@ -68,7 +68,7 @@ class KosarajuTest {
                 3, 0,
                 new int[][] {});
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(3, components.length);
     }
@@ -80,13 +80,13 @@ class KosarajuTest {
                 6, 7,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 }, { 4, 5 }, { 5, 6 }, { 6, 4 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(2, components.length);
 
         boolean foundThreeVertexComponent = false;
-        for (StaticGraph comp : components) {
-            if (comp.n == 3) {
+        for (DirectedGraph comp : components) {
+            if (comp.getVerticesCount() == 3) {
                 foundThreeVertexComponent = true;
                 break;
             }
@@ -101,7 +101,7 @@ class KosarajuTest {
                 8, 8,
                 new int[][] { { 1, 2 }, { 2, 1 }, { 3, 4 }, { 4, 3 }, { 5, 6 }, { 6, 5 }, { 2, 3 }, { 4, 5 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(5, components.length);
     }
@@ -113,7 +113,7 @@ class KosarajuTest {
                 4, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(4, components.length);
     }
@@ -125,7 +125,7 @@ class KosarajuTest {
                 2, 2,
                 new int[][] { { 1, 1 }, { 1, 2 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(2, components.length);
     }
@@ -137,7 +137,7 @@ class KosarajuTest {
                 3, 3,
                 new int[][] { { 1, 1 }, { 2, 2 }, { 3, 3 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(3, components.length);
     }
@@ -149,7 +149,7 @@ class KosarajuTest {
                 4, 4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 3, 4 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(4, components.length);
     }
@@ -161,7 +161,7 @@ class KosarajuTest {
                 6, 5,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 4, 5 }, { 5, 6 }, { 3, 6 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertTrue(components.length >= 3);
     }
@@ -173,7 +173,7 @@ class KosarajuTest {
                 7, 3,
                 new int[][] { { 1, 3 }, { 3, 5 }, { 5, 7 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(7, components.length);
     }
@@ -185,8 +185,8 @@ class KosarajuTest {
                 4, 4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 } });
 
-        StaticGraph[] components1 = Kosaraju.findSCCs(graph);
-        StaticGraph[] components2 = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components1 = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components2 = Kosaraju.findSCCs(graph);
 
         assertEquals(components1.length, components2.length);
     }
@@ -198,10 +198,10 @@ class KosarajuTest {
                 3, 6,
                 new int[][] { { 1, 2 }, { 2, 1 }, { 1, 3 }, { 3, 1 }, { 2, 3 }, { 3, 2 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(1, components.length);
-        assertEquals(3, components[0].n);
+        assertEquals(3, components[0].getVerticesCount());
     }
 
     @Test
@@ -211,7 +211,7 @@ class KosarajuTest {
                 6, 7,
                 new int[][] { { 1, 2 }, { 2, 1 }, { 2, 3 }, { 3, 2 }, { 4, 5 }, { 5, 4 }, { 6, 6 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(3, components.length);
     }
@@ -223,7 +223,7 @@ class KosarajuTest {
                 5, 5,
                 new int[][] { { 1, 2 }, { 2, 1 }, { 2, 3 }, { 4, 3 }, { 3, 5 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertTrue(components.length >= 2);
     }
@@ -235,10 +235,10 @@ class KosarajuTest {
                 4, 4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 } });
 
-        DFSResult dfsResult = DFS.search(graph);
+        DFSResult dfsResult = DFS.search((Graph) graph);
         int[] finishTimes = dfsResult.finishTimes();
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph, finishTimes);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph, finishTimes);
 
         assertEquals(2, components.length);
     }
@@ -250,10 +250,10 @@ class KosarajuTest {
                 3, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(1, components.length);
-        StaticGraph component = components[0];
+        DirectedGraph component = components[0];
 
         for (int v1 : component.getVertices()) {
             for (int v2 : component.getVertices()) {
@@ -272,7 +272,7 @@ class KosarajuTest {
                 5, 4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 4, 5 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(3, components.length);
     }
@@ -290,7 +290,7 @@ class KosarajuTest {
                         { 7, 10 }
                 });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(5, components.length);
     }
@@ -302,10 +302,10 @@ class KosarajuTest {
                 5, 5,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 1 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(1, components.length);
-        assertEquals(5, components[0].n);
+        assertEquals(5, components[0].getVerticesCount());
     }
 
     @Test
@@ -315,7 +315,7 @@ class KosarajuTest {
                 5, 4,
                 new int[][] { { 1, 2 }, { 2, 1 }, { 3, 4 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(4, components.length);
     }
@@ -327,10 +327,10 @@ class KosarajuTest {
                 4, 6,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 }, { 2, 4 }, { 3, 1 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(1, components.length);
-        assertEquals(4, components[0].n);
+        assertEquals(4, components[0].getVerticesCount());
     }
 
     @Test
@@ -340,11 +340,11 @@ class KosarajuTest {
                 6, 6,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 4, 5 }, { 5, 6 }, { 6, 4 } });
 
-        StaticGraph[] components = Kosaraju.findSCCs(graph);
+        DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(2, components.length);
 
-        for (StaticGraph comp : components) {
+        for (DirectedGraph comp : components) {
             for (int v : comp.getVertices()) {
                 assertTrue(v >= 1 && v <= 6, "Vertex " + v + " should be in valid range");
             }

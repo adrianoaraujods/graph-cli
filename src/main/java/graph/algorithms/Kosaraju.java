@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.DFS.DFSVisitor;
 import graph.api.DirectedGraph;
-import graph.api.StaticGraph;
+import graph.api.Graph;
 import graph.util.Sort;
 
 public class Kosaraju {
 
-  public static StaticGraph[] findSCCs(DirectedGraph graph) {
-    DFSResult dfsResult = DFS.search(graph, new DFSVisitor() {
+  public static DirectedGraph[] findSCCs(DirectedGraph graph) {
+    DFSResult dfsResult = DFS.search((Graph) graph, new DFSVisitor() {
       @Override
       public DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
         return new DFSResult(null, finishTimes, null);
@@ -21,11 +21,11 @@ public class Kosaraju {
     return findSCCs(graph, dfsResult.finishTimes());
   }
 
-  public static StaticGraph[] findSCCs(DirectedGraph graph, int[] finishTimes) {
+  public static DirectedGraph[] findSCCs(DirectedGraph graph, int[] finishTimes) {
     int[] rootsOrder = graph.getVertices();
     Sort.quick(finishTimes, rootsOrder, false);
 
-    StaticGraph reversedGraph = graph.getReversed();
+    DirectedGraph reversedGraph = graph.getReversed();
 
     ArrayList<ArrayList<Integer>> componentsVerticesList = new ArrayList<>();
 
@@ -44,13 +44,13 @@ public class Kosaraju {
       }
     };
 
-    DFS.search(reversedGraph, rootsOrder, getComponentsVisitor);
+    DFS.search((Graph) reversedGraph, rootsOrder, getComponentsVisitor);
 
-    StaticGraph[] components = new StaticGraph[componentsVerticesList.size()];
+    DirectedGraph[] components = new DirectedGraph[componentsVerticesList.size()];
 
     for (int i = 0; i < components.length; i++) {
       int[] vertices = componentsVerticesList.get(i).stream().mapToInt(v -> v).toArray();
-      components[i] = graph.getInducedSubgraph(vertices);
+      components[i] = (DirectedGraph) graph.getInducedSubgraph(vertices);
     }
 
     return components;

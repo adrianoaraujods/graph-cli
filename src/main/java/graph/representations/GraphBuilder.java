@@ -1,6 +1,6 @@
 package graph.representations;
 
-import graph.api.StaticGraph;
+import graph.api.Graph;
 
 /**
  * Interface defining the contract for constructing a Graph.
@@ -37,5 +37,5 @@ public interface GraphBuilder {
    *
    * @return The fully constructed Graph instance.
    */
-  StaticGraph build();
+  Graph build();
 }

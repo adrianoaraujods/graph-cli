@@ -1,6 +1,8 @@
 package graph.representations.adjacencymatrix;
 
-import graph.api.StaticGraph;
+import java.security.InvalidParameterException;
+
+import graph.api.Graph;
 import graph.representations.GraphBuilder;
 
 public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
@@ -38,17 +40,24 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
 
   @Override
   public void addEdge(int v, int w) {
-    m++;
+    if (v > n || w > n) {
+      throw new InvalidParameterException();
+    }
 
-    matrix[w - 1][v - 1] = true;
+    // prevent increase m if edge already exists
+    if (!matrix[w - 1][v - 1]) {
+      matrix[w - 1][v - 1] = true;
 
-    if (!isDirected) {
-      matrix[v - 1][w - 1] = true;
+      if (!isDirected) {
+        matrix[v - 1][w - 1] = true;
+      }
+
+      m++;
     }
   }
 
   @Override
-  public StaticGraph build() {
+  public Graph build() {
     return new AdjacencyMatrixGraph(isDirected, n, m, matrix, vertices);
   }
 }
