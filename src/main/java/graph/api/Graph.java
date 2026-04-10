@@ -84,20 +84,17 @@ public abstract class Graph implements GraphBase {
 
   @Override
   public int[][] getEdgesSet() {
-    int[][] edges = new int[n][2];
-    final int[] index = { 0 };
+    java.util.ArrayList<int[]> edgesList = new java.util.ArrayList<>();
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
       public void examineEdge(int v, int w) {
-        edges[index[0]][0] = v;
-        edges[index[0]][1] = w;
-        index[0]++;
+        edgesList.add(new int[] { v, w });
       }
     };
 
     iterateGraph(iterator);
 
-    return java.util.Arrays.copyOf(edges, index[0]);
+    return edgesList.toArray(new int[0][]);
   }
 }
