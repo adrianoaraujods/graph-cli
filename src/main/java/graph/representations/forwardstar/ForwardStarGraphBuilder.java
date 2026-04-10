@@ -35,25 +35,13 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   private int head;
 
   @Override
-  public void initialize(int n, int m) {
-    this.sources = new int[m];
-    this.targets = new int[m];
-
-    this.n = n;
-    this.m = m;
-
-    this.vertices = null;
-    head = 0;
-  }
-
-  @Override
   public void initialize(int n, int m, int[] vertices) {
-    this.sources = new int[m];
-    this.targets = new int[m];
-
     this.n = n;
-    this.m = m;
+    this.m = isDirected ? m : m * 2;
     this.vertices = vertices;
+
+    this.sources = new int[this.m];
+    this.targets = new int[this.m];
 
     head = 0;
   }
@@ -63,6 +51,12 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     sources[head] = v;
     targets[head] = w;
     head++;
+
+    if (!isDirected) {
+      sources[head] = w;
+      targets[head] = v;
+      head++;
+    }
   }
 
   @Override
@@ -84,26 +78,6 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
           n = targets[i];
         }
       }
-    }
-
-    if (!isDirected) {
-      int originalM = m;
-      int[] newSources = new int[m * 2];
-      int[] newTargets = new int[m * 2];
-
-      System.arraycopy(sources, 0, newSources, 0, m);
-      System.arraycopy(targets, 0, newTargets, 0, m);
-
-      for (int i = 0; i < originalM; i++) {
-        newSources[m + i] = targets[i];
-        newTargets[m + i] = sources[i];
-      }
-
-      sources = newSources;
-      targets = newTargets;
-      m = m * 2;
-
-      Sort.quick(sources, targets);
     }
 
     int[] pointers = new int[n + 1];

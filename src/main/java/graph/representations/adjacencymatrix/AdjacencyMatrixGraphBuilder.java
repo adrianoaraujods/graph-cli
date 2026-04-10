@@ -34,11 +34,6 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
   }
 
   @Override
-  public void initialize(int n, int m) {
-    initialize(n, m, null);
-  }
-
-  @Override
   public void addEdge(int v, int w) {
     if (v > n || w > n) {
       throw new InvalidParameterException();

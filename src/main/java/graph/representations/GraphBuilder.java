@@ -8,14 +8,6 @@ import graph.api.Graph;
 public interface GraphBuilder {
 
   /**
-   * Prepares the builder's internal temporary structures.
-   *
-   * @param n The total number of vertices.
-   * @param m The total number of edges.
-   */
-  void initialize(int n, int m);
-
-  /**
    * Prepares the builder's internal temporary structures with explicit vertices.
    *
    * @param n        The maximum vertex ID.
@@ -23,6 +15,16 @@ public interface GraphBuilder {
    * @param vertices The array of vertex IDs included in the graph.
    */
   void initialize(int n, int m, int[] vertices);
+
+  /**
+   * Prepares the builder's internal temporary structures.
+   *
+   * @param n The total number of vertices.
+   * @param m The total number of edges.
+   */
+  default void initialize(int n, int m) {
+    this.initialize(n, m, null);
+  };
 
   /**
    * Registers a single directed edge into the builder's temporary state.
