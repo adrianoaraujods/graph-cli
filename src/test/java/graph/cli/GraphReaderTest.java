@@ -42,7 +42,7 @@ class GraphReaderTest {
         Graph graph = builder.build();
 
         assertEquals(4, graph.getVerticesCount());
-        assertEquals(4, graph.getEdgesCount());
+        assertEquals(2, graph.getEdgesCount());
         assertFalse(graph.isDirected);
     }
 

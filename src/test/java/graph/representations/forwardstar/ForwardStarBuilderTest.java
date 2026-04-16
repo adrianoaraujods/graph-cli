@@ -42,13 +42,13 @@ class ForwardStarBuilderTest {
     }
 
     @Test
-    void testUndirectedEdgesDoubled() {
+    void testUndirectedEdgesCount() {
         Graph graph = GraphBuilderHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
                 3, 2,
                 new int[][] { { 1, 2 }, { 2, 3 } });
 
-        GraphHelper.assertM(graph, 4);
+        GraphHelper.assertM(graph, 2);
     }
 
     @Test
