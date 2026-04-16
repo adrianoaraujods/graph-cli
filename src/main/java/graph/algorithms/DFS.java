@@ -33,12 +33,21 @@ public class DFS {
    * events during the DFS traversal. All methods are no-ops by default.
    */
   public interface DFSVisitor {
+
+    /**
+     * Called when a visiting each vertex.
+     */
+    default boolean shouldStop() {
+      return false;
+    }
+
     /**
      * Called when a new DFS tree root is examined.
      *
      * @param v The root vertex being examined.
      */
     default void examineRoot(int v) {
+
     }
 
     /**
@@ -157,6 +166,9 @@ public class DFS {
     Stack<Integer> stack = new Stack<Integer>();
 
     for (int root : rootsOrder) {
+      if (visitor.shouldStop())
+        break;
+
       if (root < 1 || root > n) {
         throw new IndexOutOfBoundsException("The root: '" + root + "' is outside the possible vertex ID range.");
       }
@@ -169,6 +181,9 @@ public class DFS {
       visitor.examineRoot(root);
 
       while (!stack.isEmpty()) {
+        if (visitor.shouldStop())
+          break;
+
         int v = stack.peek();
 
         if (discoverTimes[v - 1] == 0) {
