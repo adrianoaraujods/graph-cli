@@ -228,4 +228,129 @@ class ForwardStarGraphTest {
 
         GraphHelper.assertVertices(graph, 1, 3, 5, 7);
     }
+
+    @Test
+    void testAddEdgeUndirected() {
+        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                4, 2,
+                new int[][] { { 1, 2 }, { 3, 4 } });
+
+        GraphHelper.assertDegree(graph, 1, 1);
+        GraphHelper.assertDegree(graph, 4, 1);
+
+        graph.addEdge(1, 4);
+
+        GraphHelper.assertDegree(graph, 1, 2);
+        GraphHelper.assertDegree(graph, 4, 2);
+        GraphHelper.assertNeighbors(graph, 1, 2, 4);
+        GraphHelper.assertNeighbors(graph, 4, 3, 1);
+    }
+
+    @Test
+    void testAddEdgeDirected() {
+        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                4, 2,
+                new int[][] { { 1, 2 }, { 3, 4 } });
+
+        GraphHelper.assertOutDegree(graph, 1, 1);
+        GraphHelper.assertInDegree(graph, 2, 1);
+
+        graph.addEdge(2, 4);
+
+        GraphHelper.assertOutDegree(graph, 2, 1);
+        GraphHelper.assertInDegree(graph, 4, 2);
+        GraphHelper.assertSuccessors(graph, 2, 4);
+        GraphHelper.assertPredecessors(graph, 4, 2, 3);
+    }
+
+    @Test
+    void testAddEdgeUpdatesEdgeCount() {
+        Graph graph = GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                3, 1,
+                new int[][] { { 1, 2 } });
+
+        assertEquals(1, graph.getEdgesCount());
+
+        graph.addEdge(2, 3);
+
+        assertEquals(2, graph.getEdgesCount());
+    }
+
+    @Test
+    void testRemoveEdgeUndirected() {
+        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                4, 3,
+                new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
+
+        GraphHelper.assertDegree(graph, 2, 2);
+        GraphHelper.assertNeighbors(graph, 2, 1, 3);
+
+        graph.removeEdge(1, 2);
+
+        GraphHelper.assertDegree(graph, 2, 1);
+        GraphHelper.assertNeighbors(graph, 2, 3);
+        GraphHelper.assertNeighbors(graph, 1);
+    }
+
+    @Test
+    void testRemoveEdgeDirected() {
+        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                4, 3,
+                new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
+
+        GraphHelper.assertOutDegree(graph, 2, 1);
+        GraphHelper.assertInDegree(graph, 3, 1);
+
+        graph.removeEdge(2, 3);
+
+        GraphHelper.assertOutDegree(graph, 2, 0);
+        GraphHelper.assertInDegree(graph, 3, 0);
+    }
+
+    @Test
+    void testRemoveEdgeUpdatesEdgeCount() {
+        Graph graph = GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                3, 2,
+                new int[][] { { 1, 2 }, { 2, 3 } });
+
+        assertEquals(2, graph.getEdgesCount());
+
+        graph.removeEdge(1, 2);
+
+        assertEquals(1, graph.getEdgesCount());
+    }
+
+    @Test
+    void testRemoveEdgeNonExistent() {
+        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                4, 2,
+                new int[][] { { 1, 2 }, { 3, 4 } });
+
+        graph.removeEdge(1, 4);
+
+        GraphHelper.assertDegree(graph, 1, 1);
+        GraphHelper.assertDegree(graph, 4, 1);
+        GraphHelper.assertNeighbors(graph, 1, 2);
+        GraphHelper.assertNeighbors(graph, 4, 3);
+    }
+
+    @Test
+    void testRemoveEdgeWithMultipleEdges() {
+        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                4, 4,
+                new int[][] { { 1, 3 }, { 2, 3 }, { 3, 4 }, { 1, 4 } });
+
+        graph.removeEdge(1, 3);
+
+        GraphHelper.assertNeighbors(graph, 3, 2, 4);
+        GraphHelper.assertNeighbors(graph, 1, 4);
+    }
 }

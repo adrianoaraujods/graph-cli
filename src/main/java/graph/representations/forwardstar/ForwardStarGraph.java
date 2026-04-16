@@ -13,9 +13,9 @@ import graph.util.Sort;
  * Star structure.
  */
 public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph {
-  private final int[] targets;
-  private final int[] pointers;
-  private final int[] vertices;
+  private int[] targets;
+  private int[] pointers;
+  private int[] vertices;
 
   /**
    * Package-private constructor. Should only be called by the
@@ -39,12 +39,70 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
   @Override
   public void addEdge(int v, int w) {
-    // TODO Auto-generated method stub
+    ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
+
+    int newN = Math.max(n, Math.max(v, w));
+    int newM = m + 1;
+    int estimatedPairs = isDirected ? newM : newM * 2;
+
+    builder.initialize(newN, estimatedPairs);
+    builder.addEdge(v, w);
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target) {
+        if (!isDirected && source > target) {
+          return;
+        }
+        builder.addEdge(source, target);
+      }
+    };
+
+    iterateGraph(iterator);
+
+    ForwardStarGraph updated = builder.build();
+
+    targets = updated.targets;
+    pointers = updated.pointers;
+    vertices = updated.vertices;
+    n = updated.n;
+    m = newM;
   }
 
   @Override
   public void removeEdge(int v, int w) {
-    // TODO Auto-generated method stub
+    ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
+
+    int estimatedPairs = isDirected ? m : m * 2;
+
+    builder.initialize(n, estimatedPairs);
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target) {
+        if (!isDirected && source > target) {
+          return;
+        }
+
+        boolean isEdgeToRemove = isDirected
+            ? (source == v && target == w)
+            : ((source == v && target == w) || (source == w && target == v));
+
+        if (!isEdgeToRemove) {
+          builder.addEdge(source, target);
+        }
+      }
+    };
+
+    iterateGraph(iterator);
+
+    ForwardStarGraph updated = builder.build();
+
+    targets = updated.targets;
+    pointers = updated.pointers;
+    vertices = updated.vertices;
+    n = updated.n;
+    m = m - 1;
   }
 
   @Override
