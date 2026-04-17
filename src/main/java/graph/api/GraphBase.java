@@ -7,7 +7,7 @@ public interface GraphBase {
    *
    * @return The number of vertices (n).
    */
-  public abstract long getVerticesCount();
+  public abstract int getVerticesCount();
 
   /**
    * Returns the total number of edges in the graph.
@@ -59,6 +59,13 @@ public interface GraphBase {
      * @param w The target vertex of the edge.
      */
     default void examineEdge(int v, int w) {
+    }
+
+    /**
+     * Called before visiting an edge or vertex.
+     */
+    default boolean shouldStop() {
+      return false;
     }
   }
 

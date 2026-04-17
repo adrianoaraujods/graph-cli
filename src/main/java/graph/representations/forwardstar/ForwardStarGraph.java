@@ -101,10 +101,18 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   @Override
   public void iterateGraph(IteratorVisitor visitor) {
     for (int v = 0; v < pointers.length - 1; v++) {
+      if (!visitor.shouldStop()) {
+        return;
+      }
+
       visitor.examineVertex(v + 1);
 
       int endIndex = pointers[v + 1];
       for (int w = pointers[v]; w < endIndex; w++) {
+        if (!visitor.shouldStop()) {
+          return;
+        }
+
         // Skip reverse direction for undirected edges
         if (!isDirected && (v + 1) > targets[w]) {
           continue;

@@ -58,9 +58,17 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
   public void iterateGraph(IteratorVisitor visitor) {
     if (vertices != null) {
       vertices.forEach(v -> {
+        if (!visitor.shouldStop()) {
+          return;
+        }
+
         visitor.examineVertex(v);
 
         for (int i = 0; i < n; i++) {
+          if (!visitor.shouldStop()) {
+            return;
+          }
+
           if (matrix[i][v - 1]) {
             // Skip reverse direction for undirected edges
             if (!isDirected && v > i + 1) {
@@ -73,9 +81,17 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
       });
     } else {
       for (int v = 0; v < n; v++) {
+        if (!visitor.shouldStop()) {
+          return;
+        }
+
         visitor.examineVertex(v + 1);
 
         for (int i = 0; i < n; i++) {
+          if (!visitor.shouldStop()) {
+            return;
+          }
+
           if (matrix[i][v]) {
             // Skip reverse direction for undirected edges
             if (!isDirected && (v + 1) > i + 1) {

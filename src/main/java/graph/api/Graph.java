@@ -27,7 +27,7 @@ public abstract class Graph implements GraphBase {
   }
 
   @Override
-  public long getVerticesCount() {
+  public int getVerticesCount() {
     return n;
   }
 
