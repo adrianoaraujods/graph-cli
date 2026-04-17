@@ -1,6 +1,5 @@
 package graph.algorithms;
 
-import java.security.InvalidAlgorithmParameterException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,7 +55,7 @@ public class NaiveBridges {
     }
   }
 
-  public static Set<int[]> find(Graph graph) throws InvalidAlgorithmParameterException {
+  public static Set<int[]> find(Graph graph) {
     Set<int[]> bridges = new HashSet<>();
 
     Graph[] components = ConnectedComponents.find(graph);

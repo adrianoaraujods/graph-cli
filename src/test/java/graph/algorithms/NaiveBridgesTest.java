@@ -2,7 +2,6 @@ package graph.algorithms;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.security.InvalidAlgorithmParameterException;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,7 @@ import graph.api.Graph;
 class NaiveBridgesTest {
 
     @Test
-    void testEmptyGraph() throws InvalidAlgorithmParameterException {
+    void testEmptyGraph() {
         Graph graph = BridgesTestHelper.buildUndirected(0, 0, BridgesTestHelper.emptyGraph());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -20,7 +19,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testSingleEdge() throws InvalidAlgorithmParameterException {
+    void testSingleEdge() {
         Graph graph = BridgesTestHelper.buildUndirected(2, 1, BridgesTestHelper.singleEdge());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -28,7 +27,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testLinearChain() throws InvalidAlgorithmParameterException {
+    void testLinearChain() {
         Graph graph = BridgesTestHelper.buildUndirected(5, 4, BridgesTestHelper.linearChain());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -36,7 +35,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testSimpleCycle() throws InvalidAlgorithmParameterException {
+    void testSimpleCycle() {
         Graph graph = BridgesTestHelper.buildUndirected(3, 3, BridgesTestHelper.simpleCycle());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -44,7 +43,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testGraphWithOneBridge() throws InvalidAlgorithmParameterException {
+    void testGraphWithOneBridge() {
         Graph graph = BridgesTestHelper.buildUndirected(6, 5, BridgesTestHelper.graphWithOneBridge());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -52,7 +51,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testMultipleBridges() throws InvalidAlgorithmParameterException {
+    void testMultipleBridges() {
         Graph graph = BridgesTestHelper.buildUndirected(7, 6, BridgesTestHelper.multipleBridges());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -60,7 +59,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testDisconnectedGraph() throws InvalidAlgorithmParameterException {
+    void testDisconnectedGraph() {
         Graph graph = BridgesTestHelper.buildUndirected(6, 3, BridgesTestHelper.disconnectedGraph());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -68,7 +67,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testTree() throws InvalidAlgorithmParameterException {
+    void testTree() {
         Graph graph = BridgesTestHelper.buildUndirected(5, 4, BridgesTestHelper.tree());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -76,7 +75,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testGraphWithTwoCycles() throws InvalidAlgorithmParameterException {
+    void testGraphWithTwoCycles() {
         Graph graph = BridgesTestHelper.buildUndirected(5, 6, BridgesTestHelper.graphWithTwoCycles());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -84,7 +83,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testBridgeInMiddle() throws InvalidAlgorithmParameterException {
+    void testBridgeInMiddle() {
         Graph graph = BridgesTestHelper.buildUndirected(9, 10, BridgesTestHelper.bridgeInMiddle());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
@@ -92,7 +91,7 @@ class NaiveBridgesTest {
     }
 
     @Test
-    void testBridgesAreUndirected() throws InvalidAlgorithmParameterException {
+    void testBridgesAreUndirected() {
         Graph graph = BridgesTestHelper.buildUndirected(2, 1, BridgesTestHelper.singleEdge());
 
         Set<int[]> bridges = NaiveBridges.find(graph);
