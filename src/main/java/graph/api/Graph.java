@@ -26,6 +26,13 @@ public abstract class Graph implements GraphBase {
     this.m = m;
   }
 
+  /**
+   * Returns the total number of vertices in the graph.
+   *
+   * @return The number of vertices (n).
+   */
+  public abstract Graph clone(Graph graph);
+
   @Override
   public int getVerticesCount() {
     return n;

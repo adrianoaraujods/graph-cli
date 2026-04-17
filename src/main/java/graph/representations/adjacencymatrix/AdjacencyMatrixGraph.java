@@ -45,6 +45,27 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
     this.vertices = null;
   }
 
+  /**
+   * Copy constructor - creates a deep copy for full independence.
+   */
+  private AdjacencyMatrixGraph(AdjacencyMatrixGraph other) {
+    super(other.isDirected, other.n, other.m);
+
+    this.matrix = new boolean[other.n][other.n];
+    for (int i = 0; i < other.n; i++) {
+      System.arraycopy(other.matrix[i], 0, this.matrix[i], 0, other.n);
+    }
+
+    this.vertices = other.vertices != null
+        ? new java.util.HashSet<>(other.vertices)
+        : null;
+  }
+
+  @Override
+  public Graph clone(Graph graph) {
+    return new AdjacencyMatrixGraph((AdjacencyMatrixGraph) graph);
+  }
+
   @Override
   public int[] getVertices() {
     if (vertices == null) {

@@ -37,6 +37,23 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
     this(isDirected, n, m, targets, pointers, null);
   }
 
+  /**
+   * Copy constructor - creates a deep copy for full independence.
+   */
+  private ForwardStarGraph(ForwardStarGraph graph) {
+    super(graph.isDirected, graph.n, graph.m);
+    this.targets = Arrays.copyOf(graph.targets, graph.targets.length);
+    this.pointers = Arrays.copyOf(graph.pointers, graph.pointers.length);
+    this.vertices = graph.vertices != null
+        ? Arrays.copyOf(graph.vertices, graph.vertices.length)
+        : null;
+  }
+
+  @Override
+  public Graph clone(Graph graph) {
+    return new ForwardStarGraph((ForwardStarGraph) graph);
+  }
+
   @Override
   public void addEdge(int v, int w) {
     ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
