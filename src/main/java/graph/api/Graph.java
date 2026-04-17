@@ -31,7 +31,8 @@ public abstract class Graph implements GraphBase {
    *
    * @return The number of vertices (n).
    */
-  public abstract Graph clone(Graph graph);
+  @Override
+  public abstract Graph clone();
 
   @Override
   public int getVerticesCount() {

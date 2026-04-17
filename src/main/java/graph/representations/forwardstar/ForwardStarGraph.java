@@ -50,8 +50,8 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   }
 
   @Override
-  public Graph clone(Graph graph) {
-    return new ForwardStarGraph((ForwardStarGraph) graph);
+  public Graph clone() {
+    return new ForwardStarGraph((ForwardStarGraph) this);
   }
 
   @Override

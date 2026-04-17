@@ -62,8 +62,8 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
   }
 
   @Override
-  public Graph clone(Graph graph) {
-    return new AdjacencyMatrixGraph((AdjacencyMatrixGraph) graph);
+  public Graph clone() {
+    return new AdjacencyMatrixGraph((AdjacencyMatrixGraph) this);
   }
 
   @Override
