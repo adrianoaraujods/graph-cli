@@ -166,6 +166,10 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
   @Override
   public void removeEdge(int v, int w) {
     matrix[w - 1][v - 1] = false;
+
+    if (!isDirected) {
+      matrix[v - 1][w - 1] = false;
+    }
   }
 
   // Directed Methods
