@@ -4,17 +4,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 import graph.algorithms.DFS.DFSVisitor;
+import graph.api.DirectedGraph;
 import graph.api.Graph;
-import graph.api.GraphBase;
 import graph.api.GraphBase.IteratorVisitor;
+import graph.api.UndirectedGraph;
 
 public class NaiveBridges {
 
   private static class IterateComponent implements IteratorVisitor {
     public final Set<int[]> bridges;
-    private final GraphBase component;
+    private final UndirectedGraph component;
 
-    IterateComponent(Set<int[]> bridges, GraphBase component) {
+    IterateComponent(Set<int[]> bridges, UndirectedGraph component) {
       this.bridges = bridges;
       this.component = component;
     }
@@ -22,21 +23,16 @@ public class NaiveBridges {
     private static class DisconnectedVisitor implements DFSVisitor {
       public boolean disconnected = false;
 
-      private int root = 0;
-
       @Override
       public boolean shouldStop() {
         return disconnected;
       }
 
       @Override
-      public void examineRoot(int vertex) {
-        if (root == 0) {
-          root = vertex;
-          return;
+      public void examineRoot(int root) {
+        if (root != 1) {
+          disconnected = true;
         }
-
-        disconnected = true;
       }
     };
 
@@ -55,15 +51,20 @@ public class NaiveBridges {
     }
   }
 
-  public static Set<int[]> find(Graph graph) {
+  public static Set<int[]> findAll(UndirectedGraph graph) {
     Set<int[]> bridges = new HashSet<>();
 
-    Graph[] components = ConnectedComponents.find(graph);
-    for (Graph component : components) {
+    UndirectedGraph[] components = (UndirectedGraph[]) ConnectedComponents.find(graph);
+
+    for (UndirectedGraph component : components) {
       IterateComponent iterator = new IterateComponent(bridges, component);
       component.iterateGraph(iterator);
     }
 
     return bridges;
+  }
+
+  public static Set<int[]> findAllWeak(DirectedGraph graph) {
+    return findAll((UndirectedGraph) graph);
   }
 }
