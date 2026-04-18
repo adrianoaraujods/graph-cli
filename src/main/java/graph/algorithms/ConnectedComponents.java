@@ -8,10 +8,11 @@ import java.util.Set;
 import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.DFS.DFSVisitor;
 import graph.api.Graph;
+import graph.api.UndirectedGraph;
 
 public class ConnectedComponents {
-  public static Graph[] find(Graph graph) {
-    List<Graph> components = new ArrayList<>();
+  public static UndirectedGraph[] find(UndirectedGraph graph) {
+    List<UndirectedGraph> components = new ArrayList<>();
 
     DFSVisitor visitor = new DFSVisitor() {
       Set<Integer> componentVertices = new HashSet<>();
@@ -22,7 +23,7 @@ public class ConnectedComponents {
         for (Integer v : componentVertices) {
           vertices[index++] = v;
         }
-        components.add(graph.getInducedSubgraph(vertices));
+        components.add((UndirectedGraph) graph.getInducedSubgraph(vertices));
         componentVertices = new HashSet<>();
       }
 
@@ -50,8 +51,8 @@ public class ConnectedComponents {
       }
     };
 
-    DFS.search(graph, visitor);
+    DFS.search((Graph) graph, visitor);
 
-    return components.toArray(new Graph[0]);
+    return components.toArray(new UndirectedGraph[0]);
   }
 }
