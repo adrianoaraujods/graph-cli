@@ -118,7 +118,7 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   @Override
   public void iterateGraph(IteratorVisitor visitor) {
     for (int v = 0; v < pointers.length - 1; v++) {
-      if (!visitor.shouldStop()) {
+      if (visitor.shouldStop()) {
         return;
       }
 
@@ -126,7 +126,7 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
       int endIndex = pointers[v + 1];
       for (int w = pointers[v]; w < endIndex; w++) {
-        if (!visitor.shouldStop()) {
+        if (visitor.shouldStop()) {
           return;
         }
 

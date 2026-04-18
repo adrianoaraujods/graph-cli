@@ -79,14 +79,14 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
   public void iterateGraph(IteratorVisitor visitor) {
     if (vertices != null) {
       vertices.forEach(v -> {
-        if (!visitor.shouldStop()) {
+        if (visitor.shouldStop()) {
           return;
         }
 
         visitor.examineVertex(v);
 
         for (int i = 0; i < n; i++) {
-          if (!visitor.shouldStop()) {
+          if (visitor.shouldStop()) {
             return;
           }
 
@@ -102,14 +102,14 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
       });
     } else {
       for (int v = 0; v < n; v++) {
-        if (!visitor.shouldStop()) {
+        if (visitor.shouldStop()) {
           return;
         }
 
         visitor.examineVertex(v + 1);
 
         for (int i = 0; i < n; i++) {
-          if (!visitor.shouldStop()) {
+          if (visitor.shouldStop()) {
             return;
           }
 
