@@ -460,4 +460,22 @@ class FleuryTest {
         assertNotNull(result);
         assertNotNull(result.path());
     }
+
+    @Test
+    void testEulerianCircuit_Undirected() {
+        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+                () -> new ForwardStarGraphBuilder(false),
+                7, 12,
+                new int[][] {
+                        { 1, 2 }, { 1, 3 }, { 2, 3 }, { 2, 4 }, { 2, 5 },
+                        { 3, 4 }, { 3, 6 }, { 4, 5 }, { 4, 6 }, { 5, 6 },
+                        { 5, 7 }, { 6, 7 } });
+
+        EulerianPath result = Fleury.findEulerianPath((Graph) graph);
+
+        assertEquals(EulerianType.EULERIAN, result.type());
+        assertEquals(13, result.path().length, "Path should have m+1 = 13 vertices");
+        assertEquals(result.path()[0], result.path()[result.path().length - 1],
+                "Eulerian circuit should return to start vertex");
+    }
 }

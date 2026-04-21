@@ -110,11 +110,16 @@ public class Fleury {
 
       Set<int[]> bridges = NaiveBridges.findAll(clone);
 
-      int neighborsIndex = 0;
-      int w = neighbors[neighborsIndex];
+      int w = neighbors[0];
       if (neighbors.length > 1) {
-        while (neighborsIndex < (neighbors.length - 1) && bridges.contains(new int[] { v, w })) {
-          w = neighbors[++neighborsIndex];
+        outer:
+        for (int i = 1; i < neighbors.length; i++) {
+          int candidate = neighbors[i];
+          if (!bridges.contains(new int[] { v, candidate }) &&
+              !bridges.contains(new int[] { candidate, v })) {
+            w = candidate;
+            break outer;
+          }
         }
       }
 
