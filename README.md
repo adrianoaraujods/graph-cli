@@ -42,7 +42,7 @@ The tools expect and generate plain text files representing a directed graph.
 
 ### Prerequisites
 
-- Java Development Kit (JDK) 25 or higher
+- Java Development Kit (JDK) 26 or higher
 
 ### Build
 
@@ -52,17 +52,21 @@ mvn test
 
 # Package as JAR
 mvn package
+
+# Package as JAR skiping tests
+mvn package -DskipTests
 ```
 
 ### Run
 
 ```bash
 # Using packaged JAR
-java -jar target/graph-cli-0.1.0.jar [options] <arguments>
+java -jar target/graph-cli-0.1.0.jar <subcommand> [options]
 
-# Commands (use --help for full list)
---create, -c          Generate a new graph file
---read, -r            Read and analyze an existing graph file
+# Subcommands
+create <file>     # Generate a new graph file
+read <file>       # Read and analyze an existing graph file
+help              # Show help (use help create or help read for subcommand-specific help)
 ```
 
 ### Without Maven
@@ -80,29 +84,38 @@ java -cp target/classes graph.GraphCLI --help
 ### Examples
 
 ```bash
-# Generate a graph with 1k vertices and 20% density
-java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2
+# Create a graph with 1k vertices and 50% density
+java -jar target/graph-cli-0.1.0.jar create graph.txt -n 1000 -d 0.5
 
-# Generate a graph with 1k vertices and 500 edges
-java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -m 500
+# Create a graph with 1k vertices and 500 edges
+java -jar target/graph-cli-0.1.0.jar create graph.txt -n 1000 -m 500
 
-# Generate a reproducible graph with a seed
-java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2 -s 42
+# Create a reproducible graph with a seed
+java -jar target/graph-cli-0.1.0.jar create graph.txt -n 1000 -d 0.5 -s 42
 
-# Generate and analyze a graph (create + read combined)
-java -jar target/graph-cli-0.1.0.jar -c -r -f graph.txt -n 1000 -d 0.2 -t 5
+# Create an undirected graph
+java -jar target/graph-cli-0.1.0.jar create graph.txt -n 1000 -d 0.5 --undirected
 
-# Read and analyze an existing graph
-java -jar target/graph-cli-0.1.0.jar -r -f graph.txt -t 5
+# Create an Eulerian graph (all vertices have even degree)
+java -jar target/graph-cli-0.1.0.jar create graph.txt -n 1000 -d 0.5 --eulerian
 
-# Generate an undirected graph
-java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2 -u
+# Read and run DFS algorithm on target vertex 5
+java -jar target/graph-cli-0.1.0.jar read graph.txt --dfs -t 5
 
-# Generate a Eulerian graph (all vertices have even degree)
-java -jar target/graph-cli-0.1.0.jar -c -f graph.txt -n 1000 -d 0.2 --eulerian
+# Read and run multiple algorithms, save output to file
+java -jar target/graph-cli-0.1.0.jar read graph.txt --kosaraju --fleury -o output.log
+
+# Read using undirected graph and run bridges algorithm
+java -jar target/graph-cli-0.1.0.jar read graph.txt --naive-bridges --undirected
 
 # Show help
-java -jar target/graph-cli-0.1.0.jar --help
+java -jar target/graph-cli-0.1.0.jar help
+
+# Show create help
+java -jar target/graph-cli-0.1.0.jar help create
+
+# Show read help
+java -jar target/graph-cli-0.1.0.jar help read
 ```
 
 ## Architecture & Core Components

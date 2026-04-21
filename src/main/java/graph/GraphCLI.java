@@ -2,6 +2,9 @@ package graph;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import graph.api.Graph;
 import graph.cli.GraphGenerator;
@@ -9,160 +12,206 @@ import graph.cli.GraphLogger;
 import graph.cli.GraphReader;
 import graph.cli.GraphGenerator.ConnectivityType;
 import graph.representations.GraphBuilder;
+import graph.util.Usage;
 import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 public class GraphCLI {
+
+    // CLI details
+    static String subcommand = null;
+    static String graphPath = null;
+    static String outputPath = null;
+
+    // Graph details
+    static boolean isDirected = true;
     static Graph graph = null;
+    static String representation = "Forward Star";
     static GraphBuilder builder;
 
-    static boolean isCreate = false;
-    static boolean isRead = true;
-    static String graphPath = null;
-    static String logPath = null;
-    static boolean isDirected = true;
-    static ConnectivityType connectivity = ConnectivityType.WEAKLY;
+    // Generator details
+    static Integer target = null;
     static int vertices = -1;
     static double density = -1.0;
     static long edges = -1;
-    static int target = -1;
+    static ConnectivityType connectivity = ConnectivityType.WEAKLY;
     static Long seed = null;
-    static String representation = "Forward Star";
 
-    static void printUsage() {
-        System.out.println("Usage:");
-        System.out.println("  java GraphCLI -c -f <file> -n <vertices> -d <density>");
-        System.out.println("  java GraphCLI -c -f <file> -n <vertices> -m <edges>");
-        System.out.println("  java GraphCLI -c -f <file> -n <vertices> -d <density> -s <seed>");
-        System.out.println("  java GraphCLI -r -f <file> -t <target>");
-        System.out.println("  java GraphCLI -c -r -f <file> -n <vertices> -d <density> -t <target>");
-        System.out.println();
-        System.out.println("Options:");
-        System.out.println("  --create, -c           Generate a new graph file");
-        System.out.println("  --read, -r             Read and analyze an existing graph file");
-        System.out.println("  --file, -f <path>      Graph file path (required)");
-        System.out.println("  --vertices, -n <n>     Number of vertices (required for create)");
-        System.out.println("  --edges, -m <count>    Number of edges (alternative to density)");
-        System.out.println("  --density, -d <val>    Edge density 0.0-1.0 (alternative to edges)");
-        System.out.println("  --seed, -s <n>         Random seed for reproducible graphs");
-        System.out.println("  --directed             Treat graph as directed (default)");
-        System.out.println("  --undirected, -u       Treat graph as undirected");
-        System.out.println("  --connected            Graph is weakly connected (default)");
-        System.out.println("  --disconnected         Graph may be disconnected");
-        System.out.println("  --eulerian             Graph has all vertices with even degree");
-        System.out.println("  --semi-eulerian        Graph has exactly two vertices of odd degree");
-        System.out.println("  --target, -t <n>       Target vertex for analysis (required for read)");
-        System.out.println("  --forward-star         Use Forward Star representation (default)");
-        System.out.println("  --help, -h             Show this help message");
-        System.out.println();
-        System.out.println("Examples:");
-        System.out.println("  java GraphCLI -c -f graph.txt -n 1000 -d 0.5");
-        System.out.println("  java GraphCLI -c -f graph.txt -n 1000 -m 500");
-        System.out.println("  java GraphCLI -c -f graph.txt -n 1000 -d 0.5 -s 42");
-        System.out.println("  java GraphCLI -r -f graph.txt -t 5");
-        System.out.println("  java GraphCLI -c -r -f graph.txt -n 1000 -d 0.5 -t 5");
+    // Reader details
+    static Set<String> algorithms = new HashSet<>();
+    static final Set<String> VALID_ALGORITHMS = Set.of("--dfs", "--kosaraju", "--fleury", "--naive-bridges");
+    static final Map<String, String> ALGORITHM_NAMES = Map.of(
+            "--dfs", "DFS",
+            "--kosaraju", "Kosaraju",
+            "--fleury", "Fleury",
+            "--naive-bridges", "Bridges");
+
+    static boolean isFlagValue(String arg) {
+        return !arg.startsWith("-") && !arg.equals("create") && !arg.equals("read") && !arg.equals("help");
     }
 
     static void processArguments(String[] args) throws InvalidAlgorithmParameterException {
-        for (int i = 0; i < args.length; i++) {
+        if (args.length == 0) {
+            Usage.printGeneral();
+            return;
+        }
+
+        String firstArg = args[0];
+
+        if (firstArg.equals("help")) {
+            if (args.length == 1) {
+                Usage.printGeneral();
+
+            } else if (args[1].equals("create")) {
+                Usage.printCreate();
+
+            } else if (args[1].equals("read")) {
+                Usage.printRead();
+
+            } else {
+                throw new InvalidAlgorithmParameterException("Unknown subcommand: " + args[1]);
+            }
+            return;
+        }
+
+        if (!firstArg.equals("create") && !firstArg.equals("read")) {
+            throw new InvalidAlgorithmParameterException(
+                    "Unknown subcommand: " + firstArg + ". Use 'create', 'read', or 'help'.");
+        }
+
+        subcommand = firstArg;
+
+        if (args.length < 2) {
+            throw new InvalidAlgorithmParameterException("Missing path for " + subcommand + " subcommand.");
+        }
+
+        if (isFlagValue(args[1])) {
+            graphPath = args[1];
+        } else {
+            throw new InvalidAlgorithmParameterException("Invalid path: " + args[1]);
+        }
+
+        for (int i = 2; i < args.length; i++) {
             String arg = args[i];
 
-            if (arg.equals("--help") || arg.equals("-h")) {
-                printUsage();
-                return;
-
-            } else if (arg.equals("--create") || arg.equals("-c")) {
-                isCreate = true;
-                isRead = false;
-
-            } else if (arg.equals("--read") || arg.equals("-r")) {
-                isRead = true;
-
-            } else if (arg.equals("--file") || arg.equals("-f")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: -f/--file requires a path.");
-                }
-                graphPath = args[++i];
-
-            } else if (arg.equals("--vertices") || arg.equals("-n")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: -n/--vertices requires a value.");
-                }
-                try {
-                    vertices = Integer.parseInt(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Vertices should be a valid integer: " + args[i]);
-                }
-
-            } else if (arg.equals("--edges") || arg.equals("-m")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: -m/--edges requires a value.");
-                }
-                try {
-                    edges = Long.parseLong(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Edges should be a valid integer: " + args[i]);
-                }
-
-            } else if (arg.equals("--density") || arg.equals("-d")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: -d/--density requires a value.");
-                }
-                try {
-                    density = Double.parseDouble(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Density should be a valid decimal: " + args[i]);
-                }
-
-            } else if (arg.equals("--seed") || arg.equals("-s")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: -s/--seed requires a value.");
-                }
-                try {
-                    seed = Long.parseLong(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Seed should be a valid integer: " + args[i]);
-                }
-
-            } else if (arg.equals("--target") || arg.equals("-t")) {
-                if (i + 1 >= args.length) {
-                    throw new InvalidAlgorithmParameterException("Missing argument: -t/--target requires a value.");
-                }
-                try {
-                    target = Integer.parseInt(args[++i]);
-                } catch (NumberFormatException e) {
-                    throw new InvalidAlgorithmParameterException("Target should be a valid integer: " + args[i]);
-                }
-
-            } else if (arg.equals("--directed")) {
+            if (arg.equals("--directed")) {
                 isDirected = true;
 
             } else if (arg.equals("--undirected") || arg.equals("-u")) {
                 isDirected = false;
 
+            } else if (VALID_ALGORITHMS.contains(arg)) {
+                algorithms.add(arg);
+
+            } else if (arg.equals("-t") || arg.equals("--target")) {
+                if (i + 1 >= args.length || !isFlagValue(args[i + 1])) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -t/--target.");
+                }
+
+                try {
+                    target = Integer.parseInt(args[++i]);
+
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid target: " + args[i]);
+                }
+            } else if (arg.equals("-o") || arg.equals("--output")) {
+                if (i + 1 >= args.length || !isFlagValue(args[i + 1])) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -o/--output.");
+                }
+
+                outputPath = args[++i];
+            } else if (arg.equals("-n") || arg.equals("--vertices")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
+                if (i + 1 >= args.length || !isFlagValue(args[i + 1])) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -n/--vertices.");
+                }
+
+                try {
+                    vertices = Integer.parseInt(args[++i]);
+
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid vertices: " + args[i]);
+                }
+            } else if (arg.equals("-m") || arg.equals("--edges")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
+                if (i + 1 >= args.length || !isFlagValue(args[i + 1])) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -m/--edges.");
+                }
+
+                try {
+                    edges = Long.parseLong(args[++i]);
+
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid edges: " + args[i]);
+                }
+            } else if (arg.equals("-d") || arg.equals("--density")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
+                if (i + 1 >= args.length || !isFlagValue(args[i + 1])) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -d/--density.");
+                }
+
+                try {
+                    density = Double.parseDouble(args[++i]);
+
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid density: " + args[i]);
+                }
+            } else if (arg.equals("-s") || arg.equals("--seed")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
+                if (i + 1 >= args.length || !isFlagValue(args[i + 1])) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -s/--seed.");
+                }
+
+                try {
+                    seed = Long.parseLong(args[++i]);
+
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid seed: " + args[i]);
+                }
             } else if (arg.equals("--connected")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
                 connectivity = ConnectivityType.WEAKLY;
-
             } else if (arg.equals("--disconnected")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
                 connectivity = ConnectivityType.NONE;
-
             } else if (arg.equals("--eulerian")) {
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
+
                 connectivity = ConnectivityType.EULERIAN;
-
             } else if (arg.equals("--semi-eulerian")) {
-                connectivity = ConnectivityType.SEMI_EULERIAN;
+                if (subcommand.equals("read")) {
+                    throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
+                }
 
+                connectivity = ConnectivityType.SEMI_EULERIAN;
             } else if (arg.equals("--forward-star")) {
                 representation = "Forward Star";
-
-            } else if (arg.equals("--incidence-matrix")) {
-                throw new InvalidAlgorithmParameterException("Invalid argument: Incidence Matrix not implemented yet.");
 
             } else if (arg.equals("--adjacency-matrix")) {
                 representation = "Adjacency Matrix";
 
-            } else if (arg.equals("--adjacency-list")) {
-                throw new InvalidAlgorithmParameterException("Invalid argument: Adjacency List not implemented yet.");
+            } else if (arg.equals("--incidence-matrix") || arg.equals("--adjacency-list")) {
+                throw new InvalidAlgorithmParameterException("Not implemented: " + arg);
 
             } else {
                 throw new InvalidAlgorithmParameterException("Unknown argument: " + arg);
@@ -174,18 +223,25 @@ public class GraphCLI {
             default -> builder = new ForwardStarGraphBuilder(isDirected);
         }
 
-        if (isRead && target == -1) {
-            throw new InvalidAlgorithmParameterException("Missing argument: -t/--target is required for read mode.");
+        if (subcommand.equals("read")) {
+            if (algorithms.isEmpty()) {
+                throw new InvalidAlgorithmParameterException("No algorithm specified.");
+            }
+
+            if (algorithms.contains("--dfs")) {
+                if (target == null) {
+                    throw new InvalidAlgorithmParameterException("--dfs requires -t/--target.");
+                }
+            }
         }
 
-        if (isCreate) {
+        if (subcommand.equals("create")) {
             if (graphPath == null) {
-                throw new InvalidAlgorithmParameterException(
-                        "Missing argument: -f/--file is required for create mode.");
+                throw new InvalidAlgorithmParameterException("Missing graph file path.");
             }
 
             if (vertices <= 0) {
-                throw new InvalidAlgorithmParameterException("Missing or invalid argument: -n/--vertices must be > 0.");
+                throw new InvalidAlgorithmParameterException("-n/--vertices must be > 0.");
             }
 
             if (edges >= 0 && density >= 0) {
@@ -208,29 +264,21 @@ public class GraphCLI {
     }
 
     public static void main(String[] args) {
-        int step = 0;
-
         try {
             processArguments(args);
 
-            System.out.printf("\nGraph Configuration:\n");
-            System.out.printf("  Directed: %s\n", isDirected);
-            System.out.printf("  Connectivity: %s\n", connectivity);
-
-            if (isCreate) {
-                if (isRead) {
-                    System.out.printf("  Mode: Create & Analyze\n");
-                } else {
-                    System.out.printf("  Mode: Create\n");
-                }
-                System.out.printf("  Output File: %s\n", graphPath);
-
-            } else {
-                System.out.printf("  Mode: Read\n");
-                System.out.printf("  Input File: %s\n", graphPath);
+            if (subcommand == null) {
+                throw new InvalidAlgorithmParameterException("[Error] No subcommand was provided.");
             }
 
-            if (isCreate) {
+            System.out.printf("\nGraph Configuration:\n");
+            System.out.printf("  Subcommand: %s\n", subcommand);
+            System.out.printf("  Graph File Path: %s\n", graphPath);
+            System.out.printf("  Direction Type: %s\n", isDirected ? "Directed" : "Undirected");
+
+            if (subcommand.equals("create")) {
+                System.out.printf("  Connectivity: %s\n", connectivity);
+
                 GraphGenerator.GraphConfig config;
                 if (edges >= 0) {
                     config = GraphGenerator.builder()
@@ -241,6 +289,7 @@ public class GraphCLI {
                             .outputPath(graphPath)
                             .seed(seed != null ? seed : null)
                             .build();
+
                 } else {
                     config = GraphGenerator.builder()
                             .directed(isDirected)
@@ -256,62 +305,99 @@ public class GraphCLI {
                 System.out.printf("  Vertices: %,d\n", vertices);
                 if (density >= 0) {
                     System.out.printf("  Density: %.2f\n", density);
+
+                } else {
+                    System.out.printf("  Edges: %,d\n", config.resolvedEdges());
                 }
+
                 if (seed != null) {
                     System.out.printf("  Seed: %d\n", seed);
                 }
-                System.out.printf("  Edges: %,d / %,d\n", config.resolvedEdges(), maxEdges);
+
+                System.out.printf("  Max Edges: %,d\n", maxEdges);
 
                 System.out.printf("\nGenerating Graph...\n");
-                GraphLogger.logTime(() -> {
-                    GraphGenerator.generateGraph(config);
-                });
-
-                if (!isRead) {
-                    System.out.println("\nGraph generation complete.");
-                    return;
-                }
+                GraphLogger.logTime(() -> GraphGenerator.generateGraph(config));
+                System.out.println("\nGraph generation complete.");
             }
 
-            if (isRead) {
-                String logPath = GraphLogger.defaultLogPath(graphPath);
-                System.out.printf("  Log File Path: %s\n", logPath);
-                System.out.printf("  Target Vertex: %d\n", target);
+            if (subcommand.equals("read")) {
                 System.out.printf("  Representation: %s\n", representation);
-                System.out.printf("\n[%d/3] Reading File...", ++step);
+                System.out.printf("  Algorithms: %s\n", algorithms);
+
+                if (target != null) {
+                    System.out.printf("  Target Vertex: %d\n", target);
+                }
+
+                if (outputPath != null) {
+                    System.out.printf("  Output Path: %s\n", outputPath);
+                }
+
+                int totalSteps = 2 + algorithms.size();
+                int step = 0;
+
+                System.out.printf("\n[%d/%d] Reading File...", ++step, totalSteps);
                 GraphLogger.logTime(() -> {
                     try {
                         GraphReader.readFile(graphPath, builder);
+
                     } catch (Exception e) {
-                        System.err.println(e);
+                        System.err.println(e.getMessage());
                     }
                 });
 
-                System.out.printf("[%d/3] Building Graph...", ++step);
-                GraphLogger.logTime(() -> {
-                    graph = builder.build();
-                });
+                System.out.printf("[%d/%d] Building Graph...", ++step, totalSteps);
+                GraphLogger.logTime(() -> graph = builder.build());
 
-                if (target < 1 || target > graph.getVerticesCount()) {
-                    throw new InvalidAlgorithmParameterException(
-                            "Invalid argument: target vertex Id should be between 1 and " + graph.getVerticesCount()
-                                    + ".");
+                StringBuilder allResults = new StringBuilder();
+
+                for (String algorithm : algorithms) {
+                    String algorithmName = ALGORITHM_NAMES.get(algorithm);
+
+                    System.out.printf("[%d/%d] Running %s...", ++step, totalSteps, algorithmName);
+                    GraphLogger.logTime(() -> {
+                        try {
+                            String result;
+
+                            switch (algorithm) {
+                                case "--dfs" -> result = GraphLogger.runDFS(graph, target, outputPath);
+                                case "--kosaraju" -> result = GraphLogger.runKosaraju(graph, outputPath);
+                                case "--fleury" -> result = GraphLogger.runFleury(graph, outputPath);
+                                case "--naive-bridges" -> result = GraphLogger.runNaiveBridges(graph, outputPath);
+                                default -> throw new RuntimeException("Unknown algorithm: " + algorithm);
+                            }
+
+                            allResults.append(result);
+
+                        } catch (RuntimeException e) {
+                            System.err.printf("[Error] " + e.getMessage());
+                        } catch (Exception e) {
+                            System.err.println(e.getMessage());
+                        }
+                    });
                 }
 
-                System.out.printf("[%d/3] Analyzing Graph...", ++step);
-                GraphLogger.logTime(() -> {
+                if (outputPath == null) {
+                    System.out.print(allResults.toString());
+                } else {
                     try {
-                        GraphLogger.writeLog(logPath, graph, target);
+                        GraphLogger.writeToFile(outputPath, allResults.toString());
+
                     } catch (IOException e) {
-                        System.err.printf("Error writing log file: " + e.getMessage());
+                        System.err.printf("[Error] Fail to write output: " + e.getMessage());
                     }
-                    return null;
-                });
+                }
             }
         } catch (InvalidAlgorithmParameterException e) {
             System.err.println(e.getMessage());
             System.out.println();
-            printUsage();
+            if (subcommand != null && subcommand.equals("create")) {
+                Usage.printCreate();
+            } else if (subcommand != null && subcommand.equals("read")) {
+                Usage.printRead();
+            } else {
+                Usage.printGeneral();
+            }
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
