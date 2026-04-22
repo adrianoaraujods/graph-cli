@@ -1,5 +1,7 @@
 package graph.algorithms;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import graph.api.DirectedGraph;
@@ -94,35 +96,46 @@ public class Fleury {
 
     UndirectedGraph clone = (UndirectedGraph) ((Graph) graph).clone();
 
+    Set<Integer> trivialVertices = new HashSet<>(clone.getVerticesCount());
+
     int v = checkDegreesIterator.specialVertices == null
         ? 1
         : checkDegreesIterator.specialVertices[0];
 
-    int pathIndex = 0;
     int[] path = new int[m + 1];
-    path[pathIndex++] = v;
+    int pathIndex = 0;
 
     while (clone.getEdgesCount() > 0) {
+      path[pathIndex++] = v;
+
       int[] neighbors = clone.getNeighbors(v);
       if (neighbors.length == 0) {
-        break;
+        return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
       }
 
-      Set<String> bridges = NaiveBridges.findAll(clone);
-
       int w = neighbors[0];
-      if (neighbors.length > 1) {
-        String edge = v < w ? (v + "," + w) : (w + "," + v);
 
-        for (int i = 1; i < neighbors.length && bridges.contains(edge); i++) {
-          w = neighbors[i];
-        }
+      if (neighbors.length > 1) {
+        Set<String> bridges = NaiveBridges.findAll(clone, trivialVertices);
+
+        int i = 1;
+        String edge;
+        do {
+          w = neighbors[i++];
+
+          edge = v < w ? (v + "," + w) : (w + "," + v);
+        } while (i < neighbors.length && bridges.contains(edge));
+      } else {
+        trivialVertices.add(v);
       }
 
       clone.removeEdge(v, w);
-      path[pathIndex++] = w;
       v = w;
     }
+
+    path[m] = checkDegreesIterator.specialVertices == null
+        ? 1
+        : checkDegreesIterator.specialVertices[1];
 
     return new EulerianPath(path, type);
   }
