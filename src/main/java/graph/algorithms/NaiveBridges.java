@@ -12,10 +12,10 @@ import graph.api.UndirectedGraph;
 public class NaiveBridges {
 
   private static class IterateComponent implements IteratorVisitor {
-    public final Set<int[]> bridges;
+    public final Set<String> bridges;
     private final UndirectedGraph component;
 
-    IterateComponent(Set<int[]> bridges, UndirectedGraph component) {
+    IterateComponent(Set<String> bridges, UndirectedGraph component) {
       this.bridges = bridges;
       this.component = component;
     }
@@ -44,15 +44,19 @@ public class NaiveBridges {
       DFS.search((Graph) component, visitor);
 
       if (visitor.disconnected) {
-        bridges.add(new int[] { v, w });
+        if (v < w) {
+          bridges.add(v + "," + w);
+        } else {
+          bridges.add(w + "," + v);
+        }
       }
 
       component.addEdge(v, w);
     }
   }
 
-  public static Set<int[]> findAll(UndirectedGraph graph) {
-    Set<int[]> bridges = new HashSet<>();
+  public static Set<String> findAll(UndirectedGraph graph) {
+    Set<String> bridges = new HashSet<>();
 
     UndirectedGraph[] components = (UndirectedGraph[]) ConnectedComponents.find(graph);
 
@@ -64,7 +68,7 @@ public class NaiveBridges {
     return bridges;
   }
 
-  public static Set<int[]> findAllWeak(DirectedGraph graph) {
+  public static Set<String> findAllWeak(DirectedGraph graph) {
     return findAll((UndirectedGraph) graph);
   }
 }

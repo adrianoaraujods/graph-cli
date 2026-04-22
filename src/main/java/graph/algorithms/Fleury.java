@@ -108,18 +108,14 @@ public class Fleury {
         break;
       }
 
-      Set<int[]> bridges = NaiveBridges.findAll(clone);
+      Set<String> bridges = NaiveBridges.findAll(clone);
 
       int w = neighbors[0];
       if (neighbors.length > 1) {
-        outer:
-        for (int i = 1; i < neighbors.length; i++) {
-          int candidate = neighbors[i];
-          if (!bridges.contains(new int[] { v, candidate }) &&
-              !bridges.contains(new int[] { candidate, v })) {
-            w = candidate;
-            break outer;
-          }
+        String edge = v < w ? (v + "," + w) : (w + "," + v);
+
+        for (int i = 1; i < neighbors.length && bridges.contains(edge); i++) {
+          w = neighbors[i];
         }
       }
 

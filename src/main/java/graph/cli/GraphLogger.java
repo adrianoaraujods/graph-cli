@@ -120,7 +120,7 @@ public class GraphLogger {
         sb.append("\nBridges (Naive):\n");
         sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
-        Set<int[]> bridges;
+        Set<String> bridges;
         if (graph.isDirected) {
             bridges = NaiveBridges.findAllWeak((DirectedGraph) graph);
         } else {
