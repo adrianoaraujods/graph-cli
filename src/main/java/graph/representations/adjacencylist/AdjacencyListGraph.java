@@ -1,0 +1,243 @@
+package graph.representations.adjacencylist;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import graph.api.DirectedGraph;
+import graph.api.Graph;
+import graph.api.UndirectedGraph;
+import graph.representations.forwardstar.ForwardStarGraphBuilder;
+
+public class AdjacencyListGraph extends Graph implements DirectedGraph, UndirectedGraph {
+  private Map<Integer, Set<Integer>> vertices;
+
+  /**
+   * Package-private constructor. Should only be called by the
+   * {@link ForwardStarGraphBuilder}.
+   */
+  AdjacencyListGraph(boolean isDirected, int n, long m, Map<Integer, Set<Integer>> vertices) {
+    super(isDirected, n, m);
+    this.vertices = vertices;
+  }
+
+  /**
+   * Copy constructor - creates a deep copy for full independence.
+   */
+  private AdjacencyListGraph(AdjacencyListGraph graph) {
+    super(graph.isDirected, graph.n, graph.m);
+    vertices = new HashMap<>(graph.vertices);
+
+    for (Map.Entry<Integer, Set<Integer>> entry : graph.vertices.entrySet()) {
+      vertices.put(entry.getKey(), new HashSet<>(entry.getValue()));
+    }
+  }
+
+  @Override
+  public Graph clone() {
+    return new AdjacencyListGraph(this);
+  }
+
+  @Override
+  public void addEdge(int v, int w) {
+    Set<Integer> vAdjacency = vertices.get(v);
+
+    if (vAdjacency == null) {
+      vAdjacency = new HashSet<>();
+      n++;
+    }
+
+    if (isDirected) {
+      if (vAdjacency.contains(w)) {
+        return;
+      }
+    } else {
+      Set<Integer> wAdjacency = vertices.get(w);
+
+      if (wAdjacency == null) {
+        wAdjacency = new HashSet<>();
+        n++;
+      }
+
+      if (wAdjacency.contains(v)) {
+        return;
+      }
+
+      wAdjacency.add(v);
+    }
+
+    vAdjacency.add(w);
+    m++;
+  }
+
+  @Override
+  public void removeEdge(int v, int w) {
+    Set<Integer> vAdjacency = vertices.get(v);
+
+    if (vAdjacency == null) {
+      return;
+    }
+
+    if (isDirected) {
+      if (!vAdjacency.contains(w)) {
+        return;
+      }
+    } else {
+      Set<Integer> wAdjacency = vertices.get(w);
+
+      if (wAdjacency == null) {
+        return;
+      }
+
+      if (!wAdjacency.contains(v)) {
+        return;
+      }
+
+      wAdjacency.remove(v);
+    }
+
+    vAdjacency.remove(w);
+    m--;
+  }
+
+  @Override
+  public void iterateGraph(IteratorVisitor visitor) {
+    int[] vertexArray = vertices.keySet().stream().mapToInt(Integer::intValue).toArray();
+
+    for (int v : vertexArray) {
+      if (visitor.shouldStop()) {
+        return;
+      }
+
+      visitor.examineVertex(v);
+
+      Set<Integer> adjacency = vertices.get(v);
+      if (adjacency == null) {
+        continue;
+      }
+
+      int[] neighborArray = adjacency.stream().mapToInt(Integer::intValue).toArray();
+      for (int w : neighborArray) {
+        if (visitor.shouldStop()) {
+          return;
+        }
+
+        visitor.examineEdge(v, w);
+      }
+    }
+  }
+
+  @Override
+  public int[] getVertices() {
+    int[] V = new int[n];
+    int i = 0;
+
+    for (int v : vertices.keySet()) {
+      V[i++] = v;
+    }
+
+    return V;
+  }
+
+  @Override
+  public Graph getInducedSubgraph(int[] vertices) {
+    return getInducedSubgraph(vertices, new AdjacencyListGraphBuilder(isDirected));
+  }
+
+  // Directed Methods
+
+  @Override
+  public int getInDegree(int v) {
+    if (v < 1 || v > n) {
+      throw new IllegalArgumentException();
+    }
+
+    int inDegree = 0;
+
+    for (Map.Entry<Integer, Set<Integer>> entry : vertices.entrySet()) {
+      for (int w : entry.getValue()) {
+        if (w == v) {
+          inDegree++;
+        }
+      }
+    }
+
+    return inDegree;
+  }
+
+  @Override
+  public int getOutDegree(int v) {
+    if (v < 1 || v > n) {
+      throw new IllegalArgumentException();
+    }
+
+    Set<Integer> adjacency = vertices.get(v);
+
+    return adjacency == null ? 0 : adjacency.size();
+  }
+
+  @Override
+  public int[] getPredecessors(int v) {
+    if (v < 1 || v > n) {
+      throw new IllegalArgumentException();
+    }
+
+    int count = 0;
+    for (Map.Entry<Integer, Set<Integer>> entry : vertices.entrySet()) {
+      if (entry.getValue().contains(v)) {
+        count++;
+      }
+    }
+
+    int[] predecessors = new int[count];
+    int i = 0;
+
+    for (Map.Entry<Integer, Set<Integer>> entry : vertices.entrySet()) {
+      if (entry.getValue().contains(v)) {
+        predecessors[i++] = entry.getKey();
+      }
+    }
+
+    return predecessors;
+  }
+
+  @Override
+  public int[] getSuccessors(int v) {
+    if (v < 1 || v > n) {
+      throw new IllegalArgumentException();
+    }
+
+    Set<Integer> adjacency = vertices.get(v);
+
+    if (adjacency == null || adjacency.isEmpty()) {
+      return new int[0];
+    }
+
+    int[] sucessors = new int[adjacency.size()];
+    int i = 0;
+
+    for (int w : adjacency) {
+      sucessors[i++] = w;
+    }
+
+    return sucessors;
+  }
+
+  @Override
+  public DirectedGraph getReversed() {
+    return getReversed(new AdjacencyListGraphBuilder(isDirected));
+  }
+
+  // Undirected Methods
+
+  @Override
+  public int getDegree(int v) {
+    return getOutDegree(v);
+  }
+
+  @Override
+  public int[] getNeighbors(int v) {
+    return getSuccessors(v);
+  }
+}

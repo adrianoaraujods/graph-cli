@@ -12,6 +12,7 @@ import graph.cli.GraphLogger;
 import graph.cli.GraphReader;
 import graph.cli.GraphGenerator.ConnectivityType;
 import graph.representations.GraphBuilder;
+import graph.representations.adjacencylist.AdjacencyListGraphBuilder;
 import graph.util.Usage;
 import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
@@ -210,7 +211,10 @@ public class GraphCLI {
             } else if (arg.equals("--adjacency-matrix")) {
                 representation = "Adjacency Matrix";
 
-            } else if (arg.equals("--incidence-matrix") || arg.equals("--adjacency-list")) {
+            } else if (arg.equals("--adjacency-list")) {
+                representation = "Adjacency List";
+
+            } else if (arg.equals("--incidence-matrix")) {
                 throw new InvalidAlgorithmParameterException("Not implemented: " + arg);
 
             } else {
@@ -220,6 +224,8 @@ public class GraphCLI {
 
         switch (representation) {
             case "Adjacency Matrix" -> builder = new AdjacencyMatrixGraphBuilder(isDirected);
+            case "Adjacency List" -> builder = new AdjacencyListGraphBuilder(isDirected);
+            case "Forward Star" -> builder = new ForwardStarGraphBuilder(isDirected);
             default -> builder = new ForwardStarGraphBuilder(isDirected);
         }
 
