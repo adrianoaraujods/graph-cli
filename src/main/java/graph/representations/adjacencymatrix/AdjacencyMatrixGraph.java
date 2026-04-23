@@ -160,7 +160,23 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
       n = newN;
     }
 
+    if (matrix[w - 1][v - 1]) {
+      return;
+    }
+
+    if (!isDirected) {
+      if (v != w && matrix[v - 1][w - 1]) {
+        return;
+      }
+    }
+
     matrix[w - 1][v - 1] = true;
+
+    if (!isDirected) {
+      matrix[v - 1][w - 1] = true;
+    }
+
+    m++;
   }
 
   @Override
@@ -171,7 +187,7 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
         return;
       }
     } else {
-      if (!matrix[w - 1][v - 1] || !matrix[v - 1][w - 1]) {
+      if (!matrix[w - 1][v - 1] && !matrix[v - 1][w - 1]) {
         return;
       }
     }
