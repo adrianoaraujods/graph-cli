@@ -115,7 +115,7 @@ public class GraphGenerator {
   }
 
   public long maxEdges() {
-    return isDirected ? n * (n - 1) : n * (n - 1) / 2;
+    return isDirected ? (long) (n) * ((long) (n - 1)) : (long) (n) * ((long) (n - 1)) / 2;
   }
 
   private boolean confirmLargeGraph() {
