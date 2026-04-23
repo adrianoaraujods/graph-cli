@@ -8,6 +8,7 @@ import graph.api.DirectedGraph;
 import graph.api.Graph;
 import graph.api.GraphBase.IteratorVisitor;
 import graph.api.UndirectedGraph;
+import graph.util.EdgeFormatter;
 
 public class NaiveBridges {
 
@@ -56,11 +57,7 @@ public class NaiveBridges {
       DFS.search((Graph) component, visitor);
 
       if (visitor.roots > 1) {
-        if (v < w) {
-          bridges.add(v + "," + w);
-        } else {
-          bridges.add(w + "," + v);
-        }
+        bridges.add(EdgeFormatter.toKey(v, w));
       }
 
       component.addEdge(v, w);

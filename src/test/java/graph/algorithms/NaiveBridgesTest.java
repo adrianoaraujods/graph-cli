@@ -100,7 +100,7 @@ class NaiveBridgesTest {
 
         boolean foundEdge = false;
         for (String edge : bridges) {
-            String[] vertices = edge.split(",");
+            String[] vertices = edge.split("-");
             int v = Integer.parseInt(vertices[0]);
             int w = Integer.parseInt(vertices[1]);
 

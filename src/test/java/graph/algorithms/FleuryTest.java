@@ -14,6 +14,7 @@ import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.representations.GraphBuilderHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
+import graph.util.EdgeFormatter;
 
 class FleuryTest {
 
@@ -304,8 +305,8 @@ class FleuryTest {
         int[][] edges = graph.getEdgesSet();
         Set<String> expectedEdges = new HashSet<>();
         for (int[] e : edges) {
-            expectedEdges.add(e[0] + "-" + e[1]);
-            expectedEdges.add(e[1] + "-" + e[0]);
+            expectedEdges.add(EdgeFormatter.toKey(e[0], e[1]));
+            expectedEdges.add(EdgeFormatter.toKey(e[1], e[0]));
         }
 
         int edgeCount = result.path().length - 1;
@@ -313,7 +314,7 @@ class FleuryTest {
 
         Set<String> pathEdges = new HashSet<>();
         for (int i = 0; i < result.path().length - 1; i++) {
-            String edge = result.path()[i] + "-" + result.path()[i + 1];
+            String edge = EdgeFormatter.toKey(result.path()[i], result.path()[i + 1]);
             pathEdges.add(edge);
         }
 
@@ -335,7 +336,7 @@ class FleuryTest {
 
         Set<String> pathEdges = new HashSet<>();
         for (int i = 0; i < result.path().length - 1; i++) {
-            String edge = result.path()[i] + "->" + result.path()[i + 1];
+            String edge = EdgeFormatter.toKey(result.path()[i], result.path()[i + 1]);
             pathEdges.add(edge);
         }
 

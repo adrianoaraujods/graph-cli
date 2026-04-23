@@ -6,6 +6,7 @@ import java.util.Set;
 import graph.api.DirectedGraph;
 import graph.api.Graph;
 import graph.api.GraphBase.IteratorVisitor;
+import graph.util.EdgeFormatter;
 import graph.api.UndirectedGraph;
 
 public class Fleury {
@@ -121,8 +122,7 @@ public class Fleury {
         String edge;
         do {
           w = neighbors[i++];
-
-          edge = v < w ? (v + "," + w) : (w + "," + v);
+          edge = EdgeFormatter.toKey(v, w);
         } while (i < neighbors.length && bridges.contains(edge));
       } else {
         trivialVertices.add(v);
