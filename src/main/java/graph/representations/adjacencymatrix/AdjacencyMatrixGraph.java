@@ -93,7 +93,7 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
           if (matrix[i][v - 1]) {
             // Skip reverse direction for undirected edges
             if (!isDirected && v > i + 1) {
-              continue;
+              break;
             }
 
             visitor.examineEdge(v, i + 1);
