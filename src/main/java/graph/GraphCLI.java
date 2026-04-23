@@ -34,7 +34,7 @@ public class GraphCLI {
     static int vertices = -1;
     static double density = -1.0;
     static long edges = -1;
-    static ConnectivityType connectivity = ConnectivityType.WEAKLY;
+    static ConnectivityType connectivity = ConnectivityType.CONNECTED;
     static Long seed = null;
 
     // Reader details
@@ -185,13 +185,13 @@ public class GraphCLI {
                     throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
                 }
 
-                connectivity = ConnectivityType.WEAKLY;
+                connectivity = ConnectivityType.CONNECTED;
             } else if (arg.equals("--disconnected")) {
                 if (subcommand.equals("read")) {
                     throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
                 }
 
-                connectivity = ConnectivityType.NONE;
+                connectivity = ConnectivityType.DISCONNECTED;
             } else if (arg.equals("--eulerian")) {
                 if (subcommand.equals("read")) {
                     throw new InvalidAlgorithmParameterException("Invalid flag for read: " + arg);
@@ -277,47 +277,29 @@ public class GraphCLI {
             System.out.printf("  Direction Type: %s\n", isDirected ? "Directed" : "Undirected");
 
             if (subcommand.equals("create")) {
-                System.out.printf("  Connectivity: %s\n", connectivity);
+                GraphGenerator generator = new GraphGenerator(vertices, isDirected, graphPath);
+                generator.setConnectivity(connectivity);
+                generator.enableLog();
 
-                GraphGenerator.GraphConfig config;
                 if (edges >= 0) {
-                    config = GraphGenerator.builder()
-                            .directed(isDirected)
-                            .connectivity(connectivity)
-                            .vertices(vertices)
-                            .edges(edges)
-                            .outputPath(graphPath)
-                            .seed(seed != null ? seed : null)
-                            .build();
-
+                    generator.setEdges(edges);
                 } else {
-                    config = GraphGenerator.builder()
-                            .directed(isDirected)
-                            .connectivity(connectivity)
-                            .vertices(vertices)
-                            .density(density)
-                            .outputPath(graphPath)
-                            .seed(seed != null ? seed : null)
-                            .build();
-                }
-
-                long maxEdges = config.maxEdges();
-                System.out.printf("  Vertices: %,d\n", vertices);
-                if (density >= 0) {
-                    System.out.printf("  Density: %.2f\n", density);
-
-                } else {
-                    System.out.printf("  Edges: %,d\n", config.resolvedEdges());
+                    generator.setDensity(density);
                 }
 
                 if (seed != null) {
+                    generator.setSeed(seed);
                     System.out.printf("  Seed: %d\n", seed);
                 }
 
-                System.out.printf("  Max Edges: %,d\n", maxEdges);
+                System.out.printf("  Connectivity: %s\n", connectivity.toString().toLowerCase());
+                System.out.printf("  Vertices: %,d\n", vertices);
+                System.out.printf("  Edges: %,d\n", generator.getEdges());
+                System.out.printf("  Density: %.2f\n", generator.getDensity());
+                System.out.printf("  Max Edges: %,d\n", generator.maxEdges());
 
                 System.out.printf("\nGenerating Graph...\n");
-                GraphLogger.logTime(() -> GraphGenerator.generateGraph(config));
+                generator.create();
                 System.out.println("\nGraph generation complete.");
             }
 

@@ -61,7 +61,7 @@ public class Fleury {
           specialVertices[1] = v;
 
         } else {
-          type = EulerianType.NON_EULERIAN;
+          return;
         }
       }
     }
