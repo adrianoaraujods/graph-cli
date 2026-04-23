@@ -15,12 +15,12 @@ public abstract class Graph implements GraphBase {
   protected int n;
 
   /** Total number of edges in the graph. */
-  protected int m;
+  protected long m;
 
   /**
    * Constructor called by the concrete implementations.
    */
-  protected Graph(boolean isDirected, int n, int m) {
+  protected Graph(boolean isDirected, int n, long m) {
     this.isDirected = isDirected;
     this.n = n;
     this.m = m;

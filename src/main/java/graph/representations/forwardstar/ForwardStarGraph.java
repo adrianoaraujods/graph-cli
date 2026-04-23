@@ -59,8 +59,8 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
     ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
 
     int newN = Math.max(n, Math.max(v, w));
-    int newM = m + 1;
-    int estimatedPairs = isDirected ? newM : newM * 2;
+    long newM = m + 1;
+    long estimatedPairs = isDirected ? newM : newM * 2;
 
     builder.initialize(newN, estimatedPairs);
     builder.addEdge(v, w);
@@ -87,7 +87,7 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   public void removeEdge(int v, int w) {
     ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
 
-    int estimatedPairs = isDirected ? m : m * 2;
+    long estimatedPairs = isDirected ? m : m * 2;
 
     builder.initialize(n, estimatedPairs);
 

@@ -14,7 +14,7 @@ public interface GraphBuilder {
    * @param m        The total number of edges.
    * @param vertices The array of vertex IDs included in the graph.
    */
-  void initialize(int n, int m, int[] vertices);
+  void initialize(int n, long m, int[] vertices);
 
   /**
    * Prepares the builder's internal temporary structures.
@@ -22,7 +22,7 @@ public interface GraphBuilder {
    * @param n The total number of vertices.
    * @param m The total number of edges.
    */
-  default void initialize(int n, int m) {
+  default void initialize(int n, long m) {
     this.initialize(n, m, null);
   };
 

@@ -25,7 +25,7 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
   }
 
   @Override
-  public void initialize(int n, int m, int[] vertices) {
+  public void initialize(int n, long m, int[] vertices) {
     this.n = n;
     this.m = 0;
     this.vertices = vertices;
@@ -40,15 +40,23 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
     }
 
     // prevent increase m if edge already exists
-    if (!matrix[w - 1][v - 1]) {
-      matrix[w - 1][v - 1] = true;
-
-      if (!isDirected) {
-        matrix[v - 1][w - 1] = true;
+    if (isDirected) {
+      if (matrix[w - 1][v - 1]) {
+        return;
       }
-
-      m++;
+    } else {
+      if (matrix[w - 1][v - 1] || matrix[v - 1][w - 1]) {
+        return;
+      }
     }
+
+    matrix[w - 1][v - 1] = true;
+
+    if (!isDirected) {
+      matrix[v - 1][w - 1] = true;
+    }
+
+    m++;
   }
 
   @Override

@@ -28,17 +28,17 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   }
 
   @Override
-  public void initialize(int n, int m, int[] vertices) {
+  public void initialize(int n, long m, int[] vertices) {
     this.n = n;
     this.m = 0;
-    this.sources = new int[isDirected ? m : m * 2];
-    this.targets = new int[isDirected ? m : m * 2];
+    this.sources = new int[(int) (isDirected ? m : m * 2)];
+    this.targets = new int[(int) (isDirected ? m : m * 2)];
     this.vertices = vertices;
   }
 
   @Override
   public void addEdge(int v, int w) {
-    int head = (isDirected ? m : m * 2);
+    int head = (int) (isDirected ? m : m * 2);
 
     if (head > sources.length) {
       int newCapacity = Math.max(4, sources.length * 2);
