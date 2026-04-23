@@ -86,6 +86,7 @@ public class Usage {
         System.out.println("    --dfs                 Run DFS with edge classification");
         System.out.println("    --kosaraju            Run Kosaraju to find SCCs (only directed)");
         System.out.println("    --fleury              Run Fleury to find an Eulerian path or cycle");
+        System.out.println("    --tarjan             Run Tarjan to find all bridges");
         System.out.println("    --naive-bridges       Run Naive Bridges to find all bridges edges");
         System.out.println("  --target <n>, -t        Target vertex (required for --dfs)");
         System.out.println("  --output <path>, -o     Output file (default: terminal)");

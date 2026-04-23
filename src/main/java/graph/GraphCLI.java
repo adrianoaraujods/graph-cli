@@ -40,11 +40,17 @@ public class GraphCLI {
 
     // Reader details
     static Set<String> algorithms = new HashSet<>();
-    static final Set<String> VALID_ALGORITHMS = Set.of("--dfs", "--kosaraju", "--fleury", "--naive-bridges");
+    static final Set<String> VALID_ALGORITHMS = Set.of(
+            "--dfs",
+            "--kosaraju",
+            "--fleury",
+            "--tarjan",
+            "--naive-bridges");
     static final Map<String, String> ALGORITHM_NAMES = Map.of(
             "--dfs", "DFS",
             "--kosaraju", "Kosaraju",
             "--fleury", "Fleury",
+            "--tarjan", "Tarjan",
             "--naive-bridges", "Bridges");
 
     static boolean isFlagValue(String arg) {
@@ -324,6 +330,12 @@ public class GraphCLI {
                 int totalSteps = 2 + algorithms.size();
                 int step = 0;
 
+                if (algorithms.contains("--fleury")) {
+                    if (algorithms.contains("--naive-bridges") || algorithms.contains("--tarjan")) {
+                        totalSteps--;
+                    }
+                }
+
                 System.out.printf("\n[%d/%d] Reading File...", ++step, totalSteps);
                 GraphLogger.logTime(() -> {
                     try {
@@ -342,7 +354,21 @@ public class GraphCLI {
                 for (String algorithm : algorithms) {
                     String algorithmName = ALGORITHM_NAMES.get(algorithm);
 
-                    System.out.printf("[%d/%d] Running %s...", ++step, totalSteps, algorithmName);
+                    if (algorithm.equals("--tarjan") && algorithms.contains("--fleury")) {
+                        continue;
+                    }
+
+                    if (algorithm.equals("--naive-bridges") && algorithms.contains("--fleury")) {
+                        continue;
+                    }
+
+                    if (algorithm.equals("--fleury")) {
+                        System.out.printf("[%d/%d] Running Fleury with %s...", ++step, totalSteps,
+                                algorithms.contains("--naive-bridges") ? "Naive Bridges" : "Tarjan");
+                    } else {
+                        System.out.printf("[%d/%d] Running %s...", ++step, totalSteps, algorithmName);
+                    }
+
                     GraphLogger.logTime(() -> {
                         try {
                             String result;
@@ -350,7 +376,9 @@ public class GraphCLI {
                             switch (algorithm) {
                                 case "--dfs" -> result = GraphLogger.runDFS(graph, target, outputPath);
                                 case "--kosaraju" -> result = GraphLogger.runKosaraju(graph, outputPath);
-                                case "--fleury" -> result = GraphLogger.runFleury(graph, outputPath);
+                                case "--fleury" -> result = GraphLogger.runFleury(graph, outputPath,
+                                        !algorithms.contains("--naive-bridges"));
+                                case "--tarjan" -> result = GraphLogger.runTarjan(graph, outputPath);
                                 case "--naive-bridges" -> result = GraphLogger.runNaiveBridges(graph, outputPath);
                                 default -> throw new RuntimeException("Unknown algorithm: " + algorithm);
                             }

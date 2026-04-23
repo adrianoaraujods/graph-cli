@@ -35,6 +35,17 @@ public class DFS {
   public interface DFSVisitor {
 
     /**
+     * Called at the start of DFS after construct the initial arrays.
+     *
+     * @param discoverTimes The discovery times array.
+     * @param finishTimes   The finish times array.
+     * @param parents       The parents array.
+     * @return The constructed DFSResult.
+     */
+    default void start(int[] discoverTimes, int[] finishTimes, int[] parents) {
+    }
+
+    /**
      * Called when a visiting each vertex.
      */
     default boolean shouldStop() {
@@ -88,11 +99,11 @@ public class DFS {
      *
      * @param discoverTimes The discovery times array.
      * @param finishTimes   The finish times array.
-     * @param predecessors  The parents/predecessors array.
+     * @param parents       The parents array.
      * @return The constructed DFSResult.
      */
-    default DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
-      return new DFSResult(discoverTimes, finishTimes, predecessors);
+    default DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] parents) {
+      return new DFSResult(discoverTimes, finishTimes, parents);
     }
 
     /**
@@ -163,6 +174,8 @@ public class DFS {
     int[] parents = new int[n];
     int[] adjacencyIndex = new int[n];
 
+    visitor.start(discoverTimes, finishTimes, parents);
+
     Stack<Integer> stack = new Stack<Integer>();
 
     for (int root : rootsOrder) {
@@ -209,16 +222,21 @@ public class DFS {
             visitor.treeEdge(v, w);
             parents[w - 1] = v;
             stack.add(w);
-          } else if (finishTimes[w - 1] == 0) {
+
+          } else if (w != parents[v - 1] && finishTimes[w - 1] == 0) {
             visitor.backEdge(v, w);
+
           } else if (discoverTimes[v - 1] < discoverTimes[w - 1]) {
             visitor.forwardEdge(v, w);
+
           } else {
             visitor.crossEdge(v, w);
           }
+
           adjacencyIndex[v - 1]++;
         } else {
           finishTimes[v - 1] = ++t;
+
           visitor.finishVertex(v);
           stack.pop();
         }
@@ -250,6 +268,10 @@ public class DFS {
    */
   public static DFSResult search(Graph graph, int[] rootsOrder) {
     return search(graph, rootsOrder, new DFSVisitor() {
+      @Override
+      public DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] parents) {
+        return new DFSResult(discoverTimes, finishTimes, parents);
+      }
     });
   }
 

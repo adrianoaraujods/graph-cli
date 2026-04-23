@@ -73,7 +73,7 @@ public class Fleury {
     }
   }
 
-  public static EulerianPath findEulerianPath(UndirectedGraph graph) {
+  public static EulerianPath findEulerianPath(UndirectedGraph graph, boolean useTarjan) {
     if (graph.getEdgesCount() < 1) {
       return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
     }
@@ -103,7 +103,10 @@ public class Fleury {
 
     path[pathIndex++] = v;
 
+    System.out.println();
     while (clone.getEdgesCount() > 0) {
+      System.out.print("\n[Info] Progress " + pathIndex + "/" + path.length);
+
       int[] neighbors = clone.getNeighbors(v);
       if (neighbors.length == 0) {
         System.out.println("\n[Error] Final path is " + pathIndex + " long, but it should be" + (m + 1) + ".");
@@ -113,7 +116,11 @@ public class Fleury {
       int w = neighbors[0];
 
       if (neighbors.length > 1) {
-        Set<String> bridges = NaiveBridges.findAll((Graph) clone);
+        long start = System.currentTimeMillis();
+        Set<String> bridges = useTarjan
+            ? Tarjan.findAll((UndirectedGraph) clone)
+            : NaiveBridges.findAll((UndirectedGraph) clone);
+        System.out.printf(" (✓ %d ms)", System.currentTimeMillis() - start);
 
         int i = 1;
         String edge;
@@ -133,6 +140,10 @@ public class Fleury {
     }
 
     return new EulerianPath(path, type);
+  }
+
+  public static EulerianPath findEulerianPath(UndirectedGraph graph) {
+    return findEulerianPath(graph, true);
   }
 
   public static EulerianPath findEulerianPath(DirectedGraph graph) {

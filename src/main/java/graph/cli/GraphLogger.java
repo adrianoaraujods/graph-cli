@@ -12,6 +12,7 @@ import graph.algorithms.Fleury;
 import graph.algorithms.Fleury.EulerianPath;
 import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
+import graph.algorithms.Tarjan;
 import graph.algorithms.DFS.ClassifiedDFSEdges;
 import graph.algorithms.DFS.DFSResult;
 import graph.api.DirectedGraph;
@@ -103,12 +104,15 @@ public class GraphLogger {
         return sb.toString();
     }
 
-    public static String runFleury(Graph graph, String outputFile) {
+    public static String runFleury(Graph graph, String outputFile, boolean useTarjan) {
         StringBuilder sb = new StringBuilder();
         sb.append("\nEulerian Path (Fleury):\n");
         sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
-        EulerianPath eulerianPath = Fleury.findEulerianPath(graph);
+        EulerianPath eulerianPath = graph.isDirected
+                ? Fleury.findEulerianPath(graph)
+                : Fleury.findEulerianPath((UndirectedGraph) graph, useTarjan);
+
         sb.append("  Eulerian Type: ").append(eulerianPath.type()).append("\n");
         sb.append("  Eulerian Path: ").append(Arrays.toString(eulerianPath.path())).append("\n");
 
@@ -121,6 +125,20 @@ public class GraphLogger {
         sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
         Set<String> bridges = NaiveBridges.findAll(graph);
+
+        sb.append("  Bridge Count: ").append(bridges.size()).append("\n");
+        sb.append("  Bridges: ").append(EdgeFormatter.toString(bridges.toArray(new int[0][]), graph.isDirected))
+                .append("\n");
+
+        return sb.toString();
+    }
+
+    public static String runTarjan(Graph graph, String outputFile) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\nBridges (Tarjan):\n");
+        sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
+
+        Set<String> bridges = Tarjan.findAll((graph));
 
         sb.append("  Bridge Count: ").append(bridges.size()).append("\n");
         sb.append("  Bridges: ").append(EdgeFormatter.toString(bridges.toArray(new int[0][]), graph.isDirected))
