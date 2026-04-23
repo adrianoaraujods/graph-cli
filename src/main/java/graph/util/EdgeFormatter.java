@@ -27,4 +27,11 @@ public class EdgeFormatter {
 
         return builder.toString();
     }
+
+    /**
+     * Creates a consistent edge key `v-w` where the smaller vertex is always first.
+     */
+    public static String toKey(int v, int w) {
+        return v < w ? (v + "-" + w) : (w + "-" + v);
+    }
 }
