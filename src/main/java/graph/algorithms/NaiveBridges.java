@@ -19,13 +19,9 @@ public class NaiveBridges {
     GraphBase.IteratorVisitor iterator = new IteratorVisitor() {
       @Override
       public void examineEdge(int v, int w) {
-        graph.removeEdge(v, w);
-
-        if (ConnectedComponents.getCount(graph) != componentsCount) {
+        if (ConnectedComponents.getCount(graph, new int[] { v, w }) != componentsCount) {
           bridges.add(EdgeFormatter.toKey(v, w));
         }
-
-        graph.addEdge(v, w);
       }
     };
 
