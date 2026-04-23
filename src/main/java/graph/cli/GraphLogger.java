@@ -120,12 +120,7 @@ public class GraphLogger {
         sb.append("\nBridges (Naive):\n");
         sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
-        Set<String> bridges;
-        if (graph.isDirected) {
-            bridges = NaiveBridges.findAllWeak((DirectedGraph) graph);
-        } else {
-            bridges = NaiveBridges.findAll((UndirectedGraph) graph);
-        }
+        Set<String> bridges = NaiveBridges.findAll(graph);
 
         sb.append("  Bridge Count: ").append(bridges.size()).append("\n");
         sb.append("  Bridges: ").append(EdgeFormatter.toString(bridges.toArray(new int[0][]), graph.isDirected))

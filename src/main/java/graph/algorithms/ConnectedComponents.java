@@ -1,58 +1,23 @@
 package graph.algorithms;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import graph.algorithms.DFS.DFSResult;
-import graph.algorithms.DFS.DFSVisitor;
 import graph.api.Graph;
-import graph.api.UndirectedGraph;
+import graph.api.GraphBase;
+import graph.api.GraphBase.IteratorVisitor;
+import graph.util.UnionFind;
 
 public class ConnectedComponents {
-  public static UndirectedGraph[] find(UndirectedGraph graph) {
-    List<UndirectedGraph> components = new ArrayList<>();
+  public static int getCount(Graph graph) {
+    UnionFind uf = new UnionFind(graph.getVerticesCount());
 
-    DFSVisitor visitor = new DFSVisitor() {
-      Set<Integer> componentVertices = new HashSet<>();
-
-      private void addComponent() {
-        int[] vertices = new int[componentVertices.size()];
-        int index = 0;
-        for (Integer v : componentVertices) {
-          vertices[index++] = v;
-        }
-        components.add((UndirectedGraph) graph.getInducedSubgraph(vertices));
-        componentVertices = new HashSet<>();
-      }
-
+    GraphBase.IteratorVisitor iterator = new IteratorVisitor() {
       @Override
-      public void examineRoot(int vertex) {
-        if (componentVertices.isEmpty()) {
-          componentVertices.add(vertex);
-        } else {
-          addComponent();
-          componentVertices.add(vertex);
-        }
-      }
-
-      @Override
-      public void examineEdge(int source, int target) {
-        componentVertices.add(target);
-      }
-
-      @Override
-      public DFSResult finish(int[] discoverTimes, int[] finishTimes, int[] predecessors) {
-        if (!componentVertices.isEmpty()) {
-          addComponent();
-        }
-        return null;
+      public void examineEdge(int v, int w) {
+        uf.union(v - 1, w - 1);
       }
     };
 
-    DFS.search((Graph) graph, visitor);
+    graph.iterateGraph(iterator);
 
-    return components.toArray(new UndirectedGraph[0]);
+    return uf.getCount();
   }
 }

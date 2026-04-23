@@ -1,6 +1,5 @@
 package graph.algorithms;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import graph.api.DirectedGraph;
@@ -48,6 +47,7 @@ public class Fleury {
         int inDegree = ((DirectedGraph) graph).getInDegree(v);
         int outDegree = ((DirectedGraph) graph).getOutDegree(v);
         isSpecial = inDegree != outDegree;
+
       } else {
         int degree = ((UndirectedGraph) graph).getDegree(v);
         isSpecial = (degree % 2) != 0;
@@ -78,11 +78,8 @@ public class Fleury {
       return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
     }
 
-    int m = (int) graph.getEdgesCount();
-
-    UndirectedGraph[] components = ConnectedComponents.find((UndirectedGraph) graph);
-
-    if (components.length > 1) {
+    int componentsCount = ConnectedComponents.getCount((Graph) graph);
+    if (componentsCount > 1) {
       return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
     }
 
@@ -95,28 +92,28 @@ public class Fleury {
     }
 
     UndirectedGraph clone = (UndirectedGraph) ((Graph) graph).clone();
+    int m = (int) clone.getEdgesCount();
 
-    Set<Integer> trivialVertices = new HashSet<>(clone.getVerticesCount());
+    int[] path = new int[m + 1];
+    int pathIndex = 0;
 
     int v = checkDegreesIterator.specialVertices == null
         ? 1
         : checkDegreesIterator.specialVertices[0];
 
-    int[] path = new int[m + 1];
-    int pathIndex = 0;
+    path[pathIndex++] = v;
 
     while (clone.getEdgesCount() > 0) {
-      path[pathIndex++] = v;
-
       int[] neighbors = clone.getNeighbors(v);
       if (neighbors.length == 0) {
+        System.out.println("\n[Error] Final path is " + pathIndex + " long, but it should be" + (m + 1) + ".");
         return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
       }
 
       int w = neighbors[0];
 
       if (neighbors.length > 1) {
-        Set<String> bridges = NaiveBridges.findAll(clone, trivialVertices);
+        Set<String> bridges = NaiveBridges.findAll((Graph) clone);
 
         int i = 1;
         String edge;
@@ -124,17 +121,16 @@ public class Fleury {
           w = neighbors[i++];
           edge = EdgeFormatter.toKey(v, w);
         } while (i < neighbors.length && bridges.contains(edge));
-      } else {
-        trivialVertices.add(v);
       }
 
       clone.removeEdge(v, w);
+      path[pathIndex++] = w;
       v = w;
     }
 
-    path[m] = checkDegreesIterator.specialVertices == null
-        ? 1
-        : checkDegreesIterator.specialVertices[1];
+    if (checkDegreesIterator.specialVertices != null && v != checkDegreesIterator.specialVertices[1]) {
+      System.out.println("\n[Warning] Final vertice of path is diffrent from expected.");
+    }
 
     return new EulerianPath(path, type);
   }

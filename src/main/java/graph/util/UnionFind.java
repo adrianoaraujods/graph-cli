@@ -43,6 +43,10 @@ public class UnionFind {
     }
   }
 
+  public int getCount() {
+    return n;
+  }
+
   public boolean isConnected() {
     return n == 1;
   }
