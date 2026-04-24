@@ -95,8 +95,6 @@ public class GraphGenerator {
       return; // No change needed non-Eulerian
     }
 
-    System.out.println((m % 2) != 0);
-
     if ((m % 2) != 0) {
       if (maxEdges() % 2 != 0) {
         m--; // Round DOWN
