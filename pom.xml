@@ -42,6 +42,26 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <executable>java</executable>
+                    <workingDirectory>${project.basedir}</workingDirectory>
+                    <jvmArgs>
+                        <jvmArg>-Xmx24g</jvmArg>
+                        <jvmArg>-XX:+UseG1GC</jvmArg>
+                        <jvmArg>-XX:+ExitOnOutOfMemoryError</jvmArg>
+                        <jvmArg>-XX:+CrashOnOutOfMemoryError</jvmArg>
+                    </jvmArgs>
+                    <arguments>
+                        <argument>-Dexec.mainClass=${exec.mainClass}</argument>
+                        <argument>-Dexec.classpathScope=${exec.classpathScope}</argument>
+                        <argument>-Dexec.args=${exec.args}</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

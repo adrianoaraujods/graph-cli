@@ -118,6 +118,80 @@ java -jar target/graph-cli-0.1.0.jar help create
 java -jar target/graph-cli-0.1.0.jar help read
 ```
 
+### Benchmark
+
+Run Fleury algorithm performance benchmarks on generated graphs:
+
+```bash
+mvn compile exec:java -Dexec.mainClass="graph.bench.Benchmark" -Dexec.args="[options]"
+```
+
+**Options:**
+
+| Argument          | Description                                  | Default     |
+| ----------------- | -------------------------------------------- | ----------- |
+| `--attempts N`    | Number of attempts per parameter combination | 10          |
+| `--parallel`      | Enable parallel execution                    | false       |
+| `--max-threads N` | Maximum parallel threads                     | 24          |
+| `--output FILE`   | Output CSV file path                         | results.csv |
+
+**Example:**
+
+```bash
+# Run 10 attempts for each combination sequentially
+mvn compile exec:java -Dexec.mainClass="graph.bench.Benchmark" -Dexec.args="--attempts 10"
+
+# Run with parallel execution (uses all 24 cores)
+mvn compile exec:java -Dexec.mainClass="graph.bench.Benchmark" -Dexec.args="--attempts 10 --parallel"
+
+# Custom output file
+mvn compile exec:java -Dexec.mainClass="graph.bench.Benchmark" -Dexec.args="--attempts 10 --output my_results.csv"
+```
+
+**CSV Output Format:**
+
+```csv
+attempt,vertices,density,connectivity,representation,create_time_ms,read_build_time_ms,fleury_time_ms,eulerian_type
+1,100,0.05,EULERIAN,ForwardStar,7,1,138,EULERIAN
+2,100,0.05,EULERIAN,ForwardStar,4,0,87,EULERIAN
+...
+```
+
+**Protections:**
+
+The benchmark includes several safeguards to prevent crashes and ensure reliable execution:
+
+1. **JVM Flags**: The following flags are automatically applied:
+   - `-Xmx24g` - Limits heap to 24GB (leaves 8GB for system)
+   - `-XX:+UseG1GC` - Uses G1 garbage collector (better for large heaps)
+   - `-XX:+ExitOnOutOfMemoryError` - Exits cleanly on OOM instead of hanging
+   - `-XX:+CrashOnOutOfMemoryError` - Crashes immediately on OOM for debugging
+
+2. **Thread-Level Exception Handling**: In parallel mode, each task runs in its own thread with try-catch protection. If a task crashes (Exception or Error), the benchmark logs the error and continues with the next task.
+
+3. **Crash Recovery**: Failed tasks write "CRASHED" to the CSV and the benchmark continues to the next combination.
+
+4. **Temp File Cleanup**: On normal completion or unexpected termination (Ctrl+C, crash), temp files are automatically cleaned up.
+
+**CSV Output Codes:**
+
+| Code            | Description                                                    |
+| --------------- | -------------------------------------------------------------- |
+| `EULERIAN`      | Graph has an Eulerian path (exactly 0 odd-degree vertices)     |
+| `SEMI_EULERIAN` | Graph has a semi-Eulerian path (exactly 2 odd-degree vertices) |
+| `NON_EULERIAN`  | Graph is not Eulerian or semi-Eulerian                         |
+| `RETRY_FAILED`  | All 3 retry attempts failed                                    |
+| `CRASHED`       | Task crashed with uncaught error                               |
+
+**Tested Parameters:**
+
+- Vertices: 100, 10,000, 100,000
+- Density: 0.01, 0.05, 0.10
+- Connectivity: EULERIAN, SEMI_EULERIAN, CONNECTED
+- Representation: ForwardStar, AdjacencyMatrix
+
+> **Note:** AdjacencyMatrix is only tested with n ≤ 10,000 due to memory constraints (n=100,000 requires ~10GB for the boolean matrix).
+
 ## Architecture & Core Components
 
 ### 1. The Core Engine (`Graph.java` & `GraphBuilder.java`)
