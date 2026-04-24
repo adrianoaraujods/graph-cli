@@ -22,7 +22,6 @@ import graph.cli.GraphGenerator;
 import graph.cli.GraphReader;
 import graph.representations.GraphBuilder;
 import graph.representations.adjacencylist.AdjacencyListGraphBuilder;
-import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 public class Benchmark {
@@ -35,18 +34,18 @@ public class Benchmark {
     private static String outputPath = "results.csv";
 
     private static final int[][] GRAPHS = {
-            { 100, 500 },
-            { 1000, 5000 },
-            { 10000, 50000 },
-            { 100000, 500000 }
+            { 100, 250 },
+            { 1000, 2500 },
+            { 10000, 25000 },
+            { 100000, 250000 }
     };
     private static final ConnectivityType[] CONNECTIVITIES = {
             ConnectivityType.EULERIAN,
             ConnectivityType.SEMI_EULERIAN,
-            ConnectivityType.CONNECTED
+            ConnectivityType.DISCONNECTED
     };
-    private static final String[] REPRESENTATIONS = { "AdjacencyList", "AdjacencyMatrix", "ForwardStar" };
-    private static final String[] ALGORITHMS = { "Naive", "Trajan" };
+    private static final String[] REPRESENTATIONS = { "AdjacencyList", "ForwardStar" };
+    private static final String[] ALGORITHMS = { "Fleury+Naive", "Fleury+Tarjan" };
 
     private static final ReentrantLock fileLock = new ReentrantLock();
 
@@ -107,13 +106,6 @@ public class Benchmark {
         System.out.println("==================================");
     }
 
-    private static boolean isValidCombination(int n, int m, ConnectivityType conn, String rep) {
-        if (rep.equals("AdjacencyMatrix") && n > 1000) {
-            return false;
-        }
-        return true;
-    }
-
     private static void writeHeader() {
         try {
             boolean fileExists = java.nio.file.Paths.get(outputPath).toFile().exists();
@@ -137,9 +129,6 @@ public class Benchmark {
             int m = graph[1];
             for (ConnectivityType conn : CONNECTIVITIES) {
                 for (String rep : REPRESENTATIONS) {
-                    if (!isValidCombination(n, m, conn, rep)) {
-                        continue;
-                    }
                     for (String algo : ALGORITHMS) {
                         for (int attempt = 1; attempt <= attempts; attempt++) {
                             int current = completed.incrementAndGet();
@@ -164,9 +153,6 @@ public class Benchmark {
             int m = graph[1];
             for (ConnectivityType conn : CONNECTIVITIES) {
                 for (String rep : REPRESENTATIONS) {
-                    if (!isValidCombination(n, m, conn, rep)) {
-                        continue;
-                    }
                     for (String algo : ALGORITHMS) {
                         for (int attempt = 1; attempt <= attempts; attempt++) {
                             int finalN = n;
@@ -213,20 +199,7 @@ public class Benchmark {
     }
 
     private static int getTotalRuns() {
-        int total = 0;
-        for (int[] graph : GRAPHS) {
-            int n = graph[0];
-            int m = graph[1];
-            for (ConnectivityType conn : CONNECTIVITIES) {
-                for (String rep : REPRESENTATIONS) {
-                    if (!isValidCombination(n, m, conn, rep)) {
-                        continue;
-                    }
-                    total += ALGORITHMS.length * attempts;
-                }
-            }
-        }
-        return total;
+        return GRAPHS.length * CONNECTIVITIES.length * REPRESENTATIONS.length * ALGORITHMS.length * attempts;
     }
 
     private static void runSingle(int n, int m, ConnectivityType conn, String rep, String algo, int attempt) {
@@ -252,14 +225,14 @@ public class Benchmark {
 
                 GraphBuilder builder = switch (rep) {
                     case "AdjacencyList" -> new AdjacencyListGraphBuilder(false);
-                    case "AdjacencyMatrix" -> new AdjacencyMatrixGraphBuilder(false);
-                    default -> new ForwardStarGraphBuilder(false);
+                    case "ForwardStar" -> new ForwardStarGraphBuilder(false);
+                    default -> throw new IllegalArgumentException("Unknown representation: " + rep);
                 };
 
                 GraphReader.readFile(tempFile, builder);
                 UndirectedGraph graph = (UndirectedGraph) builder.build();
 
-                boolean useTarjan = algo.equals("Trajan");
+                boolean useTarjan = algo.equals("Fleury+Tarjan");
 
                 long startFleury = System.currentTimeMillis();
                 EulerianPath eulerianPath = Fleury.findEulerianPath(graph, useTarjan);
