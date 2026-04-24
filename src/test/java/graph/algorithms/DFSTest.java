@@ -63,7 +63,7 @@ class DFSTest {
         DFSResult result = DFS.search(graph);
         int[] parents = result.parents();
 
-        int[][] treeEdges = DFS.getDFSTreeEdges(graph, parents);
+        long[] treeEdges = DFS.getDFSTreeEdges(graph, parents);
 
         assertNotNull(treeEdges);
     }
@@ -175,7 +175,7 @@ class DFSTest {
         DFSResult result = DFS.search(graph);
         ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
-        int[][] treeEdges = classified.treeEdges();
+        long[] treeEdges = classified.treeEdges();
         assertTrue(treeEdges.length > 0,
                 "Vertex 1 should have tree edges");
     }
@@ -341,7 +341,7 @@ class DFSTest {
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         DFSResult result = DFS.search(graph);
-        int[][] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
+        long[] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
 
         assertNotNull(treeEdges);
     }
@@ -403,7 +403,7 @@ class DFSTest {
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         DFSResult result = DFS.search(graph);
-        int[][] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
+        long[] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
 
         assertEquals(3, treeEdges.length);
     }

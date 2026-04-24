@@ -3,6 +3,7 @@ package graph.algorithms;
 import java.util.Stack;
 
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 
@@ -294,19 +295,18 @@ public class DFS {
    * @param parents The parent array from DFSResult.
    * @return A 2D array of tree edges where each row is {parent, child}.
    */
-  public static int[][] getDFSTreeEdges(Graph graph, int[] parents) {
+  public static long[] getDFSTreeEdges(Graph graph, int[] parents) {
     int count = 0;
     for (int p : parents) {
       if (p != 0)
         count++;
     }
 
-    int[][] treeEdges = new int[count][2];
+    long[] treeEdges = new long[count];
     int index = 0;
     for (int v = 1; v <= parents.length; v++) {
       if (parents[v - 1] != 0) {
-        treeEdges[index][0] = parents[v - 1];
-        treeEdges[index][1] = v;
+        treeEdges[index] = Edges.directed(parents[v - 1], v);
         index++;
       }
     }
@@ -322,7 +322,7 @@ public class DFS {
    * @param crossEdges   Edges to vertices in other branches.
    * @param forwardEdges Edges to descendants (in directed graphs).
    */
-  public record ClassifiedDFSEdges(int[][] treeEdges, int[][] backEdges, int[][] crossEdges, int[][] forwardEdges) {
+  public record ClassifiedDFSEdges(long[] treeEdges, long[] backEdges, long[] crossEdges, long[] forwardEdges) {
   }
 
   /**
@@ -340,10 +340,10 @@ public class DFS {
     int[] finishTimes = dfsResult.finishTimes();
     int[] parents = dfsResult.parents();
 
-    int[][] treeEdges = new int[parents.length][2];
-    int[][] backEdges = new int[parents.length][2];
-    int[][] crossEdges = new int[parents.length][2];
-    int[][] forwardEdges = new int[parents.length][2];
+    long[] treeEdges = new long[parents.length];
+    long[] backEdges = new long[parents.length];
+    long[] crossEdges = new long[parents.length];
+    long[] forwardEdges = new long[parents.length];
 
     int treeIdx = 0, backIdx = 0, crossIdx = 0, forwardIdx = 0;
 
@@ -356,20 +356,16 @@ public class DFS {
 
     for (int w : adjacency) {
       if (parents[w - 1] == v) {
-        treeEdges[treeIdx][0] = v;
-        treeEdges[treeIdx][1] = w;
+        treeEdges[treeIdx] = Edges.directed(v, w);
         treeIdx++;
       } else if (finishTimes[v - 1] > finishTimes[w - 1]) {
-        crossEdges[crossIdx][0] = v;
-        crossEdges[crossIdx][1] = w;
+        crossEdges[crossIdx] = Edges.directed(v, w);
         crossIdx++;
       } else if (discoverTimes[v - 1] < discoverTimes[w - 1]) {
-        forwardEdges[forwardIdx][0] = v;
-        forwardEdges[forwardIdx][1] = w;
+        forwardEdges[forwardIdx] = Edges.directed(v, w);
         forwardIdx++;
       } else {
-        backEdges[backIdx][0] = v;
-        backEdges[backIdx][1] = w;
+        backEdges[backIdx] = Edges.directed(v, w);
         backIdx++;
       }
     }

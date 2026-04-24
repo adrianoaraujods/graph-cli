@@ -1,6 +1,6 @@
-package graph.util;
+package graph.api;
 
-public class EdgeFormatter {
+public class Edges {
 
     /**
      * Packs two integer vertices into a single 64-bit long.
@@ -22,20 +22,31 @@ public class EdgeFormatter {
     }
 
     /**
-     * Extracts the smaller vertex (from the upper 32 bits).
+     * Packs two integer vertices into a single 64-bit long.
+     *
+     * @param v The first vertex
+     * @param w The second vertex
+     * @return A 64-bit long representing the undirected edge
      */
-    public static int getV(long edge) {
+    public static long directed(int v, int w) {
+        return ((long) v << 32) | (w & 0xFFFFFFFFL);
+    }
+
+    /**
+     * Extracts the source vertex (from the upper 32 bits).
+     */
+    public static int getSource(long edge) {
         return (int) (edge >>> 32); // Unsigned right shift
     }
 
     /**
-     * Extracts the larger vertex (from the lower 32 bits).
+     * Extracts the target vertex (from the lower 32 bits).
      */
-    public static int getW(long edge) {
+    public static int getTarget(long edge) {
         return (int) edge; // Casting to int naturally truncates the upper 32 bits
     }
 
-    public static String toString(int[][] edges, boolean isDirected) {
+    public static String toString(long[] edges, boolean isDirected) {
         if (edges == null || edges.length == 0) {
             return isDirected ? "()" : "{}";
         }
@@ -50,21 +61,14 @@ public class EdgeFormatter {
             }
 
             builder.append(prefix);
-            builder.append(edges[i][0]);
+            builder.append(getSource(edges[i]));
             builder.append(", ");
-            builder.append(edges[i][1]);
+            builder.append(getTarget(edges[i]));
             builder.append(suffix);
         }
 
         builder.append("}");
 
         return builder.toString();
-    }
-
-    /**
-     * Creates a consistent edge key `v-w` where the smaller vertex is always first.
-     */
-    public static String toKey(int v, int w) {
-        return v < w ? (v + "-" + w) : (w + "-" + v);
     }
 }

@@ -3,7 +3,6 @@ package graph.algorithms;
 import graph.api.Graph;
 import graph.api.GraphBase;
 import graph.api.GraphBase.IteratorVisitor;
-import graph.util.UnionFind;
 
 public class ConnectedComponents {
   public static int getCount(Graph graph, int[] ignoredEdge) {

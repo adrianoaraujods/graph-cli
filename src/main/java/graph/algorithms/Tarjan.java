@@ -3,13 +3,13 @@ package graph.algorithms;
 import java.util.HashSet;
 import java.util.Set;
 
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
-import graph.util.EdgeFormatter;
 
 public class Tarjan {
 
-  public static Set<String> findAll(Graph graph) {
+  public static Set<Long> findAll(Graph graph) {
     if (graph.isDirected) {
       throw new IllegalArgumentException("Tarjan algorithm only works for undirected graphs");
     }
@@ -17,8 +17,8 @@ public class Tarjan {
     return findAll((UndirectedGraph) graph);
   }
 
-  public static Set<String> findAll(UndirectedGraph graph) {
-    Set<String> bridges = new HashSet<>();
+  public static Set<Long> findAll(UndirectedGraph graph) {
+    Set<Long> bridges = new HashSet<>();
 
     int n = graph.getVerticesCount();
     if (n == 0) {
@@ -61,7 +61,7 @@ public class Tarjan {
           int parent = parents[v - 1];
 
           if (parent > 0 && lowestPath[v - 1] > discoverTimes[parent - 1]) {
-            bridges.add(EdgeFormatter.toKey(parent, v));
+            bridges.add(Edges.undirected(parent, v));
           }
         }
 

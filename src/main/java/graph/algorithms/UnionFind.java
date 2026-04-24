@@ -1,4 +1,4 @@
-package graph.util;
+package graph.algorithms;
 
 public class UnionFind {
   private int[] parent;

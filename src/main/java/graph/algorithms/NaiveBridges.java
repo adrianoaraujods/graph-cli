@@ -6,29 +6,28 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.GraphBase.IteratorVisitor;
 import graph.api.UndirectedGraph;
-import graph.util.EdgeFormatter;
-import graph.util.UnionFind;
 
 public class NaiveBridges {
 
   private static class EdgeBatch {
-    private final int[][] edges;
+    private final long[] edges;
     private final int componentsCount;
 
-    EdgeBatch(int[][] edges, int start, int end, int componentsCount) {
+    EdgeBatch(long[] edges, int start, int end, int componentsCount) {
       this.edges = Arrays.copyOfRange(edges, start, end);
       this.componentsCount = componentsCount;
     }
 
-    Set<String> compute(Graph graph) {
-      Set<String> localBridges = new HashSet<>();
+    Set<Long> compute(Graph graph) {
+      Set<Long> localBridges = new HashSet<>();
 
-      for (int[] edge : edges) {
-        int v = edge[0];
-        int w = edge[1];
+      for (long edge : edges) {
+        int v = Edges.getSource(edge);
+        int w = Edges.getTarget(edge);
 
         UnionFind uf = new UnionFind(graph.getVerticesCount());
 
@@ -45,7 +44,7 @@ public class NaiveBridges {
         graph.iterateGraph(iterator);
 
         if (uf.getCount() != componentsCount) {
-          localBridges.add(EdgeFormatter.toKey(v, w));
+          localBridges.add(Edges.undirected(v, w));
         }
       }
 
@@ -53,10 +52,10 @@ public class NaiveBridges {
     }
   }
 
-  public static Set<String> findAll(Graph graph) {
+  public static Set<Long> findAll(Graph graph) {
     int componentsCount = ConnectedComponents.getCount(graph);
 
-    int[][] edges = graph.getEdgesSet();
+    long[] edges = graph.getEdgesSet();
     int m = edges.length;
 
     if (m == 0) {
@@ -66,13 +65,13 @@ public class NaiveBridges {
     int numThreads = Runtime.getRuntime().availableProcessors();
     int batchSize = Math.max(1, m / numThreads);
 
-    Set<String> bridges = Arrays.stream(IntStream.range(0, numThreads).toArray())
+    Set<Long> bridges = Arrays.stream(IntStream.range(0, numThreads).toArray())
         .parallel()
         .mapToObj(i -> {
           int start = i * batchSize;
           int end = (i == numThreads - 1) ? m : Math.min((i + 1) * batchSize, m);
           if (start >= m) {
-            return new HashSet<String>();
+            return new HashSet<Long>();
           }
           return new EdgeBatch(edges, start, end, componentsCount).compute(graph);
         })
@@ -82,7 +81,7 @@ public class NaiveBridges {
     return bridges;
   }
 
-  public static Set<String> findAll(UndirectedGraph graph) {
+  public static Set<Long> findAll(UndirectedGraph graph) {
     return findAll((Graph) graph);
   }
 }

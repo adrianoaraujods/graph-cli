@@ -21,7 +21,7 @@ public interface GraphBase {
    *
    * @return A 2D array where each row is an edge {v, w}.
    */
-  public abstract int[][] getEdgesSet();
+  public abstract long[] getEdgesSet();
 
   /**
    * Removes an edge from the graph.

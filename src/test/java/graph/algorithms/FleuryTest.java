@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 import graph.algorithms.Fleury.EulerianPath;
 import graph.algorithms.Fleury.EulerianType;
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.representations.GraphBuilderHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
-import graph.util.EdgeFormatter;
 
 class FleuryTest {
 
@@ -302,20 +302,22 @@ class FleuryTest {
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
 
-        int[][] edges = graph.getEdgesSet();
-        Set<String> expectedEdges = new HashSet<>();
-        for (int[] e : edges) {
-            expectedEdges.add(EdgeFormatter.toKey(e[0], e[1]));
-            expectedEdges.add(EdgeFormatter.toKey(e[1], e[0]));
+        long[] edges = graph.getEdgesSet();
+        Set<Long> expectedEdges = new HashSet<>();
+        for (long e : edges) {
+            int v = Edges.getSource(e);
+            int w = Edges.getTarget(e);
+
+            expectedEdges.add(Edges.directed(v, w));
+            expectedEdges.add(Edges.directed(w, v));
         }
 
         int edgeCount = result.path().length - 1;
         assertEquals(edges.length, edgeCount, "Path should traverse all edges");
 
-        Set<String> pathEdges = new HashSet<>();
+        Set<Long> pathEdges = new HashSet<>();
         for (int i = 0; i < result.path().length - 1; i++) {
-            String edge = EdgeFormatter.toKey(result.path()[i], result.path()[i + 1]);
-            pathEdges.add(edge);
+            pathEdges.add(Edges.undirected(result.path()[i], result.path()[i + 1]));
         }
 
         assertEquals(edges.length, pathEdges.size(), "Each edge should appear exactly once");
@@ -330,14 +332,13 @@ class FleuryTest {
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
 
-        int[][] edges = graph.getEdgesSet();
+        long[] edges = graph.getEdgesSet();
         int edgeCount = result.path().length - 1;
         assertEquals(edges.length, edgeCount, "Path should traverse all edges");
 
-        Set<String> pathEdges = new HashSet<>();
+        Set<Long> pathEdges = new HashSet<>();
         for (int i = 0; i < result.path().length - 1; i++) {
-            String edge = EdgeFormatter.toKey(result.path()[i], result.path()[i + 1]);
-            pathEdges.add(edge);
+            pathEdges.add(Edges.undirected(result.path()[i], result.path()[i + 1]));
         }
 
         assertEquals(edges.length, pathEdges.size(), "Each edge should appear exactly once");

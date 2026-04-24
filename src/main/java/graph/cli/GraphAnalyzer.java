@@ -13,9 +13,9 @@ import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
 import graph.algorithms.Tarjan;
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
-import graph.util.EdgeFormatter;
 
 public class GraphAnalyzer {
 
@@ -47,18 +47,18 @@ public class GraphAnalyzer {
 
     DFSResult dfsResult = DFS.search(graph);
     ClassifiedDFSEdges classifiedEdges = DFS.classifyVertexDFSEdges(graph, target, dfsResult);
-    int[][] treeEdges = DFS.getDFSTreeEdges(graph, dfsResult.parents());
+    long[] treeEdges = DFS.getDFSTreeEdges(graph, dfsResult.parents());
 
-    sb.append("  Tree Edges: ").append(EdgeFormatter.toString(treeEdges, graph.isDirected)).append("\n");
+    sb.append("  Tree Edges: ").append(Edges.toString(treeEdges, graph.isDirected)).append("\n");
     sb.append("  Edges adjacent to vertex ").append(target).append(":\n");
-    sb.append("    Tree Edges: ").append(EdgeFormatter.toString(classifiedEdges.treeEdges(), graph.isDirected))
+    sb.append("    Tree Edges: ").append(Edges.toString(classifiedEdges.treeEdges(), graph.isDirected))
         .append("\n");
-    sb.append("    Back Edges: ").append(EdgeFormatter.toString(classifiedEdges.backEdges(), graph.isDirected))
+    sb.append("    Back Edges: ").append(Edges.toString(classifiedEdges.backEdges(), graph.isDirected))
         .append("\n");
-    sb.append("    Cross Edges: ").append(EdgeFormatter.toString(classifiedEdges.crossEdges(), graph.isDirected))
+    sb.append("    Cross Edges: ").append(Edges.toString(classifiedEdges.crossEdges(), graph.isDirected))
         .append("\n");
     sb.append("    Forward Edges: ")
-        .append(EdgeFormatter.toString(classifiedEdges.forwardEdges(), graph.isDirected)).append("\n");
+        .append(Edges.toString(classifiedEdges.forwardEdges(), graph.isDirected)).append("\n");
 
     return sb.toString();
   }
@@ -80,7 +80,7 @@ public class GraphAnalyzer {
     for (int c = 0; c < components.length; c++) {
       sb.append("  [").append(c + 1).append("/").append(components.length).append("] Component:\n");
       sb.append("    Vertices: ").append(Arrays.toString(components[c].getVertices())).append("\n");
-      sb.append("    Edges: ").append(EdgeFormatter.toString(components[c].getEdgesSet(), graph.isDirected))
+      sb.append("    Edges: ").append(Edges.toString(components[c].getEdgesSet(), graph.isDirected))
           .append("\n");
     }
 
@@ -107,10 +107,10 @@ public class GraphAnalyzer {
     sb.append("\nBridges (Naive):\n");
     sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
-    Set<String> bridges = NaiveBridges.findAll(graph);
+    Set<Long> bridges = NaiveBridges.findAll(graph);
 
     sb.append("  Bridge Count: ").append(bridges.size()).append("\n");
-    sb.append("  Bridges: ").append(EdgeFormatter.toString(bridges.toArray(new int[0][]), graph.isDirected))
+    sb.append("  Bridges: ").append(Edges.toString(bridges.stream().mapToLong(l -> l).toArray(), graph.isDirected))
         .append("\n");
 
     return sb.toString();
@@ -121,10 +121,10 @@ public class GraphAnalyzer {
     sb.append("\nBridges (Tarjan):\n");
     sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
-    Set<String> bridges = Tarjan.findAll((graph));
+    Set<Long> bridges = Tarjan.findAll((graph));
 
     sb.append("  Bridge Count: ").append(bridges.size()).append("\n");
-    sb.append("  Bridges: ").append(EdgeFormatter.toString(bridges.toArray(new int[0][]), graph.isDirected))
+    sb.append("  Bridges: ").append(Edges.toString(bridges.stream().mapToLong(l -> l).toArray(), graph.isDirected))
         .append("\n");
 
     return sb.toString();

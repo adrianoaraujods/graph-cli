@@ -1,11 +1,12 @@
 package graph.algorithms;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.GraphBase.IteratorVisitor;
-import graph.util.EdgeFormatter;
 import graph.api.UndirectedGraph;
 
 public class Fleury {
@@ -91,6 +92,8 @@ public class Fleury {
       return new EulerianPath(new int[0], type);
     }
 
+    long start = System.currentTimeMillis();
+
     UndirectedGraph clone = (UndirectedGraph) ((Graph) graph).clone();
     int m = (int) clone.getEdgesCount();
 
@@ -105,8 +108,6 @@ public class Fleury {
 
     System.out.println();
     while (clone.getEdgesCount() > 0) {
-      System.out.print("\n[Info] Progress " + pathIndex + "/" + path.length);
-
       int[] neighbors = clone.getNeighbors(v);
       if (neighbors.length == 0) {
         System.out.println("\n[Error] Final path is " + pathIndex + " long, but it should be" + (m + 1) + ".");
@@ -116,24 +117,37 @@ public class Fleury {
       int w = neighbors[0];
 
       if (neighbors.length > 1) {
-        long start = System.currentTimeMillis();
-        Set<String> bridges = useTarjan
+        Set<Long> bridges = useTarjan
             ? Tarjan.findAll((UndirectedGraph) clone)
             : NaiveBridges.findAll((UndirectedGraph) clone);
-        System.out.printf(" (✓ %d ms)", System.currentTimeMillis() - start);
 
         int i = 1;
-        String edge;
+        long edge;
         do {
           w = neighbors[i++];
-          edge = EdgeFormatter.toKey(v, w);
+          edge = Edges.undirected(v, w);
         } while (i < neighbors.length && bridges.contains(edge));
       }
 
       clone.removeEdge(v, w);
       path[pathIndex++] = w;
       v = w;
+
+      // if ((pathIndex % 100) == 0) {
+      long end = System.currentTimeMillis() - start;
+      // System.out.print("\r[Info] Progress " + pathIndex + "/" + path.length);
+      // System.out.printf(" (… %d / %d ms) ", end, (end / pathIndex) * path.length);
+
+      // Stop after 60 min and return path progress
+      if (end > 3_600_000) {
+        path = Arrays.copyOf(path, pathIndex); // trim path
+        return new EulerianPath(path, EulerianType.EULERIAN);
+      }
+      // }
     }
+
+    // System.out.print("\r[Info] Finished path with " + pathIndex + "/" +
+    // path.length);
 
     if (checkDegreesIterator.specialVertices != null && v != checkDegreesIterator.specialVertices[1]) {
       System.out.println("\n[Warning] Final vertice of path is diffrent from expected.");

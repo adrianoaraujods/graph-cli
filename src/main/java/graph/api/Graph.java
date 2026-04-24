@@ -1,6 +1,8 @@
 package graph.api;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -91,18 +93,18 @@ public abstract class Graph implements GraphBase {
   }
 
   @Override
-  public int[][] getEdgesSet() {
-    java.util.ArrayList<int[]> edgesList = new java.util.ArrayList<>();
+  public long[] getEdgesSet() {
+    List<Long> set = new ArrayList<>(n);
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
       public void examineEdge(int v, int w) {
-        edgesList.add(new int[] { v, w });
+        set.add(Edges.directed(v, w));
       }
     };
 
     iterateGraph(iterator);
 
-    return edgesList.toArray(new int[0][]);
+    return set.stream().mapToLong(e -> e).toArray();
   }
 }

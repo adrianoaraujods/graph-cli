@@ -9,7 +9,7 @@ import java.util.Set;
 
 import graph.algorithms.FisherYates;
 import graph.api.ConnectivityType;
-import graph.util.EdgeFormatter;
+import graph.api.Edges;
 
 /**
  * Provides graph generation capabilities for creating synthetic graph data.
@@ -219,11 +219,11 @@ public class GraphGenerator {
     FisherYates.shuffle(path, random);
 
     for (int i = 0; i < (n - 1); i++) {
-      edges.add(EdgeFormatter.undirected(path[i], path[i + 1]));
+      edges.add(Edges.undirected(path[i], path[i + 1]));
     }
 
     if (cycle) {
-      edges.add(EdgeFormatter.undirected(path[n - 1], path[0]));
+      edges.add(Edges.undirected(path[n - 1], path[0]));
     }
   }
 
@@ -240,7 +240,7 @@ public class GraphGenerator {
       int v = random.nextInt(n);
 
       if (u != v)
-        edges.add(EdgeFormatter.undirected(u, v));
+        edges.add(Edges.undirected(u, v));
       attempts++;
     }
   }
@@ -261,9 +261,9 @@ public class GraphGenerator {
       int w = random.nextInt(n);
 
       if (u != v && v != w && u != w) {
-        long e1 = EdgeFormatter.undirected(u, v);
-        long e2 = EdgeFormatter.undirected(v, w);
-        long e3 = EdgeFormatter.undirected(w, u);
+        long e1 = Edges.undirected(u, v);
+        long e2 = Edges.undirected(v, w);
+        long e3 = Edges.undirected(w, u);
 
         // Only add the cycle if NONE of the edges already exist,
         // preventing duplicate edge logic from breaking degree parity

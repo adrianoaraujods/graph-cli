@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Set;
 
-import graph.util.EdgeFormatter;
+import graph.api.Edges;
 
 public class GraphWritter implements AutoCloseable {
   private static final int CHUNK_SIZE = 64 * 1_024;
@@ -56,8 +56,8 @@ public class GraphWritter implements AutoCloseable {
 
   public void writeEdge(Set<Long> edges) throws IOException {
     for (long edge : edges) {
-      int v = EdgeFormatter.getV(edge) + 1;
-      int w = EdgeFormatter.getW(edge) + 1;
+      int v = Edges.getSource(edge) + 1;
+      int w = Edges.getTarget(edge) + 1;
 
       writer.write(v + " " + w);
       writer.newLine();
