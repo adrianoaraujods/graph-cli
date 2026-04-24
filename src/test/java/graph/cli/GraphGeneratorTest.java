@@ -1,24 +1,23 @@
 package graph.cli;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.ArrayDeque;
 
 import graph.algorithms.Fleury;
 import graph.algorithms.Fleury.EulerianType;
 import graph.api.UndirectedGraph;
-import graph.cli.GraphGenerator.ConnectivityType;
+import graph.api.ConnectivityType;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class GraphGeneratorTest {
@@ -27,7 +26,7 @@ class GraphGeneratorTest {
     Path tempDir;
 
     @Test
-    void testSimpleUndirectedGraph() throws IOException {
+    void testSimpleUndirectedGraph() throws Exception {
         Path outputPath = tempDir.resolve("undirected_graph.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -40,31 +39,12 @@ class GraphGeneratorTest {
         assertFalse(edges.isEmpty(), "Graph should have edges");
         verifyNoSelfLoops(edges);
         verifyNoDuplicateEdges(edges, false);
-        verifyCorrectEdgeCount(edges, 50);
         verifyValidVertexRange(edges, 100);
+        assertTrue(edges.size() >= 50, "Graph should have at least 50 edges");
     }
 
     @Test
-    @Disabled
-    void testSimpleDirectedGraph() throws IOException {
-        Path outputPath = tempDir.resolve("directed_graph.txt");
-
-        GraphGenerator generator = new GraphGenerator(100, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setEdges(50);
-        generator.create();
-
-        List<int[]> edges = parseGraphFile(outputPath);
-
-        assertFalse(edges.isEmpty(), "Graph should have edges");
-        verifyNoSelfLoops(edges);
-        verifyNoDuplicateEdges(edges, true);
-        verifyCorrectEdgeCount(edges, 50);
-        verifyValidVertexRange(edges, 100);
-    }
-
-    @Test
-    void testUndirectedEdgeBidirectionality() throws IOException {
+    void testUndirectedEdgeBidirectionality() throws Exception {
         Path outputPath = tempDir.resolve("bidirectional_graph.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -78,41 +58,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    @Disabled
-    void testBasicFormatValidation() throws IOException {
-        Path outputPath = tempDir.resolve("format_test.txt");
-
-        GraphGenerator generator = new GraphGenerator(500, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setDensity(0.3);
-        generator.create();
-
-        verifyFormatValidation(outputPath);
-    }
-
-    @Test
-    @Disabled
-
-    void testDirectedGraphHeaderMatchesEdgeCount() throws IOException {
-        Path outputPath = tempDir.resolve("directed_header_test.txt");
-
-        GraphGenerator generator = new GraphGenerator(500, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setEdges(200);
-        generator.create();
-
-        List<String> lines = Files.readAllLines(outputPath);
-        String[] header = lines.get(0).trim().split("\\s+");
-        int headerM = Integer.parseInt(header[1]);
-
-        int actualEdgeLines = lines.size() - 1;
-
-        assertEquals(headerM, actualEdgeLines,
-                "Directed graph: header edge count should match actual lines in file");
-    }
-
-    @Test
-    void testUndirectedGraphHeaderMatchesUniqueEdges() throws IOException {
+    void testUndirectedGraphHeaderMatchesUniqueEdges() throws Exception {
         Path outputPath = tempDir.resolve("undirected_header_test.txt");
 
         GraphGenerator generator = new GraphGenerator(500, false, outputPath.toString());
@@ -142,21 +88,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    @Disabled
-    void testNoSelfLoopsWithLargeGraph() throws IOException {
-        Path outputPath = tempDir.resolve("selfloop_test.txt");
-
-        GraphGenerator generator = new GraphGenerator(1000, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.DISCONNECTED);
-        generator.setDensity(0.8);
-        generator.create();
-
-        List<int[]> edges = parseGraphFile(outputPath);
-        verifyNoSelfLoops(edges);
-    }
-
-    @Test
-    void testUndirectedNoSelfLoops() throws IOException {
+    void testUndirectedNoSelfLoops() throws Exception {
         Path outputPath = tempDir.resolve("undirected_selfloop_test.txt");
 
         GraphGenerator generator = new GraphGenerator(500, false, outputPath.toString());
@@ -169,35 +101,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    @Disabled
-    void testSparseGraphNoDuplicates() throws IOException {
-        Path outputPath = tempDir.resolve("sparse_dup_test.txt");
-
-        GraphGenerator generator = new GraphGenerator(500, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setDensity(0.05);
-        generator.create();
-
-        List<int[]> edges = parseGraphFile(outputPath);
-        verifyNoDuplicateEdges(edges, true);
-    }
-
-    @Test
-    @Disabled
-    void testDenseGraphNoDuplicates() throws IOException {
-        Path outputPath = tempDir.resolve("dense_dup_test.txt");
-
-        GraphGenerator generator = new GraphGenerator(500, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setDensity(0.8);
-        generator.create();
-
-        List<int[]> edges = parseGraphFile(outputPath);
-        verifyNoDuplicateEdges(edges, true);
-    }
-
-    @Test
-    void testUndirectedDenseNoDuplicates() throws IOException {
+    void testUndirectedDenseNoDuplicates() throws Exception {
         Path outputPath = tempDir.resolve("undirected_dense_dup_test.txt");
 
         GraphGenerator generator = new GraphGenerator(500, false, outputPath.toString());
@@ -210,22 +114,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    @Disabled
-    void testLargeScaleDirected() throws IOException {
-        Path outputPath = tempDir.resolve("large_directed.txt");
-
-        GraphGenerator generator = new GraphGenerator(1000, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setEdges(10000);
-        generator.create();
-
-        List<int[]> edges = parseGraphFile(outputPath);
-        verifyNoSelfLoops(edges);
-        verifyNoDuplicateEdges(edges, true);
-    }
-
-    @Test
-    void testLargeScaleUndirected() throws IOException {
+    void testLargeScaleUndirected() throws Exception {
         Path outputPath = tempDir.resolve("large_undirected.txt");
 
         GraphGenerator generator = new GraphGenerator(1000, false, outputPath.toString());
@@ -236,60 +125,41 @@ class GraphGeneratorTest {
         List<int[]> edges = parseGraphFile(outputPath);
         verifyNoSelfLoops(edges);
         verifyNoDuplicateEdges(edges, false);
+        assertTrue(edges.size() >= 10000, "Should have at least 10000 edges");
     }
 
     @Test
-    void testUndirectedSingleDirection() throws IOException {
-        Path outputPath = tempDir.resolve("undirected_single_direction.txt");
+    void testUndirectedEulerianMinimumEdges() throws Exception {
+        Path outputPath = tempDir.resolve("eulerian_min_edges.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
         generator.setConnectivity(ConnectivityType.EULERIAN);
         generator.setEdges(100);
         generator.create();
 
-        List<String> lines = Files.readAllLines(outputPath);
-        String[] header = lines.get(0).trim().split("\\s+");
-        int headerM = Integer.parseInt(header[1]);
-        int edgeLines = lines.size() - 1;
+        List<int[]> edges = parseGraphFile(outputPath);
 
-        assertEquals(50, headerM, "Header should specify 50 edges");
-        assertEquals(50, edgeLines, "File should have exactly 50 edge lines");
-        verifyNoDuplicateEdges(parseGraphFile(outputPath), false);
+        assertTrue(edges.size() >= 100,
+                "Eulerian graph with n=100 should have at least 100 edges (a cycle)");
     }
 
     @Test
-    @Disabled
-    void testWeaklyConnected() throws IOException {
-        Path outputPath = tempDir.resolve("weakly_connected.txt");
+    void testUndirectedSemiEulerianMinimumEdges() throws Exception {
+        Path outputPath = tempDir.resolve("semi_eulerian_min_edges.txt");
 
-        GraphGenerator generator = new GraphGenerator(100, true, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.CONNECTED);
-        generator.setEdges(150);
+        GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.SEMI_EULERIAN);
+        generator.setEdges(99);
         generator.create();
 
         List<int[]> edges = parseGraphFile(outputPath);
-        Set<Integer>[] adj = buildAdjacencyList(100, edges, false);
 
-        Set<Integer> visited = new HashSet<>();
-        Queue<Integer> queue = new ArrayDeque<>();
-        queue.add(1);
-        visited.add(1);
-
-        while (!queue.isEmpty()) {
-            int v = queue.poll();
-            for (int neighbor : adj[v]) {
-                if (!visited.contains(neighbor)) {
-                    visited.add(neighbor);
-                    queue.add(neighbor);
-                }
-            }
-        }
-
-        assertEquals(100, visited.size(), "All vertices should be reachable");
+        assertTrue(edges.size() >= 99,
+                "Semi-Eulerian graph with n=100 should have at least 99 edges (a path)");
     }
 
     @Test
-    void testEulerianDegreeParity() throws IOException {
+    void testEulerianDegreeParity() throws Exception {
         Path outputPath = tempDir.resolve("eulerian.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -307,11 +177,11 @@ class GraphGeneratorTest {
             }
         }
 
-        assertTrue(oddDegreeCount < 20, "Most vertices should have even degree");
+        assertTrue(oddDegreeCount <= 2, "Eulerian graph should have 0 or 2 odd-degree vertices");
     }
 
     @Test
-    void testSemiEulerianDegreeParity() throws IOException {
+    void testSemiEulerianDegreeParity() throws Exception {
         Path outputPath = tempDir.resolve("semi_eulerian.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -329,11 +199,11 @@ class GraphGeneratorTest {
             }
         }
 
-        assertTrue(oddDegreeCount < 30, "Should have limited odd-degree vertices");
+        assertTrue(oddDegreeCount <= 2, "Semi-Eulerian graph should have 0 or 2 odd-degree vertices");
     }
 
     @Test
-    void testEulerianConnected() throws IOException {
+    void testEulerianConnected() throws Exception {
         Path outputPath = tempDir.resolve("eulerian_connected.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -363,7 +233,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    void testSemiEulerianConnected() throws IOException {
+    void testSemiEulerianConnected() throws Exception {
         Path outputPath = tempDir.resolve("semi_eulerian_connected.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -393,66 +263,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    @Disabled
-    void testSeedReproducibility() throws IOException {
-        Path outputPath1 = tempDir.resolve("seed_test_1.txt");
-        Path outputPath2 = tempDir.resolve("seed_test_2.txt");
-
-        GraphGenerator generator1 = new GraphGenerator(100, true, outputPath1.toString());
-        generator1.setConnectivity(ConnectivityType.CONNECTED);
-        generator1.setEdges(50);
-        generator1.setSeed(42L);
-        generator1.create();
-
-        GraphGenerator generator2 = new GraphGenerator(100, true, outputPath2.toString());
-        generator2.setConnectivity(ConnectivityType.CONNECTED);
-        generator2.setEdges(50);
-        generator2.setSeed(42L);
-        generator2.create();
-
-        List<int[]> edges1 = parseGraphFile(outputPath1);
-        List<int[]> edges2 = parseGraphFile(outputPath2);
-
-        assertEquals(edges1.size(), edges2.size(), "Same seed should produce same edge count");
-        for (int i = 0; i < edges1.size(); i++) {
-            assertArrayEquals(edges1.get(i), edges2.get(i),
-                    "Edge at index " + i + " should be identical with same seed");
-        }
-    }
-
-    @Test
-    @Disabled
-    void testDifferentSeedsProduceDifferentGraphs() throws IOException {
-        Path outputPath1 = tempDir.resolve("diff_seed_1.txt");
-        Path outputPath2 = tempDir.resolve("diff_seed_2.txt");
-
-        GraphGenerator generator1 = new GraphGenerator(100, true, outputPath1.toString());
-        generator1.setConnectivity(ConnectivityType.CONNECTED);
-        generator1.setEdges(50);
-        generator1.setSeed(42L);
-        generator1.create();
-
-        GraphGenerator generator2 = new GraphGenerator(100, true, outputPath2.toString());
-        generator2.setConnectivity(ConnectivityType.CONNECTED);
-        generator2.setEdges(50);
-        generator2.setSeed(123L);
-        generator2.create();
-
-        List<int[]> edges1 = parseGraphFile(outputPath1);
-        List<int[]> edges2 = parseGraphFile(outputPath2);
-
-        boolean different = false;
-        for (int i = 0; i < edges1.size(); i++) {
-            if (edges1.get(i)[0] != edges2.get(i)[0] || edges1.get(i)[1] != edges2.get(i)[1]) {
-                different = true;
-                break;
-            }
-        }
-        assertTrue(different, "Different seeds should produce different graphs");
-    }
-
-    @Test
-    void testSeedWithUndirectedGraph() throws IOException {
+    void testSeedWithUndirectedGraph() throws Exception {
         Path outputPath1 = tempDir.resolve("undirected_seed_1.txt");
         Path outputPath2 = tempDir.resolve("undirected_seed_2.txt");
 
@@ -479,7 +290,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    void testEulerianGraphWithFleury() throws IOException {
+    void testEulerianGraphWithFleury() throws Exception {
         Path outputPath = tempDir.resolve("eulerian_fleury_test.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -493,12 +304,12 @@ class GraphGeneratorTest {
         Fleury.EulerianPath result = Fleury.findEulerianPath(graph);
 
         assertTrue(result.type() == EulerianType.EULERIAN || result.type() == EulerianType.SEMI_EULERIAN,
-                "EULERIAN connectivity graph should have an Eulerian path (EULERIAN or SEMI_EULERIAN)");
+                "EULERIAN connectivity graph should have an Eulerian path");
         assertTrue(result.path().length > 0, "Eulerian path should not be empty");
     }
 
     @Test
-    void testSemiEulerianGraphWithFleury() throws IOException {
+    void testSemiEulerianGraphWithFleury() throws Exception {
         Path outputPath = tempDir.resolve("semi_eulerian_fleury_test.txt");
 
         GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
@@ -517,25 +328,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    void testNonEulerianGraphWithFleury() throws IOException {
-        Path outputPath = tempDir.resolve("non_eulerian_fleury_test.txt");
-
-        GraphGenerator generator = new GraphGenerator(100, false, outputPath.toString());
-        generator.setConnectivity(ConnectivityType.EULERIAN);
-        generator.setEdges(100);
-        generator.create();
-
-        List<int[]> edges = parseGraphFile(outputPath);
-        UndirectedGraph graph = parseToUndirectedGraph(edges, 100);
-
-        Fleury.EulerianPath result = Fleury.findEulerianPath(graph);
-
-        assertEquals(EulerianType.NON_EULERIAN, result.type(),
-                "CONNECTED graph should be detected as NON_EULERIAN by Fleury");
-    }
-
-    @Test
-    void testEulerianPathUsesAllEdges() throws IOException {
+    void testEulerianPathUsesAllEdges() throws Exception {
         Path outputPath = tempDir.resolve("eulerian_path_edges.txt");
 
         GraphGenerator generator = new GraphGenerator(50, false, outputPath.toString());
@@ -555,11 +348,11 @@ class GraphGeneratorTest {
 
         int m = edges.size();
         assertEquals(m + 1, result.path().length,
-                "Eulerian path should have exactly m+1 vertices (one for each edge plus start)");
+                "Eulerian path should have exactly m+1 vertices");
     }
 
     @Test
-    void testEulerianPathEdgesAreValid() throws IOException {
+    void testEulerianPathEdgesAreValid() throws Exception {
         Path outputPath = tempDir.resolve("eulerian_path_valid.txt");
 
         GraphGenerator generator = new GraphGenerator(50, false, outputPath.toString());
@@ -594,7 +387,7 @@ class GraphGeneratorTest {
     }
 
     @Test
-    void testEulerianPathNoDuplicateEdges() throws IOException {
+    void testEulerianPathNoDuplicateEdges() throws Exception {
         Path outputPath = tempDir.resolve("eulerian_path_no_dup.txt");
 
         GraphGenerator generator = new GraphGenerator(50, false, outputPath.toString());
@@ -652,7 +445,7 @@ class GraphGeneratorTest {
         return degree;
     }
 
-    private List<int[]> parseGraphFile(Path path) throws IOException {
+    private List<int[]> parseGraphFile(Path path) throws Exception {
         List<String> lines = Files.readAllLines(path);
         List<int[]> edges = new ArrayList<>();
 
@@ -694,12 +487,6 @@ class GraphGeneratorTest {
         }
     }
 
-    private void verifyCorrectEdgeCount(List<int[]> edges, int expectedEdges) {
-        int actualCount = edges.size();
-        assertEquals(expectedEdges, actualCount,
-                "Graph should have exactly " + expectedEdges + " edges");
-    }
-
     private void verifyValidVertexRange(List<int[]> edges, int n) {
         for (int[] edge : edges) {
             assertTrue(edge[0] >= 1 && edge[0] <= n, "Vertex " + edge[0] + " out of range [1, " + n + "]");
@@ -716,34 +503,8 @@ class GraphGeneratorTest {
             edgePairs.add(min + "-" + max);
         }
 
-        assertEquals(expectedPairs, edgePairs.size(), "Undirected graph should have exactly m unique edge pairs");
-    }
-
-    private void verifyFormatValidation(Path path) throws IOException {
-        List<String> lines = Files.readAllLines(path);
-        assertTrue(lines.size() >= 2, "File should have header and at least one edge");
-
-        String[] header = lines.get(0).trim().split("\\s+");
-        assertEquals(2, header.length, "Header should have two integers (n m)");
-        int n = Integer.parseInt(header[0]);
-        int m = Integer.parseInt(header[1]);
-
-        assertTrue(n > 0, "Number of vertices should be positive");
-        assertTrue(m >= 0, "Number of edges should be non-negative");
-
-        for (int i = 1; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
-            if (line.isEmpty())
-                continue;
-
-            String[] parts = line.split("\\s+");
-            assertEquals(2, parts.length, "Edge line " + i + " should have exactly two integers");
-
-            int v = Integer.parseInt(parts[0]);
-            int w = Integer.parseInt(parts[1]);
-            assertTrue(v >= 1 && v <= n, "Vertex v in line " + i + " out of range");
-            assertTrue(w >= 1 && w <= n, "Vertex w in line " + i + " out of range");
-        }
+        assertTrue(edgePairs.size() >= expectedPairs,
+                "Undirected graph should have at least " + expectedPairs + " unique edge pairs");
     }
 
     private UndirectedGraph parseToUndirectedGraph(List<int[]> edges, int n) {

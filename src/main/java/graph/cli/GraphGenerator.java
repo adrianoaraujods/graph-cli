@@ -1,15 +1,15 @@
 package graph.cli;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import graph.algorithms.ErdosGallai;
-import graph.algorithms.HavelHakimi;
+import graph.algorithms.FisherYates;
+import graph.api.ConnectivityType;
+import graph.util.EdgeFormatter;
 
 /**
  * Provides graph generation capabilities for creating synthetic graph data.
@@ -21,10 +21,7 @@ import graph.algorithms.HavelHakimi;
 public class GraphGenerator {
 
   // Config
-  private static final int CHUNK_SIZE = 64 * 1_024;
-  private static final int LOGGING_INTERVAL = 5_000;
   private static final long LARGE_EDGE_THRESHOLD = 50_000_000L;
-
   private String outputPath;
   private Random random;
 
@@ -34,22 +31,7 @@ public class GraphGenerator {
   private int n = -1;
   private long m = -1;
   private double density = -1;
-
-  // Logging
-  private boolean enableLog = false;
-  private long startTime;
-  private long lastLogTime;
-  private long written;
-
-  /**
-   * Specifies the connectivity type for generated graphs.
-   */
-  public enum ConnectivityType {
-    DISCONNECTED,
-    CONNECTED,
-    EULERIAN,
-    SEMI_EULERIAN
-  }
+  Set<Long> edges = null;
 
   /**
    * Immutable configuration for graph generation.
@@ -63,10 +45,6 @@ public class GraphGenerator {
     this.isDirected = isDirected;
     this.outputPath = outputPath;
     random = new Random();
-  }
-
-  public void enableLog() {
-    enableLog = true;
   }
 
   public void setSeed(Long seed) {
@@ -96,11 +74,7 @@ public class GraphGenerator {
     }
 
     if ((m % 2) != 0) {
-      if (maxEdges() % 2 != 0) {
-        m--; // Round DOWN
-      } else {
-        m++; // Round UP
-      }
+      m++; // Round UP
     }
   }
 
@@ -133,15 +107,7 @@ public class GraphGenerator {
     }
   }
 
-  /**
-   * Builds the GraphConfig from the current builder state.
-   *
-   * @return The constructed GraphConfig.
-   * @throws IllegalStateException    If required fields are missing or invalid.
-   * @throws IllegalArgumentException If edge/connectivity constraints are
-   *                                  violated.
-   */
-  public void create() {
+  public void validateGraph() {
     if (n <= 0) {
       throw new IllegalStateException("Vertices must be specified and greater than 0");
     }
@@ -181,159 +147,134 @@ public class GraphGenerator {
           "Undirected " + connectivity + " graph with " + n + " vertices requires at least " + (n - 1)
               + " edges, but only " + m + " specified");
     }
+  }
+
+  /**
+   * Builds the GraphConfig from the current builder state.
+   *
+   * @return The constructed GraphConfig.
+   * @throws IOException
+   * @throws IllegalStateException    If required fields are missing or invalid.
+   * @throws IllegalArgumentException If edge/connectivity constraints are
+   *                                  violated.
+   */
+  public long create() throws Exception {
+    validateGraph();
 
     if (!confirmLargeGraph()) {
       System.out.println("Graph generation cancelled.");
-      return;
+      return -1;
     }
 
-    System.out.printf("Starting %s graph generation with %,d edges...\n", connectivity.toString().toLowerCase(), m);
+    edges = new HashSet<>(m > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) m);
 
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath), CHUNK_SIZE)) {
-      // Write header
-      writer.write(n + " " + m);
-      writer.newLine();
+    if (isDirected) {
+      // TODO: implement directed method
+      throw new Exception("[ERROR] Graph generation for directed not supported.");
+    } else {
+      generateUndirected();
+    }
 
-      startTime = System.currentTimeMillis();
-      lastLogTime = startTime; // Add this line
-
-      if (density >= 1) {
-        generateCompleteGraph(writer);
-      }
-
-      if (isDirected) {
-        generateDirectedGraph(writer);
-
-      } else {
-        generateUndirectedGraph(writer);
-      }
-
-      long elapsed = System.currentTimeMillis() - startTime;
-      System.out.printf("[%d ms] Graph successfully generated! Available at: ./%s\n", elapsed, outputPath);
-
+    m = edges.size();
+    try (GraphWritter writer = new GraphWritter(n, m, outputPath)) {
+      writer.writeHeader();
+      writer.writeEdge(edges);
     } catch (IOException e) {
       System.err.println("[Error] An error occurred while writing to the file: " + e.getMessage());
     }
+
+    return m;
   }
 
-  private void generateCompleteGraph(BufferedWriter writer) {
-    // TODO
-  }
-
-  private void generateDirectedGraph(BufferedWriter writer) {
-    // TODO
-  }
-
-  private void generateUndirectedGraph(BufferedWriter writer) {
-    int[] sequence = createDegreeSequence();
-
-    Set<String> edges = HavelHakimi.generateEdges(sequence, connectivity != ConnectivityType.DISCONNECTED);
-
-    if (edges == null) {
-      System.err.println("[Error] Failed to construct graph from degree sequence");
+  private void generateUndirected() throws Exception {
+    if (connectivity == ConnectivityType.DISCONNECTED) {
+      fillWithRandomEdges();
       return;
     }
 
-    try {
-      for (String edge : edges) {
-        String[] e = edge.split("-");
-        int v = Integer.parseInt(e[0]) + 1;
-        int w = Integer.parseInt(e[1]) + 1;
-
-        writer.write(v + " " + w);
-        writer.newLine();
-        written++;
-        logWritten();
-      }
-    } catch (IOException e) {
-      System.err.println("[Error] Failed to write edges: " + e.getMessage());
+    if (connectivity == ConnectivityType.EULERIAN) {
+      addPath(true);
+    } else {
+      addPath(false);
     }
-  }
-
-  private int[] createDegreeSequence() {
-    int[] sequence = new int[n];
-    long targetSum = 2 * m;
-
-    int maxDegree = n - 1;
-    int avgDegree = (int) (targetSum / n);
-    int minDegree = 0;
-
-    boolean evenDegrees = false;
 
     if (connectivity == ConnectivityType.CONNECTED) {
-      minDegree = 1;
-    } else if (connectivity == ConnectivityType.EULERIAN || connectivity == ConnectivityType.SEMI_EULERIAN) {
-      minDegree = 2;
-      avgDegree = (int) ((targetSum / n) / 2) * 2; // Ensure is even
-      evenDegrees = true;
+      fillWithRandomEdges();
+    } else {
+      fillWithRandomCycles();
     }
-
-    for (int v = 0; v < n; v++) {
-      sequence[v] = avgDegree;
-    }
-
-    int remainder = (int) (targetSum - (avgDegree * n));
-    for (int i = 0; i < remainder / 2; i++) {
-      sequence[random.nextInt(n)] += 2;
-    }
-
-    // make two vertices have even degree
-    if (connectivity == ConnectivityType.SEMI_EULERIAN) {
-      while (true) {
-        int v = random.nextInt(n);
-        int w = random.nextInt(n);
-
-        if (v != w) {
-          if (v - 1 > minDegree && w + 1 < maxDegree) {
-            sequence[v] -= 1;
-            sequence[w] += 1;
-            break;
-
-          } else if (w - 1 > minDegree && sequence[w] + 1 <= maxDegree) {
-            sequence[w] -= 1;
-            sequence[v] += 1;
-            break;
-          }
-        }
-      }
-    }
-
-    for (int v = n - 1; v > 0; v--) {
-      int w = random.nextInt(v + 1);
-
-      int maxPossibleDiff = sequence[v] - minDegree;
-      if (maxPossibleDiff <= 0) {
-        continue;
-      }
-
-      int diff;
-      if (evenDegrees) {
-        int halfDiff = Math.max(1, maxPossibleDiff / 2);
-        diff = random.nextInt(1, halfDiff + 1) * 2;
-      } else {
-        diff = random.nextInt(1, maxPossibleDiff + 1);
-      }
-
-      if (sequence[v] - diff >= minDegree && sequence[w] + diff <= maxDegree) {
-        sequence[v] -= diff;
-        sequence[w] += diff;
-      } else if (sequence[w] - diff >= minDegree && sequence[v] + diff <= maxDegree) {
-        sequence[w] -= diff;
-        sequence[v] += diff;
-      }
-    }
-
-    return ErdosGallai.ensureValidSequence(sequence, evenDegrees);
   }
 
-  private void logWritten() {
-    if (enableLog) {
-      long now = System.currentTimeMillis();
+  private void addPath(boolean cycle) {
+    if (edges == null) {
+      edges = new HashSet<>(n);
+    }
 
-      if (now - lastLogTime > LOGGING_INTERVAL) {
-        System.out.printf("\n[%d ms] Written %,d / %,d edges", (now - startTime), written, m);
-        lastLogTime = now;
+    int[] path = new int[n];
+
+    for (int i = 0; i < n; i++) {
+      path[i] = i;
+    }
+
+    FisherYates.shuffle(path, random);
+
+    for (int i = 0; i < (n - 1); i++) {
+      edges.add(EdgeFormatter.undirected(path[i], path[i + 1]));
+    }
+
+    if (cycle) {
+      edges.add(EdgeFormatter.undirected(path[n - 1], path[0]));
+    }
+  }
+
+  private void fillWithRandomEdges() {
+    if (edges == null) {
+      edges = new HashSet<>(m > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) m);
+    }
+
+    long maxAttempts = m * 10; // Prevent infinite loops in highly dense graphs
+    int attempts = 0;
+
+    while (edges.size() < m && attempts < maxAttempts) {
+      int u = random.nextInt(n);
+      int v = random.nextInt(n);
+
+      if (u != v)
+        edges.add(EdgeFormatter.undirected(u, v));
+      attempts++;
+    }
+  }
+
+  private void fillWithRandomCycles() {
+    if (edges == null) {
+      edges = new HashSet<>(m > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) m);
+    }
+
+    long maxAttempts = m * 10;
+    int attempts = 0;
+
+    // Note: Because we add edges 3 at a time, we might slightly overshoot the
+    // targetEdge count.
+    while (edges.size() < m && attempts < maxAttempts) {
+      int u = random.nextInt(n);
+      int v = random.nextInt(n);
+      int w = random.nextInt(n);
+
+      if (u != v && v != w && u != w) {
+        long e1 = EdgeFormatter.undirected(u, v);
+        long e2 = EdgeFormatter.undirected(v, w);
+        long e3 = EdgeFormatter.undirected(w, u);
+
+        // Only add the cycle if NONE of the edges already exist,
+        // preventing duplicate edge logic from breaking degree parity
+        if (!edges.contains(e1) && !edges.contains(e2) && !edges.contains(e3)) {
+          edges.add(e1);
+          edges.add(e2);
+          edges.add(e3);
+        }
       }
+
+      attempts++;
     }
   }
 }

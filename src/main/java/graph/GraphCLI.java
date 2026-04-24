@@ -1,18 +1,21 @@
 package graph;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import graph.api.ConnectivityType;
 import graph.api.Graph;
 import graph.cli.GraphGenerator;
-import graph.cli.GraphLogger;
+import graph.cli.GraphAnalyzer;
 import graph.cli.GraphReader;
-import graph.cli.GraphGenerator.ConnectivityType;
 import graph.representations.GraphBuilder;
 import graph.representations.adjacencylist.AdjacencyListGraphBuilder;
+import graph.util.Timer;
 import graph.util.Usage;
 import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
@@ -291,7 +294,6 @@ public class GraphCLI {
             if (subcommand.equals("create")) {
                 GraphGenerator generator = new GraphGenerator(vertices, isDirected, graphPath);
                 generator.setConnectivity(connectivity);
-                generator.enableLog();
 
                 if (edges >= 0) {
                     generator.setEdges(edges);
@@ -310,9 +312,22 @@ public class GraphCLI {
                 System.out.printf("  Density: %.2f\n", generator.getDensity());
                 System.out.printf("  Max Edges: %,d\n", generator.maxEdges());
 
-                System.out.printf("\nGenerating Graph...\n");
-                generator.create();
-                System.out.println("\nGraph generation complete.");
+                System.out.printf("\n[Info] Generating graph with %,d edges...", edges);
+                Timer.run(() -> {
+                    try {
+                        long createdEdges = generator.create();
+
+                        if (createdEdges != edges) {
+                            System.out.printf("\n[Warning] Graph was generated with %,d edges insead of %,d targeted.",
+                                    createdEdges, edges);
+                        }
+                    } catch (Exception e) {
+                        System.err.printf("[Error] An error occurred while generating the graph: " + e.getMessage());
+                    }
+
+                });
+
+                System.out.printf("\nGraph successfully generated! File available at: %s\n", graphPath);
             }
 
             if (subcommand.equals("read")) {
@@ -337,7 +352,7 @@ public class GraphCLI {
                 }
 
                 System.out.printf("\n[%d/%d] Reading File...", ++step, totalSteps);
-                GraphLogger.logTime(() -> {
+                Timer.run(() -> {
                     try {
                         GraphReader.readFile(graphPath, builder);
 
@@ -347,7 +362,7 @@ public class GraphCLI {
                 });
 
                 System.out.printf("[%d/%d] Building Graph...", ++step, totalSteps);
-                GraphLogger.logTime(() -> graph = builder.build());
+                Timer.run(() -> graph = builder.build());
 
                 StringBuilder allResults = new StringBuilder();
 
@@ -369,17 +384,17 @@ public class GraphCLI {
                         System.out.printf("[%d/%d] Running %s...", ++step, totalSteps, algorithmName);
                     }
 
-                    GraphLogger.logTime(() -> {
+                    Timer.run(() -> {
                         try {
                             String result;
 
                             switch (algorithm) {
-                                case "--dfs" -> result = GraphLogger.runDFS(graph, target, outputPath);
-                                case "--kosaraju" -> result = GraphLogger.runKosaraju(graph, outputPath);
-                                case "--fleury" -> result = GraphLogger.runFleury(graph, outputPath,
+                                case "--dfs" -> result = GraphAnalyzer.runDFS(graph, target, outputPath);
+                                case "--kosaraju" -> result = GraphAnalyzer.runKosaraju(graph, outputPath);
+                                case "--fleury" -> result = GraphAnalyzer.runFleury(graph, outputPath,
                                         !algorithms.contains("--naive-bridges"));
-                                case "--tarjan" -> result = GraphLogger.runTarjan(graph, outputPath);
-                                case "--naive-bridges" -> result = GraphLogger.runNaiveBridges(graph, outputPath);
+                                case "--tarjan" -> result = GraphAnalyzer.runTarjan(graph, outputPath);
+                                case "--naive-bridges" -> result = GraphAnalyzer.runNaiveBridges(graph, outputPath);
                                 default -> throw new RuntimeException("Unknown algorithm: " + algorithm);
                             }
 
@@ -396,9 +411,8 @@ public class GraphCLI {
                 if (outputPath == null) {
                     System.out.print(allResults.toString());
                 } else {
-                    try {
-                        GraphLogger.writeToFile(outputPath, allResults.toString());
-
+                    try (PrintWriter writer = new PrintWriter(new FileWriter(outputPath))) {
+                        writer.print(allResults.toString());
                     } catch (IOException e) {
                         System.err.printf("[Error] Fail to write output: " + e.getMessage());
                     }

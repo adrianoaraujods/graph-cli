@@ -16,9 +16,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import graph.algorithms.Fleury;
 import graph.algorithms.Fleury.EulerianPath;
+import graph.api.ConnectivityType;
 import graph.api.UndirectedGraph;
 import graph.cli.GraphGenerator;
-import graph.cli.GraphGenerator.ConnectivityType;
 import graph.cli.GraphReader;
 import graph.representations.GraphBuilder;
 import graph.representations.adjacencylist.AdjacencyListGraphBuilder;
@@ -119,7 +119,8 @@ public class Benchmark {
             boolean fileExists = java.nio.file.Paths.get(outputPath).toFile().exists();
             try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, fileExists)))) {
                 if (!fileExists) {
-                    writer.println("attempt,vertices,edges,connectivity,representation,generation_time_ms,fleury_time_ms,path_length,eulerian_type,algorithm");
+                    writer.println(
+                            "attempt,vertices,edges,connectivity,representation,generation_time_ms,fleury_time_ms,path_length,eulerian_type,algorithm");
                 }
             }
         } catch (IOException e) {

@@ -9,6 +9,9 @@ import graph.util.EdgeFormatter;
 import graph.util.Sort;
 import graph.util.UnionFind;
 
+/**
+ * @deprecated
+ */
 public class HavelHakimi {
 
   /**
