@@ -3,6 +3,7 @@ package graph.representations.adjacencylist;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import graph.api.DirectedGraph;
@@ -103,22 +104,20 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
 
   @Override
   public void iterateGraph(IteratorVisitor visitor) {
-    int[] vertexArray = vertices.keySet().stream().mapToInt(Integer::intValue).toArray();
+    for (Entry<Integer, Set<Integer>> entry : vertices.entrySet()) {
+      int v = entry.getKey();
 
-    for (int v : vertexArray) {
       if (visitor.shouldStop()) {
         return;
       }
-
       visitor.examineVertex(v);
 
-      Set<Integer> adjacency = vertices.get(v);
+      Set<Integer> adjacency = entry.getValue();
       if (adjacency == null) {
         continue;
       }
 
-      int[] neighborArray = adjacency.stream().mapToInt(Integer::intValue).toArray();
-      for (int w : neighborArray) {
+      for (int w : adjacency) {
         if (visitor.shouldStop()) {
           return;
         }
