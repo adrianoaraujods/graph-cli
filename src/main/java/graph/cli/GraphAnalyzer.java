@@ -93,8 +93,8 @@ public class GraphAnalyzer {
     sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
     EulerianPath eulerianPath = graph.isDirected
-        ? Fleury.findEulerianPath(graph)
-        : Fleury.findEulerianPath((UndirectedGraph) graph, useTarjan);
+        ? Fleury.findEulerianPath((DirectedGraph) graph)
+        : Fleury.findEulerianPath((UndirectedGraph) graph, useTarjan, true);
 
     sb.append("  Eulerian Type: ").append(eulerianPath.type()).append("\n");
     sb.append("  Eulerian Path: ").append(Arrays.toString(eulerianPath.path())).append("\n");

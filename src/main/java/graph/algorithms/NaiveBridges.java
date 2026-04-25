@@ -34,7 +34,7 @@ public class NaiveBridges {
         IteratorVisitor iterator = new IteratorVisitor() {
           @Override
           public void examineEdge(int edgeV, int edgeW) {
-            if (edgeV == v && edgeW == w) {
+            if ((edgeV == v && edgeW == w) || (!graph.isDirected && (edgeV == w && edgeW == v))) {
               return;
             }
             uf.union(edgeV - 1, edgeW - 1);
@@ -83,5 +83,23 @@ public class NaiveBridges {
 
   public static Set<Long> findAll(UndirectedGraph graph) {
     return findAll((Graph) graph);
+  }
+
+  public static boolean isBridge(int v, int w, Graph graph, int componentsCount) {
+    UnionFind uf = new UnionFind(graph.getVerticesCount());
+
+    IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int edgeV, int edgeW) {
+        if ((edgeV == v && edgeW == w) || (!graph.isDirected && (edgeV == w && edgeW == v))) {
+          return;
+        }
+        uf.union(edgeV - 1, edgeW - 1);
+      }
+    };
+
+    graph.iterateGraph(iterator);
+
+    return uf.getCount() != componentsCount;
   }
 }

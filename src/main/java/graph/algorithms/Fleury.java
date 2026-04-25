@@ -74,7 +74,7 @@ public class Fleury {
     }
   }
 
-  public static EulerianPath findEulerianPath(UndirectedGraph graph, boolean useTarjan) {
+  public static EulerianPath findEulerianPath(UndirectedGraph graph, boolean useTarjan, boolean enableLog) {
     if (graph.getEdgesCount() < 1) {
       return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
     }
@@ -117,37 +117,46 @@ public class Fleury {
       int w = neighbors[0];
 
       if (neighbors.length > 1) {
-        Set<Long> bridges = useTarjan
-            ? Tarjan.findAll((UndirectedGraph) clone)
-            : NaiveBridges.findAll((UndirectedGraph) clone);
+        if (useTarjan) {
+          Set<Long> bridges = Tarjan.findAll(clone);
 
-        int i = 1;
-        long edge;
-        do {
-          w = neighbors[i++];
-          edge = Edges.undirected(v, w);
-        } while (i < neighbors.length && bridges.contains(edge));
+          int i = 0;
+          long edge;
+          do {
+            w = neighbors[i++];
+            edge = Edges.undirected(v, w);
+          } while (i < neighbors.length && bridges.contains(edge));
+        } else {
+          componentsCount = ConnectedComponents.getCount((Graph) clone);
+
+          int i = 0;
+          boolean isBridge;
+          do {
+            w = neighbors[i++];
+            isBridge = NaiveBridges.isBridge(v, w, (Graph) clone, componentsCount);
+          } while (i < neighbors.length && isBridge);
+        }
       }
 
       clone.removeEdge(v, w);
       path[pathIndex++] = w;
       v = w;
 
-      // if ((pathIndex % 100) == 0) {
-      long end = System.currentTimeMillis() - start;
-      // System.out.print("\r[Info] Progress " + pathIndex + "/" + path.length);
-      // System.out.printf(" (… %d / %d ms) ", end, (end / pathIndex) * path.length);
-
       // Stop after 60 min and return path progress
+      long end = System.currentTimeMillis() - start;
       if (end > 3_600_000) {
-        path = Arrays.copyOf(path, pathIndex); // trim path
-        return new EulerianPath(path, EulerianType.EULERIAN);
-      }
-      // }
-    }
+        System.out.printf("\n[Warning] Execution aborted after %,d ms. Path length: %,d / %,d.", end, pathIndex,
+            path.length);
 
-    // System.out.print("\r[Info] Finished path with " + pathIndex + "/" +
-    // path.length);
+        path = Arrays.copyOf(path, pathIndex); // trim path
+        return new EulerianPath(path, type);
+      }
+
+      if (enableLog && (pathIndex % 100) == 0) {
+        System.out.print("\r[Info] Progress " + pathIndex + "/" + path.length);
+        System.out.printf(" (… %d / %d ms) ", end, (end / pathIndex) * path.length);
+      }
+    }
 
     if (checkDegreesIterator.specialVertices != null && v != checkDegreesIterator.specialVertices[1]) {
       System.out.println("\n[Warning] Final vertice of path is diffrent from expected.");
@@ -157,7 +166,7 @@ public class Fleury {
   }
 
   public static EulerianPath findEulerianPath(UndirectedGraph graph) {
-    return findEulerianPath(graph, true);
+    return findEulerianPath(graph, true, false);
   }
 
   public static EulerianPath findEulerianPath(DirectedGraph graph) {
