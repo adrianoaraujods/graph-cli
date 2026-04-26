@@ -16,10 +16,12 @@ public class NaiveBridges {
   private static class EdgeBatch {
     private final long[] edges;
     private final int componentsCount;
+    private final long startTime;
 
-    EdgeBatch(long[] edges, int start, int end, int componentsCount) {
+    EdgeBatch(long[] edges, int start, int end, int componentsCount, long startTime) {
       this.edges = Arrays.copyOfRange(edges, start, end);
       this.componentsCount = componentsCount;
+      this.startTime = startTime;
     }
 
     Set<Long> compute(Graph graph) {
@@ -37,7 +39,13 @@ public class NaiveBridges {
             if ((edgeV == v && edgeW == w) || (!graph.isDirected && (edgeV == w && edgeW == v))) {
               return;
             }
+
             uf.union(edgeV - 1, edgeW - 1);
+          }
+
+          @Override
+          public boolean shouldStop() {
+            return (startTime > 0) && (System.currentTimeMillis() - startTime > 3_600_000);
           }
         };
 
@@ -52,8 +60,8 @@ public class NaiveBridges {
     }
   }
 
-  public static Set<Long> findAll(Graph graph) {
-    int componentsCount = ConnectedComponents.getCount(graph);
+  public static Set<Long> findAll(Graph graph, int componentsCount, long startTime) {
+    int components = componentsCount < 0 ? ConnectedComponents.getCount(graph) : componentsCount;
 
     long[] edges = graph.getEdgesSet();
     int m = edges.length;
@@ -70,19 +78,41 @@ public class NaiveBridges {
         .mapToObj(i -> {
           int start = i * batchSize;
           int end = (i == numThreads - 1) ? m : Math.min((i + 1) * batchSize, m);
+
           if (start >= m) {
             return new HashSet<Long>();
           }
-          return new EdgeBatch(edges, start, end, componentsCount).compute(graph);
+
+          return new EdgeBatch(edges, start, end, components, startTime).compute(graph);
         })
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
 
+    if ((startTime > 0) && (System.currentTimeMillis() - startTime > 3_600_000)) {
+      return null;
+    }
+
     return bridges;
   }
 
+  public static Set<Long> findAll(UndirectedGraph graph, int componentsCount, long startTime) {
+    return findAll((Graph) graph, componentsCount, startTime);
+  }
+
+  public static Set<Long> findAll(UndirectedGraph graph, int componentsCount) {
+    return findAll((Graph) graph, componentsCount, -1);
+  }
+
+  public static Set<Long> findAll(UndirectedGraph graph, long startTime) {
+    return findAll((Graph) graph, -1, startTime);
+  }
+
   public static Set<Long> findAll(UndirectedGraph graph) {
-    return findAll((Graph) graph);
+    return findAll((Graph) graph, -1, -1);
+  }
+
+  public static Set<Long> findAll(Graph graph) {
+    return findAll(graph, -1, -1);
   }
 
   public static boolean isBridge(int v, int w, Graph graph, int componentsCount) {

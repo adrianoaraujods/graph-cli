@@ -8,6 +8,7 @@ import graph.algorithms.DFS;
 import graph.algorithms.DFS.ClassifiedDFSEdges;
 import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.Fleury;
+import graph.algorithms.Fleury.BridgeFinder;
 import graph.algorithms.Fleury.EulerianPath;
 import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
@@ -87,14 +88,14 @@ public class GraphAnalyzer {
     return sb.toString();
   }
 
-  public static String runFleury(Graph graph, String outputFile, boolean useTarjan) {
+  public static String runFleury(Graph graph, String outputFile, BridgeFinder method) {
     StringBuilder sb = new StringBuilder();
     sb.append("\nEulerian Path (Fleury):\n");
     sb.append("  Graph Type: ").append(graph.isDirected ? "Directed" : "Undirected").append("\n");
 
     EulerianPath eulerianPath = graph.isDirected
         ? Fleury.findEulerianPath((DirectedGraph) graph)
-        : Fleury.findEulerianPath((UndirectedGraph) graph, useTarjan, true);
+        : Fleury.findEulerianPath((UndirectedGraph) graph, method, true);
 
     sb.append("  Eulerian Type: ").append(eulerianPath.type()).append("\n");
     sb.append("  Eulerian Path: ").append(Arrays.toString(eulerianPath.path())).append("\n");

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import graph.algorithms.Fleury.BridgeFinder;
 import graph.api.ConnectivityType;
 import graph.api.Graph;
 import graph.cli.GraphGenerator;
@@ -48,13 +49,15 @@ public class GraphCLI {
             "--kosaraju",
             "--fleury",
             "--tarjan",
-            "--naive-bridges");
+            "--naive-local",
+            "--naive-global");
     static final Map<String, String> ALGORITHM_NAMES = Map.of(
             "--dfs", "DFS",
             "--kosaraju", "Kosaraju",
             "--fleury", "Fleury",
             "--tarjan", "Tarjan",
-            "--naive-bridges", "Bridges");
+            "--naive-local", "Naive Bridges (Local)",
+            "--naive-global", "Naive Bridges (Global)");
 
     static boolean isFlagValue(String arg) {
         return !arg.startsWith("-") && !arg.equals("create") && !arg.equals("read") && !arg.equals("help");
@@ -346,7 +349,9 @@ public class GraphCLI {
                 int step = 0;
 
                 if (algorithms.contains("--fleury")) {
-                    if (algorithms.contains("--naive-bridges") || algorithms.contains("--tarjan")) {
+                    if (algorithms.contains("--naive-local")
+                            || algorithms.contains("--naive-global")
+                            || algorithms.contains("--tarjan")) {
                         totalSteps--;
                     }
                 }
@@ -373,13 +378,25 @@ public class GraphCLI {
                         continue;
                     }
 
-                    if (algorithm.equals("--naive-bridges") && algorithms.contains("--fleury")) {
+                    if (algorithm.equals("--naive-local") && algorithms.contains("--fleury")) {
+                        continue;
+                    }
+
+                    if (algorithm.equals("--naive-global") && algorithms.contains("--fleury")) {
                         continue;
                     }
 
                     if (algorithm.equals("--fleury")) {
-                        System.out.printf("[%d/%d] Running Fleury with %s...", ++step, totalSteps,
-                                algorithms.contains("--naive-bridges") ? "Naive Bridges" : "Tarjan");
+                        System.out.printf("[%d/%d] Running Fleury with ", ++step, totalSteps);
+                        if (algorithms.contains("--tarjan")) {
+                            System.out.printf("Tarjan... ");
+
+                        } else if (algorithms.contains("--naive-global")) {
+                            System.out.printf("Naive Bridges (Global)... ");
+
+                        } else {
+                            System.out.printf("Naive Bridges (Local)... ");
+                        }
                     } else {
                         System.out.printf("[%d/%d] Running %s...", ++step, totalSteps, algorithmName);
                     }
@@ -391,10 +408,17 @@ public class GraphCLI {
                             switch (algorithm) {
                                 case "--dfs" -> result = GraphAnalyzer.runDFS(graph, target, outputPath);
                                 case "--kosaraju" -> result = GraphAnalyzer.runKosaraju(graph, outputPath);
-                                case "--fleury" -> result = GraphAnalyzer.runFleury(graph, outputPath,
-                                        !algorithms.contains("--naive-bridges"));
+                                case "--fleury" -> {
+                                    if (algorithms.contains("--tarjan")) {
+                                        result = GraphAnalyzer.runFleury(graph, outputPath, BridgeFinder.TARJAN);
+                                    } else if (algorithms.contains("--naive-global")) {
+                                        result = GraphAnalyzer.runFleury(graph, outputPath, BridgeFinder.NAIVE_GLOBAL);
+                                    } else {
+                                        result = GraphAnalyzer.runFleury(graph, outputPath, BridgeFinder.NAIVE_LOCAL);
+                                    }
+                                }
                                 case "--tarjan" -> result = GraphAnalyzer.runTarjan(graph, outputPath);
-                                case "--naive-bridges" -> result = GraphAnalyzer.runNaiveBridges(graph, outputPath);
+                                case "--naive-global" -> result = GraphAnalyzer.runNaiveBridges(graph, outputPath);
                                 default -> throw new RuntimeException("Unknown algorithm: " + algorithm);
                             }
 

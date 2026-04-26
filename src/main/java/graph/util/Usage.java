@@ -87,7 +87,8 @@ public class Usage {
         System.out.println("    --kosaraju            Run Kosaraju to find SCCs (only directed)");
         System.out.println("    --fleury              Run Fleury to find an Eulerian path or cycle");
         System.out.println("    --tarjan             Run Tarjan to find all bridges");
-        System.out.println("    --naive-bridges       Run Naive Bridges to find all bridges edges");
+        System.out.println("    --naive-local        Run Naive Bridges (Local) to find all bridge edges");
+        System.out.println("    --naive-global       Run Naive Bridges (Global) to find all bridge edges");
         System.out.println("  --target <n>, -t        Target vertex (required for --dfs)");
         System.out.println("  --output <path>, -o     Output file (default: terminal)");
         System.out.println("  --forward-star          Use Forward Star representation (default)");

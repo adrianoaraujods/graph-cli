@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import graph.algorithms.Fleury;
+import graph.algorithms.Fleury.BridgeFinder;
 import graph.algorithms.Fleury.EulerianPath;
 import graph.api.ConnectivityType;
 import graph.api.UndirectedGraph;
@@ -42,10 +43,10 @@ public class Benchmark {
     private static final ConnectivityType[] CONNECTIVITIES = {
             ConnectivityType.EULERIAN,
             ConnectivityType.SEMI_EULERIAN,
-            ConnectivityType.DISCONNECTED
+            ConnectivityType.CONNECTED
     };
-    private static final String[] REPRESENTATIONS = { "AdjacencyList", "ForwardStar" };
-    private static final String[] ALGORITHMS = { "Fleury+Naive", "Fleury+Tarjan" };
+    private static final String[] REPRESENTATIONS = { "Adjacency List", "Forward Star" };
+    private static final String[] ALGORITHMS = { "Tarjan", "Naive Local", "Naive Global" };
 
     private static final ReentrantLock fileLock = new ReentrantLock();
 
@@ -124,12 +125,12 @@ public class Benchmark {
         int totalRuns = getTotalRuns();
         AtomicInteger completed = new AtomicInteger(0);
 
-        for (int[] graph : GRAPHS) {
-            int n = graph[0];
-            int m = graph[1];
-            for (ConnectivityType conn : CONNECTIVITIES) {
+        for (String algo : ALGORITHMS) {
+            for (int[] graph : GRAPHS) {
+                int n = graph[0];
+                int m = graph[1];
                 for (String rep : REPRESENTATIONS) {
-                    for (String algo : ALGORITHMS) {
+                    for (ConnectivityType conn : CONNECTIVITIES) {
                         for (int attempt = 1; attempt <= attempts; attempt++) {
                             int current = completed.incrementAndGet();
                             System.out.printf("[%d/%d] Running: n=%d, m=%d, conn=%s, rep=%s, algo=%s, attempt=%d%n",
@@ -148,12 +149,12 @@ public class Benchmark {
         int totalRuns = getTotalRuns();
         AtomicInteger completed = new AtomicInteger(0);
 
-        for (int[] graph : GRAPHS) {
-            int n = graph[0];
-            int m = graph[1];
-            for (ConnectivityType conn : CONNECTIVITIES) {
+        for (String algo : ALGORITHMS) {
+            for (int[] graph : GRAPHS) {
+                int n = graph[0];
+                int m = graph[1];
                 for (String rep : REPRESENTATIONS) {
-                    for (String algo : ALGORITHMS) {
+                    for (ConnectivityType conn : CONNECTIVITIES) {
                         for (int attempt = 1; attempt <= attempts; attempt++) {
                             int finalN = n;
                             int finalM = m;
@@ -208,6 +209,7 @@ public class Benchmark {
         int pathLength = -1;
         String eulerianType = "FAILED";
         String tempFile = null;
+        int createdEdges = m;
 
         for (int retry = 0; retry < MAX_RETRIES; retry++) {
             try {
@@ -220,22 +222,30 @@ public class Benchmark {
                 generator.setSeed(seed);
 
                 long startGenerate = System.currentTimeMillis();
-                generator.create();
+                createdEdges = (int) generator.create();
                 generationTime = System.currentTimeMillis() - startGenerate;
 
                 GraphBuilder builder = switch (rep) {
-                    case "AdjacencyList" -> new AdjacencyListGraphBuilder(false);
-                    case "ForwardStar" -> new ForwardStarGraphBuilder(false);
+                    case "Adjacency List" -> new AdjacencyListGraphBuilder(false);
+                    case "Forward Star" -> new ForwardStarGraphBuilder(false);
                     default -> throw new IllegalArgumentException("Unknown representation: " + rep);
                 };
 
                 GraphReader.readFile(tempFile, builder);
                 UndirectedGraph graph = (UndirectedGraph) builder.build();
 
-                boolean useTarjan = algo.equals("Fleury+Tarjan");
-
                 long startFleury = System.currentTimeMillis();
-                EulerianPath eulerianPath = Fleury.findEulerianPath(graph, useTarjan);
+                EulerianPath eulerianPath;
+                switch (algo) {
+                    case "Tarjan" ->
+                        eulerianPath = Fleury.findEulerianPath(graph, BridgeFinder.TARJAN, false);
+                    case "Naive Global" ->
+                        eulerianPath = Fleury.findEulerianPath(graph, BridgeFinder.NAIVE_GLOBAL, false);
+                    case "Naive Local" ->
+                        eulerianPath = Fleury.findEulerianPath(graph, BridgeFinder.NAIVE_LOCAL, false);
+                    default -> throw new IllegalArgumentException("Unknown algorithm: " + algo);
+                }
+
                 fleuryTime = System.currentTimeMillis() - startFleury;
 
                 pathLength = eulerianPath.path().length;
@@ -245,10 +255,10 @@ public class Benchmark {
             } catch (Exception e) {
                 if (retry < MAX_RETRIES - 1) {
                     System.err.printf("Retry %d/%d for n=%d, m=%d, conn=%s, rep=%s, algo=%s: %s%n",
-                            retry + 1, MAX_RETRIES, n, m, conn, rep, algo, e.getMessage());
+                            retry + 1, MAX_RETRIES, n, createdEdges, conn, rep, algo, e.getMessage());
                 } else {
                     System.err.printf("FAILED after %d retries for n=%d, m=%d, conn=%s, rep=%s, algo=%s: %s%n",
-                            MAX_RETRIES, n, m, conn, rep, algo, e.getMessage());
+                            MAX_RETRIES, n, createdEdges, conn, rep, algo, e.getMessage());
                     eulerianType = "RETRY_FAILED";
                 }
             } finally {
@@ -262,7 +272,8 @@ public class Benchmark {
             }
         }
 
-        writeResult(attempt, n, m, conn.name(), rep, generationTime, fleuryTime, pathLength, eulerianType, algo);
+        writeResult(attempt, n, createdEdges, conn.name(), rep, generationTime, fleuryTime, pathLength, eulerianType,
+                algo);
     }
 
     private static void writeResult(int attempt, int vertices, int edges, String connectivity,

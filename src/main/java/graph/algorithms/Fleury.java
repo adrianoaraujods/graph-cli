@@ -11,6 +11,12 @@ import graph.api.UndirectedGraph;
 
 public class Fleury {
 
+  public enum BridgeFinder {
+    TARJAN,
+    NAIVE_LOCAL,
+    NAIVE_GLOBAL
+  }
+
   public enum EulerianType {
     EULERIAN,
     SEMI_EULERIAN,
@@ -74,7 +80,7 @@ public class Fleury {
     }
   }
 
-  public static EulerianPath findEulerianPath(UndirectedGraph graph, boolean useTarjan, boolean enableLog) {
+  public static EulerianPath findEulerianPath(UndirectedGraph graph, BridgeFinder method, boolean enableLog) {
     if (graph.getEdgesCount() < 1) {
       return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
     }
@@ -117,16 +123,7 @@ public class Fleury {
       int w = neighbors[0];
 
       if (neighbors.length > 1) {
-        if (useTarjan) {
-          Set<Long> bridges = Tarjan.findAll(clone);
-
-          int i = 0;
-          long edge;
-          do {
-            w = neighbors[i++];
-            edge = Edges.undirected(v, w);
-          } while (i < neighbors.length && bridges.contains(edge));
-        } else {
+        if (method == BridgeFinder.NAIVE_LOCAL) {
           componentsCount = ConnectedComponents.getCount((Graph) clone);
 
           int i = 0;
@@ -135,6 +132,24 @@ public class Fleury {
             w = neighbors[i++];
             isBridge = NaiveBridges.isBridge(v, w, (Graph) clone, componentsCount);
           } while (i < neighbors.length && isBridge);
+        } else {
+          Set<Long> bridges;
+
+          if (method == BridgeFinder.TARJAN) {
+            bridges = Tarjan.findAll(clone);
+          } else {
+            componentsCount = ConnectedComponents.getCount((Graph) clone);
+            bridges = NaiveBridges.findAll(clone, componentsCount, start);
+          }
+
+          if (bridges != null) {
+            int i = 0;
+            long edge;
+            do {
+              w = neighbors[i++];
+              edge = Edges.undirected(v, w);
+            } while (i < neighbors.length && bridges.contains(edge));
+          }
         }
       }
 
@@ -166,7 +181,7 @@ public class Fleury {
   }
 
   public static EulerianPath findEulerianPath(UndirectedGraph graph) {
-    return findEulerianPath(graph, true, false);
+    return findEulerianPath(graph, BridgeFinder.NAIVE_LOCAL, false);
   }
 
   public static EulerianPath findEulerianPath(DirectedGraph graph) {

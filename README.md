@@ -105,8 +105,11 @@ java -jar target/graph-cli-0.1.0.jar read graph.txt --dfs -t 5
 # Read and run multiple algorithms, save output to file
 java -jar target/graph-cli-0.1.0.jar read graph.txt --kosaraju --fleury -o output.log
 
-# Read using undirected graph and run bridges algorithm
-java -jar target/graph-cli-0.1.0.jar read graph.txt --naive-bridges --undirected
+# Read using undirected graph and run bridges algorithm (local)
+java -jar target/graph-cli-0.1.0.jar read graph.txt --naive-local --undirected
+
+# Read using undirected graph and run bridges algorithm (global)
+java -jar target/graph-cli-0.1.0.jar read graph.txt --naive-global --undirected
 
 # Show help
 java -jar target/graph-cli-0.1.0.jar help
