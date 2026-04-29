@@ -1,6 +1,8 @@
 package graph.representations.forwardstar;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import graph.api.DirectedGraph;
@@ -15,26 +17,18 @@ import graph.util.Sort;
 public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph {
   private int[] targets;
   private int[] pointers;
-  private int[] vertices;
+  private final Set<Integer> isolatedVertices;
 
   /**
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, int[] vertices) {
+  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, Set<Integer> isolatedVertices) {
     super(isDirected, n, m);
 
     this.targets = targets;
     this.pointers = pointers;
-    this.vertices = vertices;
-  }
-
-  /**
-   * Package-private constructor. Should only be called by the
-   * {@link ForwardStarGraphBuilder}.
-   */
-  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers) {
-    this(isDirected, n, m, targets, pointers, null);
+    this.isolatedVertices = isolatedVertices;
   }
 
   /**
@@ -44,9 +38,7 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
     super(graph.isDirected, graph.n, graph.m);
     this.targets = Arrays.copyOf(graph.targets, graph.targets.length);
     this.pointers = Arrays.copyOf(graph.pointers, graph.pointers.length);
-    this.vertices = graph.vertices != null
-        ? Arrays.copyOf(graph.vertices, graph.vertices.length)
-        : null;
+    this.isolatedVertices = new HashSet<>(graph.isolatedVertices);
   }
 
   @Override
@@ -56,6 +48,13 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
   @Override
   public void addEdge(int v, int w) {
+    // Remove from isolated if present (now has an edge)
+    isolatedVertices.remove(v);
+    isolatedVertices.remove(w);
+
+    // TODO: verify if the v adjacency has a zero, if so, put w in that index
+    // instead of rebuilding the graph.
+
     ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
 
     int newN = Math.max(n, Math.max(v, w));
@@ -78,41 +77,78 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
     targets = updated.targets;
     pointers = updated.pointers;
-    vertices = updated.vertices;
+    isolatedVertices.addAll(updated.isolatedVertices);
     n = updated.n;
     m = newM;
   }
 
   @Override
   public void removeEdge(int v, int w) {
-    ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(isDirected);
+    if (v < 1 || v > n || w < 1 || w > n) {
+      return;
+    }
 
-    long estimatedPairs = isDirected ? m : m * 2;
+    int endIndex = pointers[v];
+    for (int i = pointers[v - 1]; i < endIndex; i++) {
+      if (targets[i] == w) {
+        targets[i] = 0;
+        break;
+      }
+    }
 
-    builder.initialize(n, estimatedPairs);
-
-    IteratorVisitor iterator = new IteratorVisitor() {
-      @Override
-      public void examineEdge(int source, int target) {
-        boolean shouldRemove = isDirected
-            ? (source == v && target == w)
-            : ((source == v && target == w) || (source == w && target == v));
-
-        if (!shouldRemove) {
-          builder.addEdge(source, target);
+    if (!isDirected) {
+      endIndex = pointers[w];
+      for (int i = pointers[w - 1]; i < endIndex; i++) {
+        if (targets[i] == v) {
+          targets[i] = 0;
+          break;
         }
       }
-    };
+    }
 
-    iterateGraph(iterator);
+    // Check if v or w became isolated
+    if (!hasEdges(v)) {
+      isolatedVertices.add(v);
+    }
+    if (!hasEdges(w)) {
+      isolatedVertices.add(w);
+    }
 
-    ForwardStarGraph updated = builder.build();
+    m--;
+  }
 
-    targets = updated.targets;
-    pointers = updated.pointers;
-    vertices = updated.vertices;
-    n = updated.n;
-    m = m - 1;
+  @Override
+  public int[] getAllVertices() {
+    Set<Integer> all = new HashSet<>(isolatedVertices);
+
+    // Add vertices that have edges
+    int[] verticesWithEdges = getVertices();
+    for (int v : verticesWithEdges) {
+      all.add(v);
+    }
+
+    return all.stream().mapToInt(Integer::intValue).sorted().toArray();
+  }
+
+  /**
+   * Checks if a vertex has any edges (incoming or outgoing).
+   */
+  private boolean hasEdges(int v) {
+    // Check outgoing edges
+    for (int i = pointers[v - 1]; i < pointers[v]; i++) {
+      if (targets[i] != 0) {
+        return true;
+      }
+    }
+
+    // Check incoming edges
+    for (int i = 0; i < targets.length; i++) {
+      if (targets[i] == v) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   @Override
@@ -122,12 +158,20 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
         return;
       }
 
+      int endIndex = pointers[v + 1];
+      if ((endIndex - pointers[v]) == 0) {
+        continue;
+      }
+
       visitor.examineVertex(v + 1);
 
-      int endIndex = pointers[v + 1];
       for (int w = pointers[v]; w < endIndex; w++) {
         if (visitor.shouldStop()) {
           return;
+        }
+
+        if (targets[w] == 0) {
+          continue;
         }
 
         // Skip reverse direction for undirected edges
@@ -142,11 +186,23 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
   @Override
   public int[] getVertices() {
-    if (vertices == null || vertices.length == 0) {
-      return IntStream.rangeClosed(1, n).toArray();
+    Set<Integer> verticesWithEdges = new HashSet<>();
+
+    // Add vertices with outgoing edges
+    for (int v = 0; v < pointers.length - 1; v++) {
+      if ((pointers[v + 1] - pointers[v]) > 0) {
+        verticesWithEdges.add(v + 1);
+      }
     }
 
-    return vertices;
+    // Add vertices with incoming edges (targets)
+    for (int target : targets) {
+      if (target != 0) {
+        verticesWithEdges.add(target);
+      }
+    }
+
+    return verticesWithEdges.stream().mapToInt(Integer::intValue).sorted().toArray();
   }
 
   @Override
@@ -178,7 +234,14 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
       throw new IllegalArgumentException();
     }
 
-    return pointers[v] - pointers[v - 1];
+    int count = 0;
+    for (int i = pointers[v - 1]; i < pointers[v]; i++) {
+      if (targets[i] != 0) {
+        count++;
+      }
+    }
+
+    return count;
   }
 
   @Override
@@ -209,9 +272,25 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
     }
 
     int[] successors = Arrays.copyOfRange(targets, pointers[v - 1], pointers[v]);
-    Sort.quick(successors);
 
-    return successors;
+    int nonZeroCount = 0;
+    for (int s : successors) {
+      if (s != 0) {
+        nonZeroCount++;
+      }
+    }
+
+    int[] result = new int[nonZeroCount];
+
+    int index = 0;
+    for (int s : successors) {
+      if (s != 0) {
+        result[index++] = s;
+      }
+    }
+
+    Sort.quick(result);
+    return result;
   }
 
   @Override
@@ -223,11 +302,7 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
   @Override
   public int getDegree(int v) {
-    if (v < 1 || v > n) {
-      throw new IllegalArgumentException();
-    }
-
-    return pointers[v] - pointers[v - 1];
+    return getOutDegree(v);
   }
 
   @Override

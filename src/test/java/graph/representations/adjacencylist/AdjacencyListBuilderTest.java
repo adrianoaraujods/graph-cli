@@ -20,17 +20,6 @@ class AdjacencyListBuilderTest {
     }
 
     @Test
-    void testInitializeWithVertices() {
-        Graph graph = GraphBuilderHelper.build(
-                () -> new AdjacencyListGraphBuilder(true),
-                7, 2,
-                new int[][] { { 1, 3 }, { 5, 7 } },
-                new int[] { 1, 3, 5, 7 });
-
-        GraphHelper.assertN(graph, 7);
-    }
-
-    @Test
     void testBuildWithUnusedCapacity() {
         Graph graph = GraphBuilderHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
@@ -110,6 +99,6 @@ class AdjacencyListBuilderTest {
                 5, 3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
-        GraphHelper.assertVertices(graph, 1, 2, 3, 4, 5);
+        GraphHelper.assertVertices(graph, 1, 2, 3);
     }
 }

@@ -13,14 +13,17 @@ import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 public class AdjacencyListGraph extends Graph implements DirectedGraph, UndirectedGraph {
   private Map<Integer, Set<Integer>> vertices;
+  private final Set<Integer> isolatedVertices;
 
   /**
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  AdjacencyListGraph(boolean isDirected, int n, long m, Map<Integer, Set<Integer>> vertices) {
+  AdjacencyListGraph(boolean isDirected, int n, long m, Map<Integer, Set<Integer>> vertices,
+      Set<Integer> isolatedVertices) {
     super(isDirected, n, m);
     this.vertices = vertices;
+    this.isolatedVertices = isolatedVertices;
   }
 
   /**
@@ -29,6 +32,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
   private AdjacencyListGraph(AdjacencyListGraph graph) {
     super(graph.isDirected, graph.n, graph.m);
     vertices = new HashMap<>(graph.vertices);
+    isolatedVertices = new HashSet<>(graph.isolatedVertices);
 
     for (Map.Entry<Integer, Set<Integer>> entry : graph.vertices.entrySet()) {
       vertices.put(entry.getKey(), new HashSet<>(entry.getValue()));
@@ -42,10 +46,15 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
 
   @Override
   public void addEdge(int v, int w) {
+    // Remove from isolated if present (now has an edge)
+    isolatedVertices.remove(v);
+    isolatedVertices.remove(w);
+
     Set<Integer> vAdjacency = vertices.get(v);
 
     if (vAdjacency == null) {
       vAdjacency = new HashSet<>();
+      vertices.put(v, vAdjacency);
       n++;
     }
 
@@ -58,6 +67,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
 
       if (wAdjacency == null) {
         wAdjacency = new HashSet<>();
+        vertices.put(w, wAdjacency);
         n++;
       }
 
@@ -96,10 +106,38 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
       }
 
       wAdjacency.remove(v);
+
+      if (wAdjacency.isEmpty()) {
+        vertices.remove(w);
+        // Check if w has any incoming edges
+        if (!hasIncomingEdges(w)) {
+          isolatedVertices.add(w);
+        }
+      }
     }
 
     vAdjacency.remove(w);
+    if (vAdjacency.isEmpty()) {
+      vertices.remove(v);
+      // Check if v has any incoming edges
+      if (!hasIncomingEdges(v)) {
+        isolatedVertices.add(v);
+      }
+    }
+
     m--;
+  }
+
+  /**
+   * Checks if a vertex has any incoming edges.
+   */
+  private boolean hasIncomingEdges(int v) {
+    for (Set<Integer> adjacency : vertices.values()) {
+      if (adjacency.contains(v)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -110,12 +148,10 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
       if (visitor.shouldStop()) {
         return;
       }
+
       visitor.examineVertex(v);
 
       Set<Integer> adjacency = entry.getValue();
-      if (adjacency == null) {
-        continue;
-      }
 
       for (int w : adjacency) {
         if (visitor.shouldStop()) {
@@ -129,19 +165,32 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
 
   @Override
   public int[] getVertices() {
-    int[] V = new int[n];
-    int i = 0;
+    Set<Integer> allVerticesWithEdges = new HashSet<>(vertices.keySet());
 
-    for (int v : vertices.keySet()) {
-      V[i++] = v;
+    // Add vertices that only have incoming edges
+    for (Set<Integer> adjacency : vertices.values()) {
+      allVerticesWithEdges.addAll(adjacency);
     }
 
-    return V;
+    return allVerticesWithEdges.stream().mapToInt(Integer::intValue).sorted().toArray();
   }
 
   @Override
   public Graph getInducedSubgraph(int[] vertices) {
     return getInducedSubgraph(vertices, new AdjacencyListGraphBuilder(isDirected));
+  }
+
+  @Override
+  public int[] getAllVertices() {
+    Set<Integer> all = new HashSet<>(isolatedVertices);
+
+    // Add vertices that have edges
+    int[] verticesWithEdges = getVertices();
+    for (int v : verticesWithEdges) {
+      all.add(v);
+    }
+
+    return all.stream().mapToInt(Integer::intValue).sorted().toArray();
   }
 
   // Directed Methods
@@ -213,14 +262,14 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
       return new int[0];
     }
 
-    int[] sucessors = new int[adjacency.size()];
+    int[] successors = new int[adjacency.size()];
     int i = 0;
 
     for (int w : adjacency) {
-      sucessors[i++] = w;
+      successors[i++] = w;
     }
 
-    return sucessors;
+    return successors;
   }
 
   @Override

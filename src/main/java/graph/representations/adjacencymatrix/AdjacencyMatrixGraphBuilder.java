@@ -1,6 +1,8 @@
 package graph.representations.adjacencymatrix;
 
 import java.security.InvalidParameterException;
+import java.util.HashSet;
+import java.util.Set;
 
 import graph.api.Graph;
 import graph.representations.GraphBuilder;
@@ -18,23 +20,26 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
 
   // int[n columns][n rows]
   private boolean[][] matrix;
-  private int[] vertices;
+  private Set<Integer> isolatedVertices;
 
   public AdjacencyMatrixGraphBuilder(boolean isDirected) {
     this.isDirected = isDirected;
   }
 
   @Override
-  public void initialize(int n, long m, int[] vertices) {
+  public void initialize(int n, long m) {
     this.n = n;
     this.m = 0;
-    this.vertices = vertices;
-
     matrix = new boolean[n][n];
+    this.isolatedVertices = new HashSet<>(n);
   }
 
   @Override
   public void addEdge(int v, int w) {
+    // Remove from isolated if present (now has an edge)
+    isolatedVertices.remove(v);
+    isolatedVertices.remove(w);
+
     if (v > n || w > n) {
       throw new InvalidParameterException();
     }
@@ -60,7 +65,12 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
   }
 
   @Override
+  public void addVertex(int v) {
+    isolatedVertices.add(v);
+  }
+
+  @Override
   public Graph build() {
-    return new AdjacencyMatrixGraph(isDirected, n, m, matrix, vertices);
+    return new AdjacencyMatrixGraph(isDirected, n, m, matrix, isolatedVertices);
   }
 }

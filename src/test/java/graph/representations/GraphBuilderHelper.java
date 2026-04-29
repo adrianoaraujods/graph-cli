@@ -19,18 +19,6 @@ public class GraphBuilderHelper {
         return builder.build();
     }
 
-    public static Graph build(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges,
-            int[] vertices) {
-        GraphBuilder builder = builderSupplier.get();
-        builder.initialize(n, m, vertices);
-
-        for (int[] edge : edges) {
-            builder.addEdge(edge[0], edge[1]);
-        }
-
-        return builder.build();
-    }
-
     public static Graph buildUndirected(Supplier<GraphBuilder> builderSupplier, int n, int m, int[][] edges) {
         GraphBuilder builder = builderSupplier.get();
         builder.initialize(n, m);

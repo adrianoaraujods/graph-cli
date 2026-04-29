@@ -80,7 +80,7 @@ public class GraphAnalyzer {
     sb.append("  Component Count: ").append(components.length).append("\n");
     for (int c = 0; c < components.length; c++) {
       sb.append("  [").append(c + 1).append("/").append(components.length).append("] Component:\n");
-      sb.append("    Vertices: ").append(Arrays.toString(components[c].getVertices())).append("\n");
+      sb.append("    Vertices: ").append(Arrays.toString(components[c].getAllVertices())).append("\n");
       sb.append("    Edges: ").append(Edges.toString(components[c].getEdgesSet(), graph.isDirected))
           .append("\n");
     }
@@ -98,7 +98,7 @@ public class GraphAnalyzer {
         : Fleury.findEulerianPath((UndirectedGraph) graph, method, true);
 
     sb.append("  Eulerian Type: ").append(eulerianPath.type()).append("\n");
-    sb.append("  Eulerian Path: ").append(Arrays.toString(eulerianPath.path())).append("\n");
+    sb.append(" Eulerian Path: ").append(Arrays.toString(eulerianPath.path())).append("\n");
 
     return sb.toString();
   }

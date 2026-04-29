@@ -75,7 +75,12 @@ public abstract class Graph implements GraphBase {
   protected Graph getInducedSubgraph(int[] vertices, GraphBuilder builder) {
     int maxVertex = Arrays.stream(vertices).max().orElse(0);
 
-    builder.initialize(maxVertex, m, vertices);
+    builder.initialize(maxVertex, m);
+
+    // Track all specified vertices (including isolated ones)
+    for (int v : vertices) {
+      builder.addVertex(v);
+    }
 
     Set<Integer> uniqueVertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
 

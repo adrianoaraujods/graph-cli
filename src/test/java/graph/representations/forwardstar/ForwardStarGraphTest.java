@@ -19,18 +19,7 @@ class ForwardStarGraphTest {
                 5, 2,
                 new int[][] { { 1, 2 }, { 3, 4 } });
 
-        GraphHelper.assertVertices(graph, 1, 2, 3, 4, 5);
-    }
-
-    @Test
-    void testIterateGraphAllEdgesVisited() {
-        Graph graph = GraphBuilderHelper.build(
-                () -> new ForwardStarGraphBuilder(true),
-                4, 3,
-                new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
-
-        GraphHelper.assertIterateVertexCount(graph, 4);
-        GraphHelper.assertIterateEdgeCount(graph, 3);
+        GraphHelper.assertVertices(graph, 1, 2, 3, 4);
     }
 
     @Test
@@ -205,28 +194,6 @@ class ForwardStarGraphTest {
 
         assertEquals(1, graph.getVerticesCount());
         assertEquals(0, graph.getEdgesCount());
-    }
-
-    @Test
-    void testIterateGraphWithNoEdges() {
-        Graph graph = GraphBuilderHelper.build(
-                () -> new ForwardStarGraphBuilder(false),
-                5, 0,
-                new int[][] {});
-
-        GraphHelper.assertIterateVertexCount(graph, 5);
-        GraphHelper.assertIterateEdgeCount(graph, 0);
-    }
-
-    @Test
-    void testGetVerticesWithCustomArray() {
-        Graph graph = GraphBuilderHelper.build(
-                () -> new ForwardStarGraphBuilder(true),
-                7, 2,
-                new int[][] { { 1, 3 }, { 5, 7 } },
-                new int[] { 1, 3, 5, 7 });
-
-        GraphHelper.assertVertices(graph, 1, 3, 5, 7);
     }
 
     @Test

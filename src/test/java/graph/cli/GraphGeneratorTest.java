@@ -508,7 +508,7 @@ class GraphGeneratorTest {
 
     private UndirectedGraph parseToUndirectedGraph(List<int[]> edges, int n) {
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
-        builder.initialize(n, edges.size(), null);
+        builder.initialize(n, edges.size());
 
         for (int[] edge : edges) {
             builder.addEdge(edge[0], edge[1]);

@@ -21,34 +21,26 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
   /** Total number of logical edges. */
   private long m;
 
-  private Map<Integer, Set<Integer>> vertices;
+  private Map<Integer, Set<Integer>> adjacency;
+  private Set<Integer> isolatedVertices;
 
   public AdjacencyListGraphBuilder(boolean isDirected) {
     this.isDirected = isDirected;
   }
 
   @Override
-  public void initialize(int n, long m, int[] vertices) {
+  public void initialize(int n, long m) {
     this.n = n;
     this.m = 0;
-    this.vertices = new HashMap<>(n);
-
-    if (vertices == null) {
-      for (int v = 1; v <= n; v++) {
-        this.vertices.put(v, new HashSet<>((int) (m / n)));
-      }
-    } else {
-      for (int v : vertices) {
-        this.vertices.put(v, new HashSet<>((int) (m / n)));
-      }
-    }
+    this.adjacency = new HashMap<>(n);
+    this.isolatedVertices = new HashSet<>(n);
   }
 
   @Override
   public void addEdge(int v, int w) {
-    if (v < 1 || w < 1) {
-      return;
-    }
+    // Remove from isolated if present (now has an edge)
+    isolatedVertices.remove(v);
+    isolatedVertices.remove(w);
 
     if (v > n) {
       n = v;
@@ -57,11 +49,11 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
       n = w;
     }
 
-    Set<Integer> vAdjacency = vertices.get(v);
+    Set<Integer> vAdjacency = adjacency.get(v);
 
     if (vAdjacency == null) {
       vAdjacency = new HashSet<>();
-      vertices.put(v, vAdjacency);
+      adjacency.put(v, vAdjacency);
     }
 
     if (isDirected) {
@@ -69,11 +61,11 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
         return;
       }
     } else {
-      Set<Integer> wAdjacency = vertices.get(w);
+      Set<Integer> wAdjacency = adjacency.get(w);
 
       if (wAdjacency == null) {
         wAdjacency = new HashSet<>();
-        vertices.put(w, wAdjacency);
+        adjacency.put(w, wAdjacency);
       }
 
       if (wAdjacency.contains(v)) {
@@ -88,7 +80,12 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
   }
 
   @Override
+  public void addVertex(int v) {
+    isolatedVertices.add(v);
+  }
+
+  @Override
   public AdjacencyListGraph build() {
-    return new AdjacencyListGraph(isDirected, n, m, vertices);
+    return new AdjacencyListGraph(isDirected, n, m, adjacency, isolatedVertices);
   }
 }

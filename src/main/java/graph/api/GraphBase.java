@@ -79,9 +79,17 @@ public interface GraphBase {
   /**
    * Returns all vertices in the graph.
    * 
-   * @return An array containing all vertex IDs from 1 to n.
+   * @return An array containing all valid vertex IDs.
    */
   public abstract int[] getVertices();
+
+  /**
+   * Returns all vertices in the graph, including isolated vertices (no edges).
+   * Unlike {@link #getVertices()}, this returns every vertex present in the graph.
+   *
+   * @return Array of all vertex IDs in the graph.
+   */
+  public abstract int[] getAllVertices();
 
   /**
    * Builds the induced subgraph based on the provided vertices.

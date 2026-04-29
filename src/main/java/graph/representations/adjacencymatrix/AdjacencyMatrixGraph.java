@@ -1,9 +1,8 @@
 package graph.representations.adjacencymatrix;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import graph.api.DirectedGraph;
 import graph.api.Graph;
@@ -17,32 +16,16 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
 
   // int[n columns][n rows]
   private boolean[][] matrix;
-  private Set<Integer> vertices;
+  private final Set<Integer> isolatedVertices;
 
   /**
    * Package-private constructor. Should only be called by the
    * {@link AdjacencyMatrixGraphBuilder}.
    */
-  AdjacencyMatrixGraph(boolean isDirected, int n, int m, boolean[][] matrix, int[] vertices) {
+  AdjacencyMatrixGraph(boolean isDirected, int n, int m, boolean[][] matrix, Set<Integer> isolatedVertices) {
     super(isDirected, n, m);
     this.matrix = matrix;
-
-    if (vertices != null) {
-      this.vertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
-    } else {
-      this.vertices = null;
-    }
-
-  }
-
-  /**
-   * Package-private constructor. Should only be called by the
-   * {@link AdjacencyMatrixGraphBuilder}.
-   */
-  AdjacencyMatrixGraph(boolean isDirected, int n, int m, boolean[][] matrix) {
-    super(isDirected, n, m);
-    this.matrix = matrix;
-    this.vertices = null;
+    this.isolatedVertices = isolatedVertices;
   }
 
   /**
@@ -50,15 +33,11 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
    */
   private AdjacencyMatrixGraph(AdjacencyMatrixGraph other) {
     super(other.isDirected, other.n, other.m);
-
     this.matrix = new boolean[other.n][other.n];
+    this.isolatedVertices = new HashSet<>(other.isolatedVertices);
     for (int i = 0; i < other.n; i++) {
       System.arraycopy(other.matrix[i], 0, this.matrix[i], 0, other.n);
     }
-
-    this.vertices = other.vertices != null
-        ? new java.util.HashSet<>(other.vertices)
-        : null;
   }
 
   @Override
@@ -66,89 +45,16 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
     return new AdjacencyMatrixGraph((AdjacencyMatrixGraph) this);
   }
 
-  @Override
-  public int[] getVertices() {
-    if (vertices == null) {
-      return IntStream.rangeClosed(1, n).toArray();
-    }
-
-    return vertices.stream().mapToInt(Integer::intValue).toArray();
-  }
-
-  @Override
-  public void iterateGraph(IteratorVisitor visitor) {
-    if (vertices != null) {
-      vertices.forEach(v -> {
-        if (visitor.shouldStop()) {
-          return;
-        }
-
-        visitor.examineVertex(v);
-
-        for (int i = 0; i < n; i++) {
-          if (visitor.shouldStop()) {
-            return;
-          }
-
-          if (matrix[i][v - 1]) {
-            // Skip reverse direction for undirected edges
-            if (!isDirected && v > i + 1) {
-              break;
-            }
-
-            visitor.examineEdge(v, i + 1);
-          }
-        }
-      });
-    } else {
-      for (int v = 0; v < n; v++) {
-        if (visitor.shouldStop()) {
-          return;
-        }
-
-        visitor.examineVertex(v + 1);
-
-        for (int i = 0; i < n; i++) {
-          if (visitor.shouldStop()) {
-            return;
-          }
-
-          if (matrix[i][v]) {
-            // Skip reverse direction for undirected edges
-            if (!isDirected && (v + 1) > i + 1) {
-              continue;
-            }
-
-            visitor.examineEdge(v + 1, i + 1);
-          }
-        }
-      }
-    }
-  }
-
-  @Override
-  public Graph getInducedSubgraph(int[] vertices) {
-    return getInducedSubgraph(vertices, new AdjacencyMatrixGraphBuilder(isDirected));
-  }
-
   // Mutable Graph Methods
 
   @Override
   public void addEdge(int v, int w) {
+    isolatedVertices.remove(v);
+    isolatedVertices.remove(w);
+
+    // increase matrix size
     if (v > n || w > n) {
       int newN = Math.max(v, w);
-
-      if (newN != n + 1) {
-        vertices = Arrays.stream(getVertices()).boxed().collect(Collectors.toSet());
-
-        if (!vertices.contains(v)) {
-          vertices.add(v);
-        }
-
-        if (!vertices.contains(w)) {
-          vertices.add(w);
-        }
-      }
 
       boolean[][] newMatrix = new boolean[newN][newN];
 
@@ -198,7 +104,91 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
       matrix[v - 1][w - 1] = false;
     }
 
+    // Check if v or w became isolated
+    if (!hasEdges(v)) {
+      isolatedVertices.add(v);
+    }
+    if (!hasEdges(w)) {
+      isolatedVertices.add(w);
+    }
+
     m--;
+  }
+
+  // Util methods
+
+  /**
+   * Checks if a vertex has any edges (incoming or outgoing).
+   */
+  private boolean hasEdges(int v) {
+    for (int i = 0; i < n; i++) {
+      if (matrix[v - 1][i] || matrix[i][v - 1]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  @Override
+  public void iterateGraph(IteratorVisitor visitor) {
+    for (int v = 1; v <= n; v++) {
+      if (visitor.shouldStop()) {
+        return;
+      }
+
+      int[] successors = getSuccessors(v);
+
+      if (successors.length == 0) {
+        continue;
+      }
+
+      visitor.examineVertex(v);
+
+      for (int w : successors) {
+        if (visitor.shouldStop()) {
+          return;
+        }
+
+        visitor.examineEdge(v, w);
+      }
+    }
+  }
+
+  @Override
+  public Graph getInducedSubgraph(int[] vertices) {
+    return getInducedSubgraph(vertices, new AdjacencyMatrixGraphBuilder(isDirected));
+  }
+
+  @Override
+  public int[] getVertices() {
+    Set<Integer> verticesWithEdges = new HashSet<>();
+
+    // Check all matrix entries for edges
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        if (matrix[i][j]) {
+          // i+1 and j+1 are vertices with edges
+          verticesWithEdges.add(i + 1);
+          verticesWithEdges.add(j + 1);
+        }
+      }
+    }
+
+    return verticesWithEdges.stream().mapToInt(Integer::intValue).sorted().toArray();
+  }
+
+  @Override
+  public int[] getAllVertices() {
+    Set<Integer> all = new HashSet<>(isolatedVertices);
+
+    // Add vertices that have edges
+    int[] verticesWithEdges = getVertices();
+    for (int v : verticesWithEdges) {
+      all.add(v);
+    }
+
+    return all.stream().mapToInt(Integer::intValue).sorted().toArray();
   }
 
   // Directed Methods

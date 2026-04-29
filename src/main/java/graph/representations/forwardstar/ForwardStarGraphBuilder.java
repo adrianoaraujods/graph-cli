@@ -1,6 +1,8 @@
 package graph.representations.forwardstar;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import graph.representations.GraphBuilder;
 import graph.util.Sort;
@@ -21,26 +23,30 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
 
   private int[] sources;
   private int[] targets;
-  private int[] vertices;
+  private Set<Integer> isolatedVertices;
 
   public ForwardStarGraphBuilder(boolean isDirected) {
     this.isDirected = isDirected;
   }
 
   @Override
-  public void initialize(int n, long m, int[] vertices) {
+  public void initialize(int n, long m) {
     this.n = n;
     this.m = 0;
     this.sources = new int[(int) (isDirected ? m : m * 2)];
     this.targets = new int[(int) (isDirected ? m : m * 2)];
-    this.vertices = vertices;
+    this.isolatedVertices = new HashSet<>(n);
   }
 
   @Override
   public void addEdge(int v, int w) {
+    // Remove from isolated if present (now has an edge)
+    isolatedVertices.remove(v);
+    isolatedVertices.remove(w);
+
     int head = (int) (isDirected ? m : m * 2);
 
-    if (head > sources.length) {
+    if (head >= sources.length) {
       int newCapacity = Math.max(4, sources.length * 2);
       sources = Arrays.copyOf(sources, newCapacity);
       targets = Arrays.copyOf(targets, newCapacity);
@@ -58,6 +64,11 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   }
 
   @Override
+  public void addVertex(int v) {
+    isolatedVertices.add(v);
+  }
+
+  @Override
   public ForwardStarGraph build() {
     int edgesCount = (isDirected ? m : m * 2);
 
@@ -70,7 +81,7 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     if (edgesCount > 0) {
       Sort.quick(sources, targets);
 
-      for (int i = 0; i < edgesCount; i++) {
+      for (int i = 0; i < sources.length; i++) {
         if (sources[i] > n) {
           n = sources[i];
         }
@@ -99,6 +110,6 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.sources = null;
     this.targets = null;
 
-    return new ForwardStarGraph(isDirected, n, m, finalTargets, pointers, vertices);
+    return new ForwardStarGraph(isDirected, n, m, finalTargets, pointers, isolatedVertices);
   }
 }

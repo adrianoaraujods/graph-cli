@@ -1,6 +1,7 @@
 package graph.algorithms;
 
 import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.DFS.DFSVisitor;
@@ -9,11 +10,12 @@ import graph.api.Graph;
 import graph.util.Sort;
 
 /**
- * Provides Kosaraju's algorithm for finding Strongly Connected Components (SCCs)
- * in a directed graph.
+ * Provides Kosaraju's algorithm for finding Strongly Connected Components
+ * (SCCs) in a directed graph.
  * <p>
  * Kosaraju's algorithm uses two Depth-First Search passes: first to compute
- * finish times on the original graph, then on the reversed graph to extract SCCs.
+ * finish times on the original graph, then on the reversed graph to extract
+ * SCCs.
  */
 public class Kosaraju {
 
@@ -22,9 +24,9 @@ public class Kosaraju {
    * <p>
    * This method performs a complete Kosaraju algorithm execution:
    * <ol>
-   *   <li>Runs DFS on the original graph to compute finish times</li>
-   *   <li>Transposes the graph (reverses all edges)</li>
-   *   <li>Runs DFS on the transposed graph in reverse finish time order</li>
+   * <li>Runs DFS on the original graph to compute finish times</li>
+   * <li>Transposes the graph (reverses all edges)</li>
+   * <li>Runs DFS on the transposed graph in reverse finish time order</li>
    * </ol>
    *
    * @param graph The directed graph to analyze.
@@ -45,14 +47,20 @@ public class Kosaraju {
    * Finds SCCs using a pre-computed finish times array.
    * <p>
    * This is the second phase of Kosaraju's algorithm: given the finish times
-   * from the first DFS pass, it runs DFS on the reversed graph to extract components.
+   * from the first DFS pass, it runs DFS on the reversed graph to extract
+   * components.
    *
-   * @param graph        The original directed graph.
-   * @param finishTimes  The finish times from the first DFS pass (used for root ordering).
+   * @param graph       The original directed graph.
+   * @param finishTimes The finish times from the first DFS pass (used for root
+   *                    ordering).
    * @return An array of DirectedGraph, each representing one SCC.
    */
   public static DirectedGraph[] findSCCs(DirectedGraph graph, int[] finishTimes) {
-    int[] rootsOrder = graph.getVertices();
+    int n = graph.getVerticesCount();
+
+    int[] rootsOrder = IntStream.rangeClosed(1, n).toArray();
+
+    // Sort rootsOrder by finish times (descending)
     Sort.quick(finishTimes, rootsOrder, false);
 
     DirectedGraph reversedGraph = graph.getReversed();

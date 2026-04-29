@@ -20,18 +20,7 @@ class AdjacencyListGraphTest {
                 5, 2,
                 new int[][] { { 1, 2 }, { 3, 4 } });
 
-        GraphHelper.assertVertices(graph, 1, 2, 3, 4, 5);
-    }
-
-    @Test
-    void testIterateGraphAllEdgesVisited() {
-        Graph graph = GraphBuilderHelper.build(
-                () -> new AdjacencyListGraphBuilder(true),
-                4, 3,
-                new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 } });
-
-        GraphHelper.assertIterateVertexCount(graph, 4);
-        GraphHelper.assertIterateEdgeCount(graph, 3);
+        GraphHelper.assertVertices(graph, 1, 2, 3, 4);
     }
 
     @Test

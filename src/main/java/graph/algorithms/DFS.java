@@ -158,13 +158,10 @@ public class DFS {
    *         vertices.
    */
   public static DFSResult search(Graph graph, int[] rootsOrder, DFSVisitor visitor) {
-    int n = graph.getVertices().length;
+    int n = graph.getVerticesCount();
 
     if (rootsOrder == null) {
-      rootsOrder = new int[n];
-      for (int i = 1; i <= n; i++) {
-        rootsOrder[i - 1] = i;
-      }
+      rootsOrder = graph.getAllVertices();
     } else if (rootsOrder.length > n) {
       throw new IllegalArgumentException("The rootsOrder array has more elements than the number of possible roots.");
     }
@@ -195,8 +192,9 @@ public class DFS {
       visitor.examineRoot(root);
 
       while (!stack.isEmpty()) {
-        if (visitor.shouldStop())
+        if (visitor.shouldStop()) {
           break;
+        }
 
         int v = stack.peek();
 
