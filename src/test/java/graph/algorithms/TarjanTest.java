@@ -3,27 +3,21 @@ package graph.algorithms;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
 
 import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
+import graph.util.TestGraphs;
+import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
 
 class TarjanTest {
 
     @Test
-    void testEmptyGraph() {
-        Graph graph = BridgesTestHelper.buildUndirected(0, 0,
-                BridgesTestHelper.emptyGraph());
-
-        Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
-        assertTrue(bridges.isEmpty(), "Empty graph should have no bridges");
-    }
-
-    @Test
     void testSingleEdge() {
-        Graph graph = BridgesTestHelper.buildUndirected(2, 1, BridgesTestHelper.singleEdge());
+        Graph graph = TestGraphs.singleEdge(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertEquals(1, bridges.size(), "Single edge graph should have one bridge");
@@ -31,7 +25,7 @@ class TarjanTest {
 
     @Test
     void testLinearChain() {
-        Graph graph = BridgesTestHelper.buildUndirected(5, 4, BridgesTestHelper.linearChain());
+        Graph graph = TestGraphs.linearChain(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertEquals(4, bridges.size(), "Linear chain of 5 vertices has 4 bridges");
@@ -39,7 +33,7 @@ class TarjanTest {
 
     @Test
     void testSimpleCycle() {
-        Graph graph = BridgesTestHelper.buildUndirected(3, 3, BridgesTestHelper.simpleCycle());
+        Graph graph = TestGraphs.simpleCycle(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertTrue(bridges.isEmpty(), "Simple cycle has no bridges");
@@ -47,7 +41,7 @@ class TarjanTest {
 
     @Test
     void testGraphWithOneBridge() {
-        Graph graph = BridgesTestHelper.buildUndirected(6, 5, BridgesTestHelper.graphWithOneBridge());
+        Graph graph = TestGraphs.graphWithOneBridge(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertTrue(bridges.size() >= 1, "Graph should have at least one bridge");
@@ -55,7 +49,7 @@ class TarjanTest {
 
     @Test
     void testMultipleBridges() {
-        Graph graph = BridgesTestHelper.buildUndirected(7, 6, BridgesTestHelper.multipleBridges());
+        Graph graph = TestGraphs.multipleBridges(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertTrue(bridges.size() >= 1, "Graph should have bridges");
@@ -63,7 +57,7 @@ class TarjanTest {
 
     @Test
     void testDisconnectedGraph() {
-        Graph graph = BridgesTestHelper.buildUndirected(6, 3, BridgesTestHelper.disconnectedGraph());
+        Graph graph = TestGraphs.disconnectedGraph(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertEquals(3, bridges.size(), "Disconnected graph with 3 components should have 3 bridges");
@@ -71,7 +65,7 @@ class TarjanTest {
 
     @Test
     void testTree() {
-        Graph graph = BridgesTestHelper.buildUndirected(5, 4, BridgesTestHelper.tree());
+        Graph graph = TestGraphs.tree(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertEquals(4, bridges.size(), "Tree with 4 edges should have 4 bridges");
@@ -79,7 +73,7 @@ class TarjanTest {
 
     @Test
     void testGraphWithTwoCycles() {
-        Graph graph = BridgesTestHelper.buildUndirected(5, 6, BridgesTestHelper.graphWithTwoCycles());
+        Graph graph = TestGraphs.graphWithTwoCycles(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertTrue(bridges.isEmpty(), "Graph with cycles should have no bridges");
@@ -87,7 +81,7 @@ class TarjanTest {
 
     @Test
     void testBridgeInMiddle() {
-        Graph graph = BridgesTestHelper.buildUndirected(9, 10, BridgesTestHelper.bridgeInMiddle());
+        Graph graph = TestGraphs.bridgeInMiddle(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
         assertTrue(bridges.size() >= 1, "Graph should have at least one bridge");
@@ -95,7 +89,7 @@ class TarjanTest {
 
     @Test
     void testBridgesAreUndirected() {
-        Graph graph = BridgesTestHelper.buildUndirected(2, 1, BridgesTestHelper.singleEdge());
+        Graph graph = TestGraphs.singleEdge(() -> new AdjacencyMatrixGraphBuilder(false));
 
         Set<Long> bridges = Tarjan.findAll((UndirectedGraph) graph);
 

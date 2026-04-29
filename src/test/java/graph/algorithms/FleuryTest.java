@@ -13,7 +13,8 @@ import graph.api.DirectedGraph;
 import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
-import graph.representations.GraphBuilderHelper;
+import graph.util.GraphTestHelper;
+import graph.util.GraphHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class FleuryTest {
@@ -22,9 +23,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_Triangle() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -36,9 +37,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_AllOddDegrees() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 6,
+                5,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 }, { 1, 3 }, { 2, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -49,9 +50,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_PetersenCore() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                5, 10,
+                5,
                 new int[][] {
                         { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 }, { 5, 1 },
                         { 1, 3 }, { 2, 4 }, { 3, 5 }, { 4, 1 }, { 5, 2 } });
@@ -64,9 +65,9 @@ class FleuryTest {
 
     @Test
     void testSemiEulerian_LinearPath() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -82,9 +83,9 @@ class FleuryTest {
 
     @Test
     void testSemiEulerian_PathWithCycle() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                5, 5,
+                5,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 }, { 4, 5 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -95,9 +96,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_Disconnected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                6, 4,
+                6,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 4, 5 }, { 5, 6 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -108,9 +109,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_ThreeOddDegrees() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -121,9 +122,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_FourCycle() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -134,9 +135,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_IsolatedVertex() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -147,9 +148,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_ReturnsToStart() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -163,9 +164,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_SimpleCycle() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -176,9 +177,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_ComplexCycle() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 8,
+                4,
                 new int[][] {
                         { 1, 2 }, { 2, 1 }, { 2, 3 }, { 3, 2 },
                         { 3, 4 }, { 4, 3 }, { 4, 1 }, { 1, 4 } });
@@ -191,9 +192,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_DirectedCycle() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -204,9 +205,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_NotStronglyConnectedTrail() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -217,9 +218,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_NotStronglyConnected() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -230,9 +231,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_MultipleSCCs() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                6, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 1 }, { 3, 4 }, { 4, 3 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -243,9 +244,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_UnequalDegrees() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 2, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -256,9 +257,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_SingleVertexNoEdges() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                1, 0,
+                1,
                 new int[][] {});
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -271,9 +272,9 @@ class FleuryTest {
 
     @Test
     void testPathLength_Undirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -283,9 +284,9 @@ class FleuryTest {
 
     @Test
     void testPathLength_Directed() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -295,9 +296,9 @@ class FleuryTest {
 
     @Test
     void testPathVisitsAllEdges_Undirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 5,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 }, { 1, 3 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -325,9 +326,9 @@ class FleuryTest {
 
     @Test
     void testPathVisitsAllEdges_Directed() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -346,9 +347,9 @@ class FleuryTest {
 
     @Test
     void testPathEdgesAreAdjacent_Undirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -356,16 +357,16 @@ class FleuryTest {
         for (int i = 0; i < result.path().length - 1; i++) {
             int v = result.path()[i];
             int w = result.path()[i + 1];
-            assertTrue(GraphBuilderHelper.hasNeighbor(graph, v, w),
+            assertTrue(GraphHelper.hasNeighbor(graph, v, w),
                     "Consecutive vertices (" + v + ", " + w + ") must be adjacent");
         }
     }
 
     @Test
     void testPathEdgesAreAdjacent_Directed() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -373,7 +374,7 @@ class FleuryTest {
         for (int i = 0; i < result.path().length - 1; i++) {
             int v = result.path()[i];
             int w = result.path()[i + 1];
-            assertTrue(GraphBuilderHelper.hasEdge(graph, v, w),
+            assertTrue(GraphHelper.hasEdge(graph, v, w),
                     "Consecutive vertices (" + v + " -> " + w + ") must form a directed edge");
         }
     }
@@ -382,9 +383,9 @@ class FleuryTest {
 
     @Test
     void testGraphInterface_DispatchesUndirected() {
-        Graph graph = GraphBuilderHelper.buildUndirected(
+        Graph graph = GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         assertFalse(graph.isDirected);
@@ -397,9 +398,9 @@ class FleuryTest {
 
     @Test
     void testGraphInterface_DispatchesDirected() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         assertTrue(graph.isDirected);
@@ -414,9 +415,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_SingleVertexUndirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                1, 0,
+                1,
                 new int[][] {});
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -427,9 +428,9 @@ class FleuryTest {
 
     @Test
     void testNonEulerian_WeaklyConnectedButNotStrongly() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -439,9 +440,9 @@ class FleuryTest {
 
     @Test
     void testPathEnd_IsAtOddDegreeVertex() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -452,9 +453,9 @@ class FleuryTest {
 
     @Test
     void testSelfLoopsIgnored() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
-                3, 4,
+                3,
                 new int[][] { { 1, 1 }, { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
@@ -465,9 +466,9 @@ class FleuryTest {
 
     @Test
     void testEulerianCircuit_Undirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.buildUndirected(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),
-                7, 12,
+                7,
                 new int[][] {
                         { 1, 2 }, { 1, 3 }, { 2, 3 }, { 2, 4 }, { 2, 5 },
                         { 3, 4 }, { 3, 6 }, { 4, 5 }, { 4, 6 }, { 5, 6 },

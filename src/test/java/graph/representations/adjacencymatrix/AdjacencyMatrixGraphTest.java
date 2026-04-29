@@ -6,17 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import graph.api.DirectedGraph;
 import graph.api.Graph;
-import graph.api.GraphHelper;
+import graph.util.GraphHelper;
 import graph.api.UndirectedGraph;
-import graph.representations.GraphBuilderHelper;
+import graph.util.GraphTestHelper;
 
 class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetVerticesDefaultRange() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(false),
-                5, 2,
+                5,
                 new int[][] { { 1, 2 }, { 3, 4 } });
 
         GraphHelper.assertVertices(graph, 1, 2, 3, 4);
@@ -24,9 +24,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetDegreeUndirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(false),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 1, 4 } });
 
         GraphHelper.assertDegree(graph, 1, 3);
@@ -37,9 +37,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetInDegreeDirected() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 2 }, { 4, 2 } });
 
         GraphHelper.assertInDegree(graph, 1, 0);
@@ -50,9 +50,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetOutDegreeDirected() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 3, 4 } });
 
         GraphHelper.assertOutDegree(graph, 1, 2);
@@ -63,9 +63,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetSuccessors() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 5,
+                5,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 3, 5 } });
 
         GraphHelper.assertSuccessors(graph, 1, 2, 3);
@@ -74,9 +74,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetNeighborsUndirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(false),
-                5, 4,
+                5,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 5, 1 } });
 
         GraphHelper.assertNeighbors(graph, 1, 2, 3, 5);
@@ -85,9 +85,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetInducedSubgraph() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                6, 6,
+                6,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 }, { 3, 4 }, { 4, 5 }, { 5, 6 } });
 
         GraphHelper.assertInducedSubgraphN(graph, new int[] { 1, 2, 3 }, 3);
@@ -96,9 +96,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testGetReversedDirected() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 3, 4 } });
 
         GraphHelper.assertReversedM(graph, 4);
@@ -109,9 +109,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testInvalidVertexArgumentGetDegree() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 1,
+                5,
                 new int[][] { { 1, 2 } });
 
         GraphHelper.assertThrowsIAE(() -> graph.getDegree(0));
@@ -120,9 +120,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testInvalidVertexArgumentGetInDegree() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 1,
+                5,
                 new int[][] { { 1, 2 } });
 
         GraphHelper.assertThrowsIAE(() -> graph.getInDegree(0));
@@ -131,9 +131,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testInvalidVertexArgumentGetOutDegree() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 1,
+                5,
                 new int[][] { { 1, 2 } });
 
         GraphHelper.assertThrowsIAE(() -> graph.getOutDegree(0));
@@ -142,9 +142,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testInvalidVertexArgumentGetSuccessors() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 1,
+                5,
                 new int[][] { { 1, 2 } });
 
         GraphHelper.assertThrowsIAE(() -> graph.getSuccessors(0));
@@ -153,9 +153,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testInvalidVertexArgumentGetPredecessors() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 1,
+                5,
                 new int[][] { { 1, 2 } });
 
         GraphHelper.assertThrowsIAE(() -> graph.getPredecessors(0));
@@ -164,9 +164,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testEmptyGraph() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(false),
-                5, 0,
+                5,
                 new int[][] {});
 
         assertEquals(5, graph.getVerticesCount());
@@ -176,9 +176,9 @@ class AdjacencyMatrixGraphTest {
 
     @Test
     void testSingleVertexGraph() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                1, 0,
+                1,
                 new int[][] {});
 
         assertEquals(1, graph.getVerticesCount());

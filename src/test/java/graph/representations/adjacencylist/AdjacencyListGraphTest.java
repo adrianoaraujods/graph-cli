@@ -7,17 +7,17 @@ import org.junit.jupiter.api.Test;
 import graph.algorithms.Fleury;
 import graph.api.DirectedGraph;
 import graph.api.Graph;
-import graph.api.GraphHelper;
+import graph.util.GraphHelper;
 import graph.api.UndirectedGraph;
-import graph.representations.GraphBuilderHelper;
+import graph.util.GraphTestHelper;
 
 class AdjacencyListGraphTest {
 
     @Test
     void testGetVerticesDefaultRange() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                5, 2,
+                5,
                 new int[][] { { 1, 2 }, { 3, 4 } });
 
         GraphHelper.assertVertices(graph, 1, 2, 3, 4);
@@ -25,9 +25,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetDegreeUndirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                4, 3,
+                4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 1, 4 } });
 
         GraphHelper.assertDegree(graph, 1, 3);
@@ -38,9 +38,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetInDegreeDirected() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 2 }, { 4, 2 } });
 
         GraphHelper.assertInDegree(graph, 1, 0);
@@ -51,9 +51,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetOutDegreeDirected() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                4, 4,
+                4,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 3, 4 } });
 
         GraphHelper.assertOutDegree(graph, 1, 2);
@@ -64,9 +64,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetSuccessors() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                5, 5,
+                5,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 3, 5 } });
 
         GraphHelper.assertSuccessors(graph, 1, 2, 3);
@@ -75,9 +75,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetPredecessors() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                5, 6,
+                5,
                 new int[][] { { 1, 3 }, { 2, 3 }, { 3, 4 }, { 3, 5 }, { 4, 5 }, { 2, 5 } });
 
         GraphHelper.assertPredecessors(graph, 3, 1, 2);
@@ -86,9 +86,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetNeighborsUndirected() {
-        UndirectedGraph graph = (UndirectedGraph) GraphBuilderHelper.build(
+        UndirectedGraph graph = (UndirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                5, 5,
+                5,
                 new int[][] { { 1, 2 }, { 1, 3 }, { 2, 4 }, { 2, 5 }, { 3, 5 } });
 
         GraphHelper.assertNeighbors(graph, 1, 2, 3);
@@ -97,9 +97,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testClone() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                3, 2,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 } });
 
         Graph cloned = graph.clone();
@@ -111,9 +111,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetReversed() {
-        DirectedGraph graph = (DirectedGraph) GraphBuilderHelper.build(
+        DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                3, 2,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 } });
 
         DirectedGraph reversed = graph.getReversed();
@@ -124,9 +124,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testAddEdgeDuplicateDirected() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                3, 3,
+                2,
                 new int[][] { { 1, 2 }, { 1, 2 }, { 1, 2 } });
 
         GraphHelper.assertM(graph, 1);
@@ -134,9 +134,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testAddEdgeDuplicateUndirected() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                3, 3,
+                2,
                 new int[][] { { 1, 2 }, { 1, 2 }, { 2, 1 } });
 
         GraphHelper.assertM(graph, 1);
@@ -144,9 +144,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetVerticesCount() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                5, 2,
+                5,
                 new int[][] { { 1, 2 }, { 3, 4 } });
 
         assertEquals(5, graph.getVerticesCount());
@@ -154,9 +154,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetEdgesCount() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                5, 5,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         assertEquals(3, graph.getEdgesCount());
@@ -164,9 +164,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testGetInducedSubgraph() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(true),
-                5, 4,
+                5,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 } });
 
         Graph subgraph = graph.getInducedSubgraph(new int[] { 1, 2, 3 });
@@ -176,9 +176,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testFleuryEulerianCircuit() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         Fleury.EulerianPath result = Fleury.findEulerianPath(graph);
@@ -190,9 +190,9 @@ class AdjacencyListGraphTest {
 
     @Test
     void testCloneVsOriginal() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
-                7, 12,
+                7,
                 new int[][] { 
                     { 1, 2 }, { 1, 3 }, { 2, 3 }, { 2, 4 }, { 2, 5 }, 
                     { 3, 4 }, { 3, 6 }, { 4, 5 }, { 4, 6 }, { 5, 6 }, 

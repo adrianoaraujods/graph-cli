@@ -2,17 +2,17 @@ package graph.representations.adjacencymatrix;
 
 import org.junit.jupiter.api.Test;
 
-import graph.api.GraphHelper;
+import graph.util.GraphHelper;
 import graph.api.Graph;
-import graph.representations.GraphBuilderHelper;
+import graph.util.GraphTestHelper;
 
 class AdjacencyMatrixBuilderTest {
 
     @Test
     void testInitializeBasic() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                10, 5,
+                10,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 4 } });
 
         GraphHelper.assertN(graph, 10);
@@ -21,9 +21,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testBuildWithUnusedCapacity() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 10,
+                5,
                 new int[][] { { 1, 2 }, { 2, 3 } });
 
         GraphHelper.assertM(graph, 2);
@@ -31,9 +31,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testUndirectedEdgesPreserved() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(false),
-                3, 2,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 } });
 
         GraphHelper.assertM(graph, 2);
@@ -41,9 +41,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testDirectedEdgesPreserved() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                3, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         GraphHelper.assertM(graph, 3);
@@ -51,9 +51,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testEmptyGraph() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                5, 0,
+                5,
                 new int[][] {});
 
         GraphHelper.assertN(graph, 5);
@@ -62,9 +62,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testZeroVertices() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                0, 0,
+                0,
                 new int[][] {});
 
         GraphHelper.assertN(graph, 0);
@@ -73,9 +73,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testSingleVertex() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(true),
-                1, 0,
+                1,
                 new int[][] {});
 
         GraphHelper.assertN(graph, 1);
@@ -84,9 +84,9 @@ class AdjacencyMatrixBuilderTest {
 
     @Test
     void testVerticesUndirected() {
-        Graph graph = GraphBuilderHelper.build(
+        Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyMatrixGraphBuilder(false),
-                5, 3,
+                3,
                 new int[][] { { 1, 2 }, { 2, 3 }, { 3, 1 } });
 
         GraphHelper.assertVertices(graph, 1, 2, 3);

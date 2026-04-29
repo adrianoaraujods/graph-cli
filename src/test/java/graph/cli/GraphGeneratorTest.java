@@ -17,6 +17,7 @@ import graph.algorithms.Fleury;
 import graph.algorithms.Fleury.EulerianType;
 import graph.api.UndirectedGraph;
 import graph.api.ConnectivityType;
+import graph.util.GraphTestHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class GraphGeneratorTest {
@@ -507,13 +508,10 @@ class GraphGeneratorTest {
     }
 
     private UndirectedGraph parseToUndirectedGraph(List<int[]> edges, int n) {
-        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
-        builder.initialize(n, edges.size());
-
-        for (int[] edge : edges) {
-            builder.addEdge(edge[0], edge[1]);
-        }
-
-        return (UndirectedGraph) builder.build();
+        int[][] edgesArray = edges.toArray(new int[edges.size()][]);
+        return (UndirectedGraph) GraphTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                n,
+                edgesArray);
     }
 }

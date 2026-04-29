@@ -1,18 +1,22 @@
-package graph.api;
+package graph.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import graph.api.DirectedGraph;
+import graph.api.Graph;
+import graph.api.UndirectedGraph;
+
 public class GraphHelper {
 
     public static void assertN(Graph graph, int expected) {
-        assertEquals(expected, graph.n);
+        assertEquals(expected, graph.getVerticesCount());
     }
 
     public static void assertM(Graph graph, int expected) {
-        assertEquals(expected, graph.m);
+        assertEquals(expected, graph.getEdgesCount());
     }
 
     public static void assertVertices(Graph graph, int... expected) {
@@ -109,12 +113,12 @@ public class GraphHelper {
 
     public static void assertInducedSubgraphN(Graph graph, int[] vertices, int expectedN) {
         Graph subgraph = graph.getInducedSubgraph(vertices);
-        assertEquals(expectedN, subgraph.n);
+        assertEquals(expectedN, subgraph.getVerticesCount());
     }
 
     public static void assertInducedSubgraphM(Graph graph, int[] vertices, int expectedM) {
         Graph subgraph = graph.getInducedSubgraph(vertices);
-        assertEquals(expectedM, subgraph.m);
+        assertEquals(expectedM, subgraph.getEdgesCount());
     }
 
     public static void assertReversedM(DirectedGraph graph, int expectedM) {
@@ -137,5 +141,25 @@ public class GraphHelper {
             }
         }
         assertTrue(found, "Expected reversed graph to have edge " + source + " -> " + target);
+    }
+
+    public static boolean hasEdge(DirectedGraph graph, int source, int target) {
+        int[] successors = graph.getSuccessors(source);
+        for (int s : successors) {
+            if (s == target) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasNeighbor(UndirectedGraph graph, int source, int target) {
+        int[] neighbors = graph.getNeighbors(source);
+        for (int n : neighbors) {
+            if (n == target) {
+                return true;
+            }
+        }
+        return false;
     }
 }
