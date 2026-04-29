@@ -1,4 +1,4 @@
-package graph.cli;
+package graph.cli.create;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;

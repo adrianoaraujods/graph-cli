@@ -1,4 +1,4 @@
-package graph.cli;
+package graph.cli.create;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -176,7 +176,7 @@ public class GraphGenerator {
     }
 
     m = edges.size();
-    try (GraphWritter writer = new GraphWritter(n, m, outputPath)) {
+    try (GraphWriter writer = new GraphWriter(n, m, outputPath)) {
       writer.writeHeader();
       writer.writeEdge(edges);
     } catch (IOException e) {

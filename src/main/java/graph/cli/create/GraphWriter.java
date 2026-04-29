@@ -1,4 +1,4 @@
-package graph.cli;
+package graph.cli.create;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -7,14 +7,14 @@ import java.util.Set;
 
 import graph.api.Edges;
 
-public class GraphWritter implements AutoCloseable {
+public class GraphWriter implements AutoCloseable {
   private static final int CHUNK_SIZE = 64 * 1_024;
 
   private BufferedWriter writer;
   private int n;
   private long m;
 
-  public GraphWritter(int n, long m, String outputPath) throws IOException {
+  public GraphWriter(int n, long m, String outputPath) throws IOException {
     this.n = n;
     this.m = m;
 

@@ -1,0 +1,35 @@
+package graph.cli.read;
+
+import graph.algorithms.Fleury.BridgeFinder;
+
+import java.util.Map;
+
+public record AlgorithmRequest(String name, Map<String, Object> params) {
+
+    public static AlgorithmRequest dfs(int target) {
+        return new AlgorithmRequest("--dfs", Map.of("target", target));
+    }
+
+    public static AlgorithmRequest kosaraju() {
+        return new AlgorithmRequest("--kosaraju", Map.of());
+    }
+
+    public static AlgorithmRequest fleury(BridgeFinder bridgeFinder) {
+        if (bridgeFinder == null) {
+            return new AlgorithmRequest("--fleury", Map.of());
+        }
+        return new AlgorithmRequest("--fleury", Map.of("bridgeFinder", bridgeFinder));
+    }
+
+    public static AlgorithmRequest tarjan() {
+        return new AlgorithmRequest("--tarjan", Map.of());
+    }
+
+    public static AlgorithmRequest naiveBridges() {
+        return new AlgorithmRequest("--naive-global", Map.of());
+    }
+
+    public static AlgorithmRequest naiveLocalBridges() {
+        return new AlgorithmRequest("--naive-local", Map.of());
+    }
+}

@@ -19,7 +19,7 @@ import graph.algorithms.Fleury.BridgeFinder;
 import graph.algorithms.Fleury.EulerianPath;
 import graph.api.ConnectivityType;
 import graph.api.UndirectedGraph;
-import graph.cli.GraphGenerator;
+import graph.cli.create.GraphGenerator;
 import graph.cli.GraphReader;
 import graph.representations.GraphBuilder;
 import graph.representations.adjacencylist.AdjacencyListGraphBuilder;
