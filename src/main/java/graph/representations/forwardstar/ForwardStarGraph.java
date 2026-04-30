@@ -8,7 +8,6 @@ import java.util.stream.IntStream;
 import graph.api.DirectedGraph;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
-import graph.util.Sort;
 
 /**
  * Concrete and static (immutable) implementation of the Graph using the Forward
@@ -289,7 +288,6 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
       }
     }
 
-    Sort.quick(result);
     return result;
   }
 
