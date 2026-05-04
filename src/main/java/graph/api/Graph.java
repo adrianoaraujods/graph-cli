@@ -65,9 +65,14 @@ public abstract class Graph implements GraphBase {
    * @return The {@link Graph} with the reversed edges.
    */
   protected DirectedGraph getReversed(GraphBuilder builder) {
-    builder.initialize(n, m);
+    builder.initialize(n, m, isWeighted);
 
     IteratorVisitor iterator = new IteratorVisitor() {
+      @Override
+      public void examineEdge(int source, int target, int weight) {
+        builder.addEdge(target, source, weight);
+      }
+
       @Override
       public void examineEdge(int source, int target) {
         builder.addEdge(target, source);
@@ -85,30 +90,37 @@ public abstract class Graph implements GraphBase {
    * @param builder  The graph builder used to construct the subgraph.
    * @return The induced {@link Graph} containing only the specified vertices.
    */
-  protected Graph getInducedSubgraph(int[] vertices, GraphBuilder builder) {
-    int maxVertex = Arrays.stream(vertices).max().orElse(0);
+   protected Graph getInducedSubgraph(int[] vertices, GraphBuilder builder) {
+     int maxVertex = Arrays.stream(vertices).max().orElse(0);
 
-    builder.initialize(maxVertex, m);
+     builder.initialize(maxVertex, m, isWeighted);
 
-    // Track all specified vertices (including isolated ones)
-    for (int v : vertices) {
-      builder.addVertex(v);
-    }
+     // Track all specified vertices (including isolated ones)
+     for (int v : vertices) {
+       builder.addVertex(v);
+     }
 
-    Set<Integer> uniqueVertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
+     Set<Integer> uniqueVertices = Arrays.stream(vertices).boxed().collect(Collectors.toSet());
 
-    IteratorVisitor iterator = new IteratorVisitor() {
-      @Override
-      public void examineEdge(int v, int w) {
-        if (uniqueVertices.contains(v) && uniqueVertices.contains(w)) {
-          builder.addEdge(v, w);
-        }
-      }
-    };
+     IteratorVisitor iterator = new IteratorVisitor() {
+       @Override
+       public void examineEdge(int v, int w, int weight) {
+         if (uniqueVertices.contains(v) && uniqueVertices.contains(w)) {
+           builder.addEdge(v, w, weight);
+         }
+       }
 
-    iterateGraph(iterator);
-    return builder.build();
-  }
+       @Override
+       public void examineEdge(int v, int w) {
+         if (uniqueVertices.contains(v) && uniqueVertices.contains(w)) {
+           builder.addEdge(v, w);
+         }
+       }
+     };
+
+     iterateGraph(iterator);
+     return builder.build();
+   }
 
   @Override
   public long[] getEdgesSet() {

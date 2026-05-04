@@ -7,22 +7,27 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
+import graph.api.WeightedGraph;
 import graph.api.UndirectedGraph;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
-public class AdjacencyListGraph extends Graph implements DirectedGraph, UndirectedGraph {
+public class AdjacencyListGraph extends Graph implements DirectedGraph, UndirectedGraph, WeightedGraph {
   private Map<Integer, Set<Integer>> vertices;
+  private Map<Integer, Map<Integer, Integer>> weightedVertices;
   private final Set<Integer> isolatedVertices;
 
   /**
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  AdjacencyListGraph(boolean isDirected, int n, long m, Map<Integer, Set<Integer>> vertices,
+  AdjacencyListGraph(boolean isDirected, int n, long m, boolean isWeighted,
+      Map<Integer, Set<Integer>> vertices, Map<Integer, Map<Integer, Integer>> weightedVertices,
       Set<Integer> isolatedVertices) {
-    super(isDirected, n, m, false);
+    super(isDirected, n, m, isWeighted);
     this.vertices = vertices;
+    this.weightedVertices = weightedVertices != null ? weightedVertices : new HashMap<>();
     this.isolatedVertices = isolatedVertices;
   }
 
@@ -141,6 +146,48 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
   }
 
   @Override
+  public int getEdgeWeight(int v, int w) {
+    Map<Integer, Integer> neighbors = weightedVertices.get(v);
+    if (neighbors == null) {
+      throw new IllegalArgumentException("Edge does not exist: " + v + " -> " + w);
+    }
+    Integer weight = neighbors.get(w);
+    if (weight == null) {
+      throw new IllegalArgumentException("Edge does not exist: " + v + " -> " + w);
+    }
+    return weight;
+  }
+
+  @Override
+  public int[] getWeightsSet() {
+    java.util.List<Integer> weights = new java.util.ArrayList<>();
+    iterateGraph(new IteratorVisitor() {
+      @Override
+      public void examineEdge(int v, int w, int weight) {
+        weights.add(weight);
+      }
+    });
+    return weights.stream().mapToInt(Integer::intValue).toArray();
+  }
+
+  @Override
+  public WeightedEdges getWeightedEdgesSet() {
+    java.util.List<Long> edges = new java.util.ArrayList<>();
+    java.util.List<Integer> weights = new java.util.ArrayList<>();
+    iterateGraph(new IteratorVisitor() {
+      @Override
+      public void examineEdge(int v, int w, int weight) {
+        edges.add(Edges.directed(v, w));
+        weights.add(weight);
+      }
+    });
+    return new WeightedEdges(
+        edges.stream().mapToLong(Long::longValue).toArray(),
+        weights.stream().mapToInt(Integer::intValue).toArray()
+    );
+  }
+
+  @Override
   public void iterateGraph(IteratorVisitor visitor) {
     for (Entry<Integer, Set<Integer>> entry : vertices.entrySet()) {
       int v = entry.getKey();
@@ -158,7 +205,12 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
           return;
         }
 
-        visitor.examineEdge(v, w);
+        if (isWeighted) {
+          Map<Integer, Integer> neighbors = weightedVertices.get(v);
+          visitor.examineEdge(v, w, neighbors.get(w));
+        } else {
+          visitor.examineEdge(v, w);
+        }
       }
     }
   }

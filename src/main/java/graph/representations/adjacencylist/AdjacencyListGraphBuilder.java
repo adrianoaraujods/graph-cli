@@ -25,6 +25,7 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
   private long m;
 
   private Map<Integer, Set<Integer>> adjacency;
+  private Map<Integer, Map<Integer, Integer>> weightedAdjacency;
   private Set<Integer> isolatedVertices;
 
   public AdjacencyListGraphBuilder(boolean isDirected) {
@@ -42,6 +43,7 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
     this.m = 0;
     this.isWeighted = weighted;
     this.adjacency = new HashMap<>(n);
+    this.weightedAdjacency = weighted ? new HashMap<>(n) : null;
     this.isolatedVertices = new HashSet<>(n);
   }
 
@@ -90,6 +92,14 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
     }
 
     vAdjacency.add(w);
+
+    if (isWeighted && weightedAdjacency != null) {
+      weightedAdjacency.computeIfAbsent(v, k -> new HashMap<>()).put(w, weight);
+      if (!isDirected) {
+        weightedAdjacency.computeIfAbsent(w, k -> new HashMap<>()).put(v, weight);
+      }
+    }
+
     m++;
   }
 
@@ -100,6 +110,6 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
 
   @Override
   public AdjacencyListGraph build() {
-    return new AdjacencyListGraph(isDirected, n, m, adjacency, isolatedVertices);
+    return new AdjacencyListGraph(isDirected, n, m, isWeighted, adjacency, weightedAdjacency, isolatedVertices);
   }
 }

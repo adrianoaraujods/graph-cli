@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import graph.algorithms.Fleury;
 import graph.api.DirectedGraph;
 import graph.api.Graph;
+import graph.api.GraphBase;
+import graph.api.WeightedGraph;
+import graph.cli.read.GraphLoader;
 import graph.util.GraphHelper;
 import graph.api.UndirectedGraph;
 import graph.util.GraphTestHelper;
@@ -172,6 +175,137 @@ class AdjacencyListGraphTest {
         Graph subgraph = graph.getInducedSubgraph(new int[] { 1, 2, 3 });
 
         assertEquals(3, subgraph.getVerticesCount());
+    }
+
+    @Test
+    void testWeightedGraphIsWeighted() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        Graph graph = builder.build();
+
+        assertTrue(graph.isWeighted());
+    }
+
+    @Test
+    void testGetEdgeWeightReturnsCorrectWeight() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        assertEquals(5, graph.getEdgeWeight(1, 2));
+        assertEquals(10, graph.getEdgeWeight(2, 3));
+    }
+
+    @Test
+    void testGetEdgeWeightThrowsForMissingEdge() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
+        builder.initialize(3, 1, true);
+        builder.addEdge(1, 2, 5);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        assertThrows(IllegalArgumentException.class, () -> graph.getEdgeWeight(1, 3));
+        assertThrows(IllegalArgumentException.class, () -> graph.getEdgeWeight(2, 1));
+    }
+
+    @Test
+    void testIterateGraphPassesWeightsToVisitor() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        java.util.Map<String, Integer> edgeWeights = new java.util.HashMap<>();
+        GraphBase.IteratorVisitor visitor = new GraphBase.IteratorVisitor() {
+            @Override
+            public void examineEdge(int v, int w, int weight) {
+                edgeWeights.put(v + "->" + w, weight);
+            }
+        };
+        graph.iterateGraph(visitor);
+
+        assertEquals(5, edgeWeights.get("1->2").intValue());
+        assertEquals(10, edgeWeights.get("2->3").intValue());
+    }
+
+    @Test
+    void testGetWeightsSetReturnsWeightArray() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        int[] weights = graph.getWeightsSet();
+        assertEquals(2, weights.length);
+        assertArrayEquals(new int[] { 5, 10 }, weights);
+    }
+
+    @Test
+    void testGetWeightedEdgesSetReturnsEdgesAndWeights() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        WeightedGraph.WeightedEdges result = graph.getWeightedEdgesSet();
+        assertEquals(2, result.edges().length);
+        assertEquals(2, result.weights().length);
+        assertEquals(5, result.weights()[0]);
+        assertEquals(10, result.weights()[1]);
+    }
+
+    @Test
+    void testGetReversedPreservesWeights() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        DirectedGraph graph = (DirectedGraph) builder.build();
+
+        DirectedGraph reversed = graph.getReversed();
+        WeightedGraph weightedReversed = (WeightedGraph) reversed;
+
+        assertEquals(5, weightedReversed.getEdgeWeight(2, 1));
+        assertEquals(10, weightedReversed.getEdgeWeight(3, 2));
+    }
+
+    @Test
+    void testGetInducedSubgraphPreservesWeights() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
+        builder.initialize(4, 3, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 3, 10);
+        builder.addEdge(3, 4, 15);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        WeightedGraph subgraph = (WeightedGraph) graph.getInducedSubgraph(new int[] { 1, 2, 3 });
+
+        assertEquals(5, subgraph.getEdgeWeight(1, 2));
+        assertEquals(10, subgraph.getEdgeWeight(2, 3));
+        assertThrows(IllegalArgumentException.class, () -> subgraph.getEdgeWeight(3, 4));
+    }
+
+    @Test
+    void testIntegrationLoadWeightedFileIntoAdjacencyList() throws Exception {
+        java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("weighted_graph", ".txt");
+        String content = "3 2\n1 2 5\n2 3 10\n";
+        java.nio.file.Files.writeString(tempFile, content);
+
+        Graph graph = GraphLoader.load(tempFile.toString(), "Adjacency List", true, true);
+
+        assertTrue(graph.isWeighted());
+        WeightedGraph weightedGraph = (WeightedGraph) graph;
+        assertEquals(5, weightedGraph.getEdgeWeight(1, 2));
+        assertEquals(10, weightedGraph.getEdgeWeight(2, 3));
+        assertEquals(2, weightedGraph.getWeightsSet().length);
+
+        java.nio.file.Files.deleteIfExists(tempFile);
     }
 
     @Test
