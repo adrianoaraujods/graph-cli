@@ -10,7 +10,9 @@ import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.util.TestGraphs;
+import graph.util.WeightedTestHelper;
 import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;
+import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class NaiveBridgesTest {
 
@@ -81,6 +83,44 @@ class NaiveBridgesTest {
     @Test
     void testBridgeInMiddle() {
         Graph graph = TestGraphs.bridgeInMiddle(() -> new AdjacencyMatrixGraphBuilder(false));
+
+        Set<Long> bridges = NaiveBridges.findAll((UndirectedGraph) graph);
+        assertTrue(bridges.size() >= 1, "Graph should have at least one bridge");
+    }
+
+    // ==================== WEIGHTED GRAPH TESTS ====================
+
+    @Test
+    void testOnWeightedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 4, 15 }, { 4, 5, 20 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        Set<Long> bridges = NaiveBridges.findAll((UndirectedGraph) graph);
+        assertEquals(4, bridges.size(), "Linear chain of 5 vertices has 4 bridges");
+    }
+
+    @Test
+    void testWeightedGraphWithCycle() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        Set<Long> bridges = NaiveBridges.findAll((UndirectedGraph) graph);
+        assertTrue(bridges.isEmpty(), "Simple cycle has no bridges");
+    }
+
+    @Test
+    void testWeightedGraphWithBridge() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 4, 15 }, { 2, 5, 20 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
 
         Set<Long> bridges = NaiveBridges.findAll((UndirectedGraph) graph);
         assertTrue(bridges.size() >= 1, "Graph should have at least one bridge");

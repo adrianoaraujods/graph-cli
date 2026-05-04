@@ -14,6 +14,7 @@ import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.util.GraphTestHelper;
+import graph.util.WeightedTestHelper;
 import graph.util.GraphHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
@@ -377,6 +378,65 @@ class FleuryTest {
             assertTrue(GraphHelper.hasEdge(graph, v, w),
                     "Consecutive vertices (" + v + " -> " + w + ") must form a directed edge");
         }
+    }
+
+    // ==================== WEIGHTED GRAPH TESTS ====================
+
+    @Test
+    void testOnWeightedUndirectedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        EulerianPath result = Fleury.findEulerianPath(graph);
+
+        assertEquals(EulerianType.EULERIAN, result.type());
+        assertEquals(4, result.path().length);
+    }
+
+    @Test
+    void testOnWeightedDirectedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        EulerianPath result = Fleury.findEulerianPath(graph);
+
+        assertEquals(EulerianType.EULERIAN, result.type());
+        assertEquals(4, result.path().length);
+    }
+
+    @Test
+    void testWeightedGraphNonEulerian() {
+        // Disconnected weighted graph - not Eulerian
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 }, { 4, 5, 20 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        EulerianPath result = Fleury.findEulerianPath(graph);
+
+        assertEquals(EulerianType.NON_EULERIAN, result.type());
+        assertEquals(0, result.path().length);
+    }
+
+    @Test
+    void testWeightedGraphSemiEulerian() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 4, 15 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        EulerianPath result = Fleury.findEulerianPath(graph);
+
+        assertEquals(EulerianType.SEMI_EULERIAN, result.type());
+        assertEquals(4, result.path().length);
     }
 
     // ==================== DISPATCH/INTEGRATION TESTS ====================

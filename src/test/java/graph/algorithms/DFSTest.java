@@ -9,6 +9,7 @@ import graph.algorithms.DFS.DFSResult;
 import graph.algorithms.DFS.DFSVisitor;
 import graph.api.Graph;
 import graph.util.GraphTestHelper;
+import graph.util.WeightedTestHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class DFSTest {
@@ -322,6 +323,87 @@ class DFSTest {
         ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
 
         assertNotNull(classified.forwardEdges());
+    }
+
+    // ==================== WEIGHTED GRAPH TESTS ====================
+
+    @Test
+    void testDFSOnWeightedGraph() {
+        // Create weighted graph: edges {1,2,5}, {2,3,10}, {3,4,15}
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 4, 15 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        DFSResult result = DFS.search(graph);
+        int[] discoverTimes = result.discoverTimes();
+
+        for (int i = 0; i < discoverTimes.length; i++) {
+            assertTrue(discoverTimes[i] > 0, "All vertices should be discovered");
+        }
+
+        // Verify DFS ignores weights - tree edges should be based on structure only
+        long[] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
+        assertEquals(3, treeEdges.length, "Should have 3 tree edges");
+    }
+
+    @Test
+    void testDFSOnWeightedUndirectedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 4, 15 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        DFSResult result = DFS.search(graph);
+        int[] discoverTimes = result.discoverTimes();
+
+        for (int i = 0; i < discoverTimes.length; i++) {
+            assertTrue(discoverTimes[i] > 0, "All vertices should be discovered");
+        }
+    }
+
+    @Test
+    void testDFSTreeEdgesIgnoreWeights() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 100 }, { 1, 3, 1 }, { 2, 4, 50 } });
+
+        DFSResult result = DFS.search(graph);
+        long[] treeEdges = DFS.getDFSTreeEdges(graph, result.parents());
+
+        assertNotNull(treeEdges);
+        assertEquals(3, treeEdges.length);
+    }
+
+    @Test
+    void testDFSClassifyEdgesOnWeightedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 5 }, { 1, 3, 10 }, { 2, 4, 15 }, { 2, 5, 20 } });
+
+        DFSResult result = DFS.search(graph);
+        ClassifiedDFSEdges classified = DFS.classifyVertexDFSEdges(graph, 1, result);
+
+        assertNotNull(classified);
+        assertNotNull(classified.treeEdges());
+        assertTrue(classified.treeEdges().length > 0, "Vertex 1 should have tree edges");
+    }
+
+    @Test
+    void testDFSWithCycleOnWeightedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        DFSResult result = DFS.search(graph);
+
+        int[] discoverTimes = result.discoverTimes();
+        int[] finishTimes = result.finishTimes();
+
+        assertNotNull(discoverTimes);
+        assertNotNull(finishTimes);
     }
 
     @Test

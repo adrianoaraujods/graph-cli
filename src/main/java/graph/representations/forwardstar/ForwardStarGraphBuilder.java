@@ -98,15 +98,18 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     isolatedVertices.add(v);
   }
 
-  @Override
-  public ForwardStarGraph build() {
-    int edgesCount = (isDirected ? m : m * 2);
+    @Override
+    public ForwardStarGraph build() {
+        int edgesCount = (isDirected ? m : m * 2);
 
-    // Trim the arrays to the final size
-    if (edgesCount != sources.length) {
-      sources = Arrays.copyOf(sources, edgesCount);
-      targets = Arrays.copyOf(targets, edgesCount);
-    }
+        // Trim the arrays to the final size
+        if (edgesCount != sources.length) {
+            sources = Arrays.copyOf(sources, edgesCount);
+            targets = Arrays.copyOf(targets, edgesCount);
+            if (isWeighted && weights != null) {
+                weights = Arrays.copyOf(weights, edgesCount);
+            }
+        }
 
     if (edgesCount > 0) {
       if (isWeighted && weights != null) {

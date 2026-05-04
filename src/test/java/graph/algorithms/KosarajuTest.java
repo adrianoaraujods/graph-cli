@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import graph.algorithms.DFS.DFSResult;
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
+import graph.api.WeightedGraph;
 import graph.util.GraphTestHelper;
+import graph.util.WeightedTestHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
 class KosarajuTest {
@@ -227,6 +230,107 @@ class KosarajuTest {
         DirectedGraph[] components = Kosaraju.findSCCs(graph);
 
         assertEquals(3, components.length);
+    }
+
+    // ==================== WEIGHTED GRAPH TESTS ====================
+
+    @Test
+    void testOnWeightedGraph() {
+        // Weighted directed graph with SCCs: {1,2,3} and {4}, {5}
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 }, { 3, 4, 20 }, { 4, 5, 25 } });
+
+        assertTrue(graph.isWeighted(), "Graph should be weighted");
+
+        DirectedGraph[] components = Kosaraju.findSCCs((DirectedGraph) graph);
+
+        assertEquals(3, components.length, "Should have 3 SCCs");
+
+        boolean foundThreeVertexComponent = false;
+        for (DirectedGraph comp : components) {
+            if (comp.getVerticesCount() == 3) {
+                foundThreeVertexComponent = true;
+                break;
+            }
+        }
+        assertTrue(foundThreeVertexComponent, "Should have SCC with 3 vertices");
+    }
+
+    @Test
+    void testWeightedGraphReversedPreservesWeights() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        assertTrue(graph instanceof WeightedGraph, "Graph should implement WeightedGraph");
+
+        DirectedGraph reversed = ((DirectedGraph) graph).getReversed();
+
+        assertTrue(reversed instanceof WeightedGraph, "Reversed graph should implement WeightedGraph");
+        assertTrue(((Graph) reversed).isWeighted(), "Reversed graph should be weighted");
+
+        // Verify weights are preserved in reversed graph
+        WeightedGraph wg = (WeightedGraph) reversed;
+        assertEquals(5, wg.getEdgeWeight(2, 1), "Weight should be preserved in reversed edge");
+        assertEquals(10, wg.getEdgeWeight(3, 2), "Weight should be preserved in reversed edge");
+        assertEquals(15, wg.getEdgeWeight(1, 3), "Weight should be preserved in reversed edge");
+    }
+
+    @Test
+    void testWeightedGraphInducedSubgraphPreservesWeights() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        assertTrue(graph instanceof WeightedGraph, "Graph should implement WeightedGraph");
+
+        Graph subgraph = graph.getInducedSubgraph(new int[] { 1, 2, 3 });
+
+        assertTrue(subgraph instanceof WeightedGraph, "Subgraph should implement WeightedGraph");
+        assertTrue(subgraph.isWeighted(), "Subgraph should be weighted");
+
+        // Verify weights are preserved in subgraph
+        WeightedGraph wg = (WeightedGraph) subgraph;
+        assertEquals(5, wg.getEdgeWeight(1, 2), "Weight should be preserved in subgraph edge");
+        assertEquals(10, wg.getEdgeWeight(2, 3), "Weight should be preserved in subgraph edge");
+        assertEquals(15, wg.getEdgeWeight(3, 1), "Weight should be preserved in subgraph edge (cycle)");
+    }
+
+    @Test
+    void testGetEdgesSetOnWeightedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        long[] edges = graph.getEdgesSet();
+
+        assertNotNull(edges);
+        assertEquals(3, edges.length, "Should have 3 edges (undirected counts each edge once)");
+    }
+
+    @Test
+    void testGetWeightedEdgesSetOnWeightedGraph() {
+        Graph graph = WeightedTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                new int[][] { { 1, 2, 5 }, { 2, 3, 10 }, { 3, 1, 15 } });
+
+        assertTrue(graph instanceof WeightedGraph, "Graph should implement WeightedGraph");
+
+        WeightedGraph wg = (WeightedGraph) graph;
+        WeightedGraph.WeightedEdges result = wg.getWeightedEdgesSet();
+
+        assertNotNull(result);
+        assertEquals(3, result.edges().length, "Should have 3 edges");
+        assertEquals(3, result.weights().length, "Should have 3 weights");
+
+        // Verify edges and weights are aligned
+        for (int i = 0; i < result.edges().length; i++) {
+            int v = Edges.getSource(result.edges()[i]);
+            int w = Edges.getTarget(result.edges()[i]);
+            int expectedWeight = wg.getEdgeWeight(v, w);
+            assertEquals(expectedWeight, result.weights()[i], "Weight should match edge at index " + i);
+        }
     }
 
     @Test

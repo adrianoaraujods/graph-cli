@@ -35,7 +35,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
    * Copy constructor - creates a deep copy for full independence.
    */
   private AdjacencyListGraph(AdjacencyListGraph graph) {
-    super(graph.isDirected, graph.n, graph.m, false);
+    super(graph.isDirected, graph.n, graph.m, graph.isWeighted());
     vertices = new HashMap<>(graph.vertices);
     isolatedVertices = new HashSet<>(graph.isolatedVertices);
 

@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import graph.api.DirectedGraph;
+import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.api.WeightedGraph;
@@ -349,8 +350,18 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
   @Override
   public WeightedEdges getWeightedEdgesSet() {
-    long[] edges = getEdgesSet();
-    int[] weightsArray = getWeightsSet();
-    return new WeightedEdges(edges, weightsArray);
+    java.util.List<Long> edges = new java.util.ArrayList<>();
+    java.util.List<Integer> weights = new java.util.ArrayList<>();
+    iterateGraph(new IteratorVisitor() {
+        @Override
+        public void examineEdge(int v, int w, int weight) {
+            edges.add(Edges.directed(v, w));
+            weights.add(weight);
+        }
+    });
+    return new WeightedEdges(
+            edges.stream().mapToLong(Long::longValue).toArray(),
+            weights.stream().mapToInt(Integer::intValue).toArray()
+    );
   }
 }
