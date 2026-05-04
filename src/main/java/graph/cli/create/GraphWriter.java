@@ -13,12 +13,24 @@ public class GraphWriter implements AutoCloseable {
   private BufferedWriter writer;
   private int n;
   private long m;
+  private boolean isWeighted;
+  private int[] weights;
+  private int weightIndex;
 
   public GraphWriter(int n, long m, String outputPath) throws IOException {
+    this(n, m, outputPath, false);
+  }
+
+  public GraphWriter(int n, long m, String outputPath, boolean isWeighted) throws IOException {
     this.n = n;
     this.m = m;
-
+    this.isWeighted = isWeighted;
     writer = new BufferedWriter(new FileWriter(outputPath), CHUNK_SIZE);
+  }
+
+  public void setWeights(int[] weights) {
+    this.weights = weights;
+    this.weightIndex = 0;
   }
 
   public void writeHeader() throws IOException {
@@ -31,7 +43,10 @@ public class GraphWriter implements AutoCloseable {
       int v = path[i];
       int w = path[i + 1];
 
-      writer.write((v + 1) + " " + (w + 1)); // adding one to make 1-indexed
+      writer.write((v + 1) + " " + (w + 1));
+      if (isWeighted && weights != null) {
+        writer.write(" " + weights[weightIndex++]);
+      }
       writer.newLine();
     }
   }
@@ -39,6 +54,9 @@ public class GraphWriter implements AutoCloseable {
   public void writeEdges(int v, int[] adjacency) throws IOException {
     for (int w : adjacency) {
       writer.write((v + 1) + " " + (w + 1));
+      if (isWeighted && weights != null) {
+        writer.write(" " + weights[weightIndex++]);
+      }
       writer.newLine();
     }
   }
@@ -50,6 +68,9 @@ public class GraphWriter implements AutoCloseable {
       int w = Integer.parseInt(e[1]) + 1;
 
       writer.write(v + " " + w);
+      if (isWeighted && weights != null) {
+        writer.write(" " + weights[weightIndex++]);
+      }
       writer.newLine();
     }
   }
@@ -60,6 +81,9 @@ public class GraphWriter implements AutoCloseable {
       int w = Edges.getTarget(edge) + 1;
 
       writer.write(v + " " + w);
+      if (isWeighted && weights != null) {
+        writer.write(" " + weights[weightIndex++]);
+      }
       writer.newLine();
     }
   }

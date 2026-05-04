@@ -33,6 +33,10 @@ public class GraphGenerator {
   private double density = -1;
   Set<Long> edges = null;
 
+  // Weight config
+  private Integer minWeight = null;
+  private Integer maxWeight = null;
+
   /**
    * Immutable configuration for graph generation.
    *
@@ -58,24 +62,16 @@ public class GraphGenerator {
   public void setEdges(long m) {
     this.m = m;
     this.density = (double) m / maxEdges();
-    ensureEvenEdges();
   }
 
   public void setDensity(double density) {
     this.density = density;
-    this.m = (long) (isDirected ? maxEdges() * density : (maxEdges() * density) / 2);
-    ensureEvenEdges();
+    this.m = (long) (maxEdges() * density);
   }
 
-  private void ensureEvenEdges() {
-    if (connectivity != ConnectivityType.EULERIAN &&
-        connectivity != ConnectivityType.SEMI_EULERIAN) {
-      return; // No change needed non-Eulerian
-    }
-
-    if ((m % 2) != 0) {
-      m++; // Round UP
-    }
+  public void setWeights(Integer minWeight, Integer maxWeight) {
+    this.minWeight = minWeight;
+    this.maxWeight = maxWeight;
   }
 
   public double getDensity() {
@@ -129,7 +125,7 @@ public class GraphGenerator {
     }
 
     if (m >= 0 && m > maxEdges()) {
-      throw new IllegalStateException("Edges must be between 0 and maxEdges");
+      throw new IllegalStateException("Edges must be between 0 and " + maxEdges());
     }
 
     if (connectivity == ConnectivityType.EULERIAN && m < n) {
@@ -139,7 +135,7 @@ public class GraphGenerator {
 
     if (connectivity == ConnectivityType.SEMI_EULERIAN && m < n - 1) {
       throw new IllegalArgumentException(
-          "Semi-Eulerian graph with " + m + " vertices requires at least " + (m - 1) + " edges");
+          "Semi-Eulerian graph with " + n + " vertices requires at least " + (n - 1) + " edges");
     }
 
     if (!isDirected && m < n - 1 && connectivity != ConnectivityType.DISCONNECTED) {
@@ -176,8 +172,16 @@ public class GraphGenerator {
     }
 
     m = edges.size();
-    try (GraphWriter writer = new GraphWriter(n, m, outputPath)) {
+    try (GraphWriter writer = new GraphWriter(n, m, outputPath, minWeight != null && maxWeight != null)) {
       writer.writeHeader();
+      if (minWeight != null && maxWeight != null) {
+        int[] weights = new int[edges.size()];
+        int index = 0;
+        for (long edge : edges) {
+          weights[index++] = minWeight + random.nextInt(maxWeight - minWeight + 1);
+        }
+        writer.setWeights(weights);
+      }
       writer.writeEdge(edges);
     } catch (IOException e) {
       System.err.println("[Error] An error occurred while writing to the file: " + e.getMessage());
@@ -191,18 +195,8 @@ public class GraphGenerator {
       fillWithRandomEdges();
       return;
     }
-
-    if (connectivity == ConnectivityType.EULERIAN) {
-      addPath(true);
-    } else {
-      addPath(false);
-    }
-
-    if (connectivity == ConnectivityType.CONNECTED) {
-      fillWithRandomEdges();
-    } else {
-      fillWithRandomCycles();
-    }
+    addPath(true); // Start with a path/cycle
+    fillWithRandomEdges();
   }
 
   private void addPath(boolean cycle) {

@@ -320,4 +320,105 @@ class ForwardStarGraphTest {
         GraphHelper.assertNeighbors(graph, 3, 2, 4);
         GraphHelper.assertNeighbors(graph, 1, 4);
     }
+
+    @Test
+    void testIsWeightedUnweightedGraph() {
+        Graph graph = GraphTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                3,
+                new int[][] { { 1, 2 }, { 2, 3 } });
+
+        assertFalse(graph.isWeighted());
+    }
+
+    @Test
+    void testIsWeightedWeightedGraph() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true); // directed
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 10);
+        builder.addEdge(2, 3, 20);
+        Graph graph = builder.build();
+
+        assertTrue(graph.isWeighted());
+    }
+
+    @Test
+    void testGetEdgeWeight() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 10);
+        builder.addEdge(2, 3, 20);
+        Graph graph = builder.build();
+
+        assertTrue(graph instanceof graph.api.WeightedGraph);
+        graph.api.WeightedGraph weightedGraph = (graph.api.WeightedGraph) graph;
+        assertEquals(10, weightedGraph.getEdgeWeight(1, 2));
+        assertEquals(20, weightedGraph.getEdgeWeight(2, 3));
+    }
+
+    @Test
+    void testGetEdgeWeightUnweightedReturnsOne() {
+        Graph graph = GraphTestHelper.build(
+                () -> new ForwardStarGraphBuilder(false),
+                3,
+                new int[][] { { 1, 2 }, { 2, 3 } });
+
+        // Unweighted graphs still implement WeightedGraph but return 1
+        if (graph instanceof graph.api.WeightedGraph wg) {
+            assertEquals(1, wg.getEdgeWeight(1, 2));
+        }
+    }
+
+    @Test
+    void testIterateGraphWithWeights() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 10);
+        builder.addEdge(2, 3, 20);
+        Graph graph = builder.build();
+
+        final int[] lastWeight = { 0 };
+
+        graph.iterateGraph(new graph.api.GraphBase.IteratorVisitor() {
+            @Override
+            public void examineEdge(int v, int w, int weight) {
+                lastWeight[0] = weight;
+            }
+        });
+
+        // Verify the last edge visited has correct weight
+        assertTrue(lastWeight[0] > 0);
+    }
+
+    @Test
+    void testGetWeightsSet() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true); // directed
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 10);
+        builder.addEdge(2, 3, 20);
+        Graph graph = builder.build();
+
+        graph.api.WeightedGraph wg = (graph.api.WeightedGraph) graph;
+        int[] weights = wg.getWeightsSet();
+
+        assertEquals(2, weights.length);
+        // After sorting, verify both weights are present
+        assertTrue(weights[0] == 10 || weights[0] == 20);
+        assertTrue(weights[1] == 10 || weights[1] == 20);
+    }
+
+    @Test
+    void testGetWeightedEdgesSet() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true); // directed
+        builder.initialize(3, 2, true);
+        builder.addEdge(1, 2, 10);
+        builder.addEdge(2, 3, 20);
+        Graph graph = builder.build();
+
+        graph.api.WeightedGraph wg = (graph.api.WeightedGraph) graph;
+        graph.api.WeightedGraph.WeightedEdges result = wg.getWeightedEdgesSet();
+
+        assertEquals(2, result.edges().length);
+        assertEquals(2, result.weights().length);
+    }
 }

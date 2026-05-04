@@ -8,33 +8,37 @@ import java.util.stream.IntStream;
 import graph.api.DirectedGraph;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
+import graph.api.WeightedGraph;
 
 /**
  * Concrete and static (immutable) implementation of the Graph using the Forward
  * Star structure.
  */
-public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph {
+public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph, WeightedGraph {
   private int[] targets;
   private int[] pointers;
+  private int[] weights;
   private final Set<Integer> isolatedVertices;
 
   /**
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, Set<Integer> isolatedVertices) {
-    super(isDirected, n, m);
+  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, Set<Integer> isolatedVertices, boolean isWeighted, int[] weights) {
+    super(isDirected, n, m, isWeighted);
 
     this.targets = targets;
     this.pointers = pointers;
     this.isolatedVertices = isolatedVertices;
+    this.weights = weights;
   }
 
   /**
    * Copy constructor - creates a deep copy for full independence.
    */
   private ForwardStarGraph(ForwardStarGraph graph) {
-    super(graph.isDirected, graph.n, graph.m);
+    super(graph.isDirected, graph.n, graph.m, graph.isWeighted());
+
     this.targets = Arrays.copyOf(graph.targets, graph.targets.length);
     this.pointers = Arrays.copyOf(graph.pointers, graph.pointers.length);
     this.isolatedVertices = new HashSet<>(graph.isolatedVertices);
@@ -178,7 +182,11 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
           continue;
         }
 
-        visitor.examineEdge((v + 1), targets[w]);
+        if (isWeighted() && weights != null) {
+          visitor.examineEdge((v + 1), targets[w], weights[w]);
+        } else {
+          visitor.examineEdge((v + 1), targets[w]);
+        }
       }
     }
   }
@@ -306,5 +314,43 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   @Override
   public int[] getNeighbors(int v) {
     return getSuccessors(v);
+  }
+
+  // WeightedGraph Methods
+
+  @Override
+  public int getEdgeWeight(int v, int w) {
+    if (v < 1 || v > n || w < 1 || w > n) {
+      throw new IllegalArgumentException("Vertex out of range");
+    }
+
+    int start = pointers[v - 1];
+    int end = (v < n) ? pointers[v] : targets.length;
+
+    for (int i = start; i < end; i++) {
+      if (targets[i] == w) {
+        if (isWeighted() && weights != null) {
+          return weights[i];
+        }
+        return 1; // Unweighted graph default
+      }
+    }
+
+    throw new IllegalArgumentException("Edge " + v + " -> " + w + " not found");
+  }
+
+  @Override
+  public int[] getWeightsSet() {
+    if (!isWeighted() || weights == null) {
+      return new int[0];
+    }
+    return Arrays.copyOf(weights, weights.length);
+  }
+
+  @Override
+  public WeightedEdges getWeightedEdgesSet() {
+    long[] edges = getEdgesSet();
+    int[] weightsArray = getWeightsSet();
+    return new WeightedEdges(edges, weightsArray);
   }
 }

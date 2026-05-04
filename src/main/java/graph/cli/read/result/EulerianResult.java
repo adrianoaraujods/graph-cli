@@ -17,7 +17,8 @@ public record EulerianResult(
         }
         sb.append(":\n");
         sb.append("  Eulerian Type: ").append(path.type()).append("\n");
-        sb.append(" Eulerian Path: ").append(Arrays.toString(path.path())).append("\n");
+        // sb.append(" Eulerian Path:
+        // ").append(Arrays.toString(path.path())).append("\n");
         return sb.toString();
     }
 }

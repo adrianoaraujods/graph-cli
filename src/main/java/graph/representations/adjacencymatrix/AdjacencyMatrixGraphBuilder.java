@@ -11,6 +11,7 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
 
   /** If the graph has directed edges. */
   private final boolean isDirected;
+  private boolean isWeighted;
 
   /** Total number of vertices in the graph. */
   private int n;
@@ -28,14 +29,25 @@ public class AdjacencyMatrixGraphBuilder implements GraphBuilder {
 
   @Override
   public void initialize(int n, long m) {
+    initialize(n, m, false);
+  }
+
+  @Override
+  public void initialize(int n, long m, boolean weighted) {
     this.n = n;
     this.m = 0;
+    this.isWeighted = weighted;
     matrix = new boolean[n][n];
     this.isolatedVertices = new HashSet<>(n);
   }
 
   @Override
   public void addEdge(int v, int w) {
+    addEdge(v, w, 1);
+  }
+
+  @Override
+  public void addEdge(int v, int w, int weight) {
     // Remove from isolated if present (now has an edge)
     isolatedVertices.remove(v);
     isolatedVertices.remove(w);

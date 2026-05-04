@@ -22,6 +22,11 @@ public class CreateHandler {
             System.out.printf("  Seed: %d\n", config.seed());
         }
 
+        if (config.minWeight() != null && config.maxWeight() != null) {
+            generator.setWeights(config.minWeight(), config.maxWeight());
+            System.out.printf("  Weight Range: [%d, %d]\n", config.minWeight(), config.maxWeight());
+        }
+
         System.out.printf("  Connectivity: %s\n", config.connectivity().toString().toLowerCase());
         System.out.printf("  Vertices: %,d\n", config.vertices());
         System.out.printf("  Edges: %,d\n", generator.getEdges());

@@ -9,5 +9,7 @@ public record CreateConfig(
         double density,
         Long seed,
         ConnectivityType connectivity,
-        boolean isDirected) {
+        boolean isDirected,
+        Integer minWeight,
+        Integer maxWeight) {
 }

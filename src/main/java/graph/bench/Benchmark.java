@@ -29,7 +29,7 @@ public class Benchmark {
 
     private static final int MAX_RETRIES = 3;
 
-    private static int attempts = 10;
+    private static int attempts = 4;
     private static boolean parallel = false;
     private static int maxThreads = 24;
     private static String outputPath = "results.csv";
@@ -45,8 +45,8 @@ public class Benchmark {
             ConnectivityType.SEMI_EULERIAN,
             ConnectivityType.CONNECTED
     };
-    private static final String[] REPRESENTATIONS = { "Adjacency List", "Forward Star" };
-    private static final String[] ALGORITHMS = { "Tarjan", "Naive Local", "Naive Global" };
+    private static final String[] REPRESENTATIONS = { "Forward Star" };
+    private static final String[] ALGORITHMS = { "Tarjan", "Naive Local" };
 
     private static final ReentrantLock fileLock = new ReentrantLock();
 

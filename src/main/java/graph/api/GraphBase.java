@@ -62,6 +62,18 @@ public interface GraphBase {
     }
 
     /**
+     * Called when visiting a weighted edge.
+     * Default implementation calls examineEdge(v, w) for backward compatibility.
+     *
+     * @param v The source vertex of the edge.
+     * @param w The target vertex of the edge.
+     * @param weight The edge weight.
+     */
+    default void examineEdge(int v, int w, int weight) {
+        examineEdge(v, w);
+    }
+
+    /**
      * Called before visiting an edge or vertex.
      */
     default boolean shouldStop() {

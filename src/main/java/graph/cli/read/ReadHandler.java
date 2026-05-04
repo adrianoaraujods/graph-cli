@@ -58,7 +58,7 @@ public class ReadHandler {
 
         int step = 0;
         System.out.printf("\n[%d/%d] Reading File...", ++step, totalSteps);
-        Graph graph = GraphLoader.load(config.graphPath(), config.representation(), config.isDirected());
+        Graph graph = GraphLoader.load(config.graphPath(), config.representation(), config.isDirected(), config.isWeighted());
 
         System.out.printf("\n[%d/%d] Building Graph...", ++step, totalSteps);
         // Graph is already built by GraphLoader

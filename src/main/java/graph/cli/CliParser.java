@@ -64,6 +64,8 @@ public class CliParser {
         ConnectivityType connectivity = ConnectivityType.CONNECTED;
         boolean isDirected = true;
         Long seed = null;
+        Integer minWeight = null;
+        Integer maxWeight = null;
 
         for (int i = 2; i < args.length; i++) {
             String arg = args[i];
@@ -116,6 +118,24 @@ public class CliParser {
                 connectivity = ConnectivityType.EULERIAN;
             } else if (arg.equals("--semi-eulerian")) {
                 connectivity = ConnectivityType.SEMI_EULERIAN;
+            } else if (arg.equals("--min-weight")) {
+                if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+                    throw new InvalidAlgorithmParameterException("Missing value for --min-weight.");
+                }
+                try {
+                    minWeight = Integer.parseInt(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid min-weight: " + args[i]);
+                }
+            } else if (arg.equals("--max-weight")) {
+                if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+                    throw new InvalidAlgorithmParameterException("Missing value for --max-weight.");
+                }
+                try {
+                    maxWeight = Integer.parseInt(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid max-weight: " + args[i]);
+                }
             } else {
                 throw new InvalidAlgorithmParameterException("Unknown argument: " + arg);
             }
@@ -143,7 +163,7 @@ public class CliParser {
                     "Eulerian graph with " + vertices + " vertices requires at least " + vertices + " edges");
         }
 
-        CreateConfig config = new CreateConfig(graphPath, vertices, edges, density, seed, connectivity, isDirected);
+        CreateConfig config = new CreateConfig(graphPath, vertices, edges, density, seed, connectivity, isDirected, minWeight, maxWeight);
         return new CreateCommand(config);
     }
 
@@ -153,6 +173,7 @@ public class CliParser {
         Integer target = null;
         String outputPath = null;
         List<AlgorithmRequest> algorithms = new ArrayList<>();
+        boolean isWeighted = false;
 
         for (int i = 2; i < args.length; i++) {
             String arg = args[i];
@@ -193,6 +214,8 @@ public class CliParser {
                 representation = "Adjacency Matrix";
             } else if (arg.equals("--adjacency-list")) {
                 representation = "Adjacency List";
+            } else if (arg.equals("--weighted")) {
+                isWeighted = true;
             } else {
                 throw new InvalidAlgorithmParameterException("Unknown argument: " + arg);
             }
@@ -230,7 +253,7 @@ public class CliParser {
             }
         }
 
-        ReadConfig config = new ReadConfig(graphPath, representation, isDirected, algorithms, outputPath);
+        ReadConfig config = new ReadConfig(graphPath, representation, isDirected, isWeighted, algorithms, outputPath);
         return new ReadCommand(config);
     }
 }

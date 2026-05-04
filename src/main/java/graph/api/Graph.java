@@ -13,6 +13,9 @@ public abstract class Graph implements GraphBase {
   /** If the graph has directed edges. */
   public final boolean isDirected;
 
+  /** If the graph has weighted edges. */
+  protected final boolean isWeighted;
+
   /** Total number of vertices in the graph. */
   protected int n;
 
@@ -22,10 +25,20 @@ public abstract class Graph implements GraphBase {
   /**
    * Constructor called by the concrete implementations.
    */
-  protected Graph(boolean isDirected, int n, long m) {
+  protected Graph(boolean isDirected, int n, long m, boolean isWeighted) {
     this.isDirected = isDirected;
     this.n = n;
     this.m = m;
+    this.isWeighted = isWeighted;
+  }
+
+  /**
+   * Returns whether this graph has weighted edges.
+   *
+   * @return true if the graph is weighted, false otherwise.
+   */
+  public boolean isWeighted() {
+    return isWeighted;
   }
 
   /**

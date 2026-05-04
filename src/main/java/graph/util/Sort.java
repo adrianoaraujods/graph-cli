@@ -102,6 +102,65 @@ public class Sort {
   }
 
   /**
+   * Sorts the primary array in the specified order using Quicksort, while
+   * simultaneously applying the exact same swaps to two secondary arrays.
+   *
+   * @param primary   The array guiding the sort.
+   * @param secondary1 The first array mirroring the swaps.
+   * @param secondary2 The second array mirroring the swaps.
+   * @throws IllegalArgumentException If the arrays are not the same length.
+   */
+  public static void quick(int[] primary, int[] secondary1, int[] secondary2) {
+    quick(primary, secondary1, secondary2, true);
+  }
+
+  /**
+   * Sorts the primary array in the specified order using Quicksort, while
+   * simultaneously applying the exact same swaps to two secondary arrays.
+   *
+   * @param primary   The array guiding the sort.
+   * @param secondary1 The first array mirroring the swaps.
+   * @param secondary2 The second array mirroring the swaps.
+   * @param ascending True to sort in ascending order, false for descending.
+   * @throws IllegalArgumentException If the arrays are not the same length.
+   */
+  public static void quick(int[] primary, int[] secondary1, int[] secondary2, boolean ascending) {
+    if (primary == null || secondary1 == null || secondary2 == null) {
+      return;
+    }
+
+    if (primary.length != secondary1.length || primary.length != secondary2.length) {
+      throw new IllegalArgumentException("All arrays should have the same size.");
+    }
+
+    if (primary.length <= 1) {
+      return;
+    }
+
+    SortVisitor tripleSwapper = new SortVisitor() {
+      @Override
+      public void swap(int a, int b) {
+        // Swap primary
+        int temp1 = primary[a];
+        primary[a] = primary[b];
+        primary[b] = temp1;
+
+        // Swap secondary1
+        int temp2 = secondary1[a];
+        secondary1[a] = secondary1[b];
+        secondary1[b] = temp2;
+
+        // Swap secondary2
+        int temp3 = secondary2[a];
+        secondary2[a] = secondary2[b];
+        secondary2[b] = temp3;
+      }
+    };
+
+    quicksort(primary, 0, primary.length - 1, tripleSwapper, ascending);
+  }
+
+  /**
    * Universal Recursive Quicksort engine. It dictates the traversal and
    * partitioning, but delegates the actual data mutation to the provided
    * {@link SortVisitor}.

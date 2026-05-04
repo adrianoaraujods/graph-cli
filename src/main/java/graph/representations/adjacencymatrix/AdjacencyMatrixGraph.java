@@ -23,7 +23,7 @@ public class AdjacencyMatrixGraph extends Graph implements DirectedGraph, Undire
    * {@link AdjacencyMatrixGraphBuilder}.
    */
   AdjacencyMatrixGraph(boolean isDirected, int n, int m, boolean[][] matrix, Set<Integer> isolatedVertices) {
-    super(isDirected, n, m);
+    super(isDirected, n, m, false);
     this.matrix = matrix;
     this.isolatedVertices = isolatedVertices;
   }

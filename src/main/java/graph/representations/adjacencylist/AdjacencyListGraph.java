@@ -21,7 +21,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
    */
   AdjacencyListGraph(boolean isDirected, int n, long m, Map<Integer, Set<Integer>> vertices,
       Set<Integer> isolatedVertices) {
-    super(isDirected, n, m);
+    super(isDirected, n, m, false);
     this.vertices = vertices;
     this.isolatedVertices = isolatedVertices;
   }
@@ -30,7 +30,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
    * Copy constructor - creates a deep copy for full independence.
    */
   private AdjacencyListGraph(AdjacencyListGraph graph) {
-    super(graph.isDirected, graph.n, graph.m);
+    super(graph.isDirected, graph.n, graph.m, false);
     vertices = new HashMap<>(graph.vertices);
     isolatedVertices = new HashSet<>(graph.isolatedVertices);
 

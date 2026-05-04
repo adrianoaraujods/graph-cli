@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class GraphLoader {
 
-    public static Graph load(String graphPath, String representation, boolean isDirected)
+    public static Graph load(String graphPath, String representation, boolean isDirected, boolean isWeighted)
             throws IOException, Exception {
         GraphBuilder builder;
         switch (representation) {
@@ -21,7 +21,12 @@ public class GraphLoader {
             default -> builder = new ForwardStarGraphBuilder(isDirected);
         }
 
-        GraphReader.readFile(graphPath, builder);
+        GraphReader.readFile(graphPath, builder, isWeighted);
         return builder.build();
+    }
+
+    public static Graph load(String graphPath, String representation, boolean isDirected)
+            throws IOException, Exception {
+        return load(graphPath, representation, isDirected, false);
     }
 }

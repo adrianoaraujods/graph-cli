@@ -23,13 +23,15 @@ public class GraphReader {
    * <p>
    * The file format expects: first line with "n m" (number of vertices and edges),
    * followed by m lines each containing "source target" edge pairs.
+   * If isWeighted is true, expects "source target weight" format.
    *
    * @param pathName The path to the graph file.
    * @param builder  The GraphBuilder to populate with edges.
+   * @param isWeighted If true, parse third int as weight.
    * @throws IOException If the file cannot be read.
    * @throws Exception    If the file format is invalid.
    */
-  public static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
+  public static void readFile(String pathName, GraphBuilder builder, boolean isWeighted) throws IOException, Exception {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {
 
@@ -43,7 +45,7 @@ public class GraphReader {
         n = readNextInt(channel, buffer);
         m = readNextInt(channel, buffer);
 
-        builder.initialize(n, m);
+        builder.initialize(n, m, isWeighted);
       } else {
         throw new Exception("The input file is empty.");
       }
@@ -51,15 +53,35 @@ public class GraphReader {
       for (int i = 0; i < m; i++) {
         Integer source = readNextInt(channel, buffer);
         Integer target = readNextInt(channel, buffer);
+        Integer weight = isWeighted ? readNextInt(channel, buffer) : null;
 
         if (source == null || target == null) {
           System.err.println("Warning: End of the file reached before reading all 'm' edges.");
           break;
         }
 
-        builder.addEdge(source, target);
+        if (isWeighted && weight != null) {
+          builder.addEdge(source, target, weight);
+        } else {
+          builder.addEdge(source, target);
+        }
       }
     }
+  }
+
+  /**
+   * Reads a graph from a file and populates the provided builder.
+   * <p>
+   * The file format expects: first line with "n m" (number of vertices and edges),
+   * followed by m lines each containing "source target" edge pairs.
+   *
+   * @param pathName The path to the graph file.
+   * @param builder  The GraphBuilder to populate with edges.
+   * @throws IOException If the file cannot be read.
+   * @throws Exception    If the file format is invalid.
+   */
+  public static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
+    readFile(pathName, builder, false);
   }
 
   /**
