@@ -62,11 +62,24 @@ public class GraphGenerator {
   public void setEdges(long m) {
     this.m = m;
     this.density = (double) m / maxEdges();
+    ensureEvenEdges();
   }
 
   public void setDensity(double density) {
     this.density = density;
-    this.m = (long) (maxEdges() * density);
+    this.m = (long) (isDirected ? maxEdges() * density : (maxEdges() * density) / 2);
+    ensureEvenEdges();
+  }
+
+  private void ensureEvenEdges() {
+    if (connectivity != ConnectivityType.EULERIAN &&
+        connectivity != ConnectivityType.SEMI_EULERIAN) {
+      return; // No change needed non-Eulerian
+    }
+
+    if ((m % 2) != 0) {
+      m++; // Round UP
+    }
   }
 
   public void setWeights(Integer minWeight, Integer maxWeight) {
@@ -130,7 +143,7 @@ public class GraphGenerator {
 
     if (connectivity == ConnectivityType.EULERIAN && m < n) {
       throw new IllegalArgumentException(
-          "Eulerian graph with " + n + " vertices requires at least " + n + " edges");
+          "Eulerian graph with " + n + " vertices requires at least " + (n - 1) + " edges");
     }
 
     if (connectivity == ConnectivityType.SEMI_EULERIAN && m < n - 1) {
@@ -177,11 +190,14 @@ public class GraphGenerator {
       if (minWeight != null && maxWeight != null) {
         int[] weights = new int[edges.size()];
         int index = 0;
-        for (long edge : edges) {
+
+        for (long _ : edges) {
           weights[index++] = minWeight + random.nextInt(maxWeight - minWeight + 1);
         }
+
         writer.setWeights(weights);
       }
+
       writer.writeEdge(edges);
     } catch (IOException e) {
       System.err.println("[Error] An error occurred while writing to the file: " + e.getMessage());
@@ -195,8 +211,18 @@ public class GraphGenerator {
       fillWithRandomEdges();
       return;
     }
-    addPath(true); // Start with a path/cycle
-    fillWithRandomEdges();
+
+    if (connectivity == ConnectivityType.EULERIAN) {
+      addPath(true);
+    } else {
+      addPath(false);
+    }
+
+    if (connectivity == ConnectivityType.CONNECTED) {
+      fillWithRandomEdges();
+    } else {
+      fillWithRandomCycles();
+    }
   }
 
   private void addPath(boolean cycle) {

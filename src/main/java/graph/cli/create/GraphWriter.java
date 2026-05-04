@@ -81,9 +81,11 @@ public class GraphWriter implements AutoCloseable {
       int w = Edges.getTarget(edge) + 1;
 
       writer.write(v + " " + w);
+
       if (isWeighted && weights != null) {
         writer.write(" " + weights[weightIndex++]);
       }
+
       writer.newLine();
     }
   }
