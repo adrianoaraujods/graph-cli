@@ -54,6 +54,7 @@ public class Usage {
     public static void printCreateUsage() {
         System.out.println("  graph-cli create <file> -n <vertices> -d <density>");
         System.out.println("  graph-cli create <file> -n <vertices> -m <edges>");
+        System.out.println("  graph-cli create <file> -n <vertices> -d <density> --weighted");
     }
 
     public static void printCreateOptions() {
@@ -67,18 +68,20 @@ public class Usage {
         System.out.println("  --disconnected          Graph may be disconnected");
         System.out.println("  --eulerian              Graph has all vertices with even degree");
         System.out.println("  --semi-eulerian         Graph has exactly two vertices of odd degree");
+        System.out.println("  --weighted              Generate weighted graph (format: u v w)");
     }
 
     public static void printCreateExamples() {
         System.out.println("  graph-cli create graph.txt -n 1000 -d 0.5");
         System.out.println("  graph-cli create graph.txt -n 1000 -m 500");
         System.out.println("  graph-cli create graph.txt -n 1000 -d 0.5 -s 42");
+        System.out.println("  graph-cli create weighted.txt -n 1000 -d 0.5 --weighted");
     }
 
     // Read Methods
 
     public static void printReadUsage() {
-        System.out.println("  graph-cli read <file> --<algorithm> [-t <target>] [-o <path>]");
+        System.out.println("  graph-cli read <file> --<algorithm> [-t <target>] [-o <path>] [--weighted]");
     }
 
     public static void printReadOptions() {
@@ -86,15 +89,16 @@ public class Usage {
         System.out.println("    --dfs                 Run DFS with edge classification");
         System.out.println("    --kosaraju            Run Kosaraju to find SCCs (only directed)");
         System.out.println("    --fleury              Run Fleury to find an Eulerian path or cycle");
-        System.out.println("    --tarjan             Run Tarjan to find all bridges");
-        System.out.println("    --naive-local        Run Naive Bridges (Local) to find all bridge edges");
-        System.out.println("    --naive-global       Run Naive Bridges (Global) to find all bridge edges");
+        System.out.println("    --tarjan              Run Tarjan to find all bridges");
+        System.out.println("    --naive-local         Run Naive Bridges (Local) to find all bridge edges");
+        System.out.println("    --naive-global        Run Naive Bridges (Global) to find all bridge edges");
         System.out.println("  --target <n>, -t        Target vertex (required for --dfs)");
         System.out.println("  --output <path>, -o     Output file (default: terminal)");
         System.out.println("  --forward-star          Use Forward Star representation (default)");
         System.out.println("  --adjacency-matrix      Use Adjacency Matrix representation");
         System.out.println("  --directed              Treat graph as directed (default)");
         System.out.println("  --undirected, -u        Treat graph as undirected");
+        System.out.println("  --weighted              Read weighted graph file (format: u v w)");
     }
 
     public static void printReadExamples() {
