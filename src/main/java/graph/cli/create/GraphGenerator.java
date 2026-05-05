@@ -37,6 +37,9 @@ public class GraphGenerator {
   private Integer minWeight = null;
   private Integer maxWeight = null;
 
+  // Flag to skip large graph confirmation
+  private boolean skipConfirmation = false;
+
   /**
    * Immutable configuration for graph generation.
    *
@@ -53,6 +56,10 @@ public class GraphGenerator {
 
   public void setSeed(Long seed) {
     random = new Random(seed);
+  }
+
+  public void setSkipConfirmation(boolean skipConfirmation) {
+    this.skipConfirmation = skipConfirmation;
   }
 
   public void setConnectivity(ConnectivityType connectivity) {
@@ -106,7 +113,7 @@ public class GraphGenerator {
   }
 
   private boolean confirmLargeGraph() {
-    if (m <= LARGE_EDGE_THRESHOLD) {
+    if (skipConfirmation || m <= LARGE_EDGE_THRESHOLD) {
       return true;
     }
 
