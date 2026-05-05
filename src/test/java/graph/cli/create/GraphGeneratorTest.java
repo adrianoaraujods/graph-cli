@@ -16,7 +16,9 @@ import java.util.ArrayDeque;
 import graph.algorithms.Fleury;
 import graph.algorithms.Fleury.EulerianType;
 import graph.api.UndirectedGraph;
+import graph.api.DirectedGraph;
 import graph.api.ConnectivityType;
+import graph.cli.CliParser;
 import graph.util.GraphTestHelper;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
@@ -513,5 +515,234 @@ class GraphGeneratorTest {
                 () -> new ForwardStarGraphBuilder(false),
                 n,
                 edgesArray);
+    }
+
+    @Test
+    void testSimpleDirectedDisconnectedGraph() throws Exception {
+        Path outputPath = tempDir.resolve("directed_disconnected_graph.txt");
+
+        GraphGenerator generator = new GraphGenerator(100, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.DISCONNECTED);
+        generator.setEdges(50);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+
+        assertFalse(edges.isEmpty(), "Graph should have edges");
+        verifyNoSelfLoopsDirected(edges);
+        verifyNoDuplicateEdges(edges, true);
+        verifyValidVertexRange(edges, 100);
+        assertTrue(edges.size() >= 50, "Graph should have at least 50 edges");
+    }
+
+    @Test
+    void testDirectedNoSelfLoops() throws Exception {
+        Path outputPath = tempDir.resolve("directed_selfloop_test.txt");
+
+        GraphGenerator generator = new GraphGenerator(500, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.DISCONNECTED);
+        generator.setDensity(0.9);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        verifyNoSelfLoopsDirected(edges);
+    }
+
+    @Test
+    void testDirectedWeaklyConnected() throws Exception {
+        Path outputPath = tempDir.resolve("directed_weakly_connected.txt");
+
+        GraphGenerator generator = new GraphGenerator(100, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.CONNECTED);
+        generator.setEdges(200);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+
+        // Verify weak connectivity (treat as undirected)
+        Set<Integer>[] adj = buildAdjacencyList(100, edges, false);
+        Set<Integer> visited = new HashSet<>();
+        Queue<Integer> queue = new ArrayDeque<>();
+        queue.add(1);
+        visited.add(1);
+
+        while (!queue.isEmpty()) {
+            int v = queue.poll();
+            for (int neighbor : adj[v]) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+
+        assertEquals(100, visited.size(),
+                "Directed graph should be weakly connected (underlying undirected is connected)");
+    }
+
+    @Test
+    void testDirectedStronglyConnected() throws Exception {
+        Path outputPath = tempDir.resolve("directed_strongly_connected.txt");
+
+        GraphGenerator generator = new GraphGenerator(50, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.STRONGLY_CONNECTED);
+        generator.setEdges(100);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+
+        // Build directed adjacency list
+        Set<Integer>[] adj = buildAdjacencyList(50, edges, true);
+
+        // Verify strong connectivity: every vertex can reach every other
+        for (int start = 1; start <= 50; start++) {
+            Set<Integer> visited = new HashSet<>();
+            Queue<Integer> queue = new ArrayDeque<>();
+            queue.add(start);
+            visited.add(start);
+
+            while (!queue.isEmpty()) {
+                int v = queue.poll();
+                for (int neighbor : adj[v]) {
+                    if (!visited.contains(neighbor)) {
+                        visited.add(neighbor);
+                        queue.add(neighbor);
+                    }
+                }
+            }
+
+            assertEquals(50, visited.size(), "Vertex " + start + " should be able to reach all 50 vertices");
+        }
+    }
+
+    @Test
+    void testDirectedEulerianDegrees() throws Exception {
+        Path outputPath = tempDir.resolve("directed_eulerian.txt");
+
+        GraphGenerator generator = new GraphGenerator(100, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.EULERIAN);
+        generator.setEdges(200);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+
+        // Calculate in-degree and out-degree for each vertex
+        int n = 100;
+        int[] inDegree = new int[n + 1];
+        int[] outDegree = new int[n + 1];
+
+        for (int[] edge : edges) {
+            int v = edge[0];
+            int w = edge[1];
+            outDegree[v]++;
+            inDegree[w]++;
+        }
+
+        // All vertices should have in-degree == out-degree for Eulerian circuit
+        for (int i = 1; i <= n; i++) {
+            assertEquals(inDegree[i], outDegree[i],
+                    "Vertex " + i + " should have in-degree == out-degree for Eulerian graph");
+        }
+    }
+
+    @Test
+    void testDirectedEulerianWithFleury() throws Exception {
+        Path outputPath = tempDir.resolve("directed_eulerian_fleury.txt");
+
+        GraphGenerator generator = new GraphGenerator(50, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.EULERIAN);
+        generator.setEdges(100);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+        DirectedGraph graph = parseToDirectedGraph(edges, 50);
+
+        Fleury.EulerianPath result = Fleury.findEulerianPath(graph);
+
+        assertEquals(Fleury.EulerianType.EULERIAN, result.type(),
+                "Directed Eulerian graph should have an Eulerian circuit");
+        assertTrue(result.path().length > 0, "Eulerian path should not be empty");
+    }
+
+    @Test
+    void testDirectedSemiEulerianDegrees() throws Exception {
+        Path outputPath = tempDir.resolve("directed_semi_eulerian.txt");
+
+        GraphGenerator generator = new GraphGenerator(100, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.SEMI_EULERIAN);
+        generator.setEdges(200);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+
+        // Calculate in-degree and out-degree for each vertex
+        int n = 100;
+        int[] inDegree = new int[n + 1];
+        int[] outDegree = new int[n + 1];
+
+        for (int[] edge : edges) {
+            int v = edge[0];
+            int w = edge[1];
+            outDegree[v]++;
+            inDegree[w]++;
+        }
+
+        // Count vertices where in-degree != out-degree
+        int imbalancedCount = 0;
+        for (int i = 1; i <= n; i++) {
+            if (inDegree[i] != outDegree[i]) {
+                imbalancedCount++;
+            }
+        }
+
+        assertEquals(2, imbalancedCount,
+                "Semi-Eulerian directed graph should have exactly 2 imbalanced vertices");
+    }
+
+    @Test
+    void testDirectedSemiEulerianWithFleury() throws Exception {
+        Path outputPath = tempDir.resolve("directed_semi_eulerian_fleury.txt");
+
+        GraphGenerator generator = new GraphGenerator(50, true, outputPath.toString());
+        generator.setConnectivity(ConnectivityType.SEMI_EULERIAN);
+        generator.setEdges(100);
+        generator.create();
+
+        List<int[]> edges = parseGraphFile(outputPath);
+
+        DirectedGraph graph = parseToDirectedGraph(edges, 50);
+        Fleury.EulerianPath result = Fleury.findEulerianPath(graph);
+
+        assertEquals(Fleury.EulerianType.SEMI_EULERIAN, result.type(),
+                "Directed Semi-Eulerian graph should have an Eulerian path (not circuit)");
+        assertTrue(result.path().length > 0, "Eulerian path should not be empty");
+    }
+
+    @Test
+    void testStronglyWithUndirectedThrows() {
+        String[] args = { "create", "test.txt", "-n", "100", "-m", "200", "--undirected", "--strongly" };
+        assertThrows(Exception.class, () -> CliParser.parse(args),
+                "Should throw exception when --strongly used with --undirected");
+    }
+
+    @Test
+    void testConnectedAndStronglyThrows() {
+        String[] args = { "create", "test.txt", "-n", "100", "-m", "200", "--directed", "--connected", "--strongly" };
+        assertThrows(Exception.class, () -> CliParser.parse(args),
+                "Should throw exception when --connected and --strongly both specified");
+    }
+
+    private DirectedGraph parseToDirectedGraph(List<int[]> edges, int n) {
+        int[][] edgesArray = edges.toArray(new int[edges.size()][]);
+        return (DirectedGraph) GraphTestHelper.build(
+                () -> new ForwardStarGraphBuilder(true),
+                n,
+                edgesArray);
+    }
+
+    private void verifyNoSelfLoopsDirected(List<int[]> edges) {
+        for (int[] edge : edges) {
+            assertNotEquals(edge[0], edge[1], "Directed graph should not contain self-loops");
+        }
     }
 }

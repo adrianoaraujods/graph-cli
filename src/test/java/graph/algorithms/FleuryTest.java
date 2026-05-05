@@ -205,7 +205,7 @@ class FleuryTest {
     }
 
     @Test
-    void testNonEulerian_NotStronglyConnectedTrail() {
+    void testSemiEulerian_NotStronglyConnectedTrail() {
         DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4,
@@ -213,12 +213,15 @@ class FleuryTest {
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
 
-        assertEquals(EulerianType.NON_EULERIAN, result.type());
-        assertEquals(0, result.path().length);
+        // Graph is weakly connected (sufficient for Eulerian path)
+        // Vertex 4 has in=1, out=0 (imbalanced), others balanced -> exactly 2
+        // imbalanced
+        assertEquals(EulerianType.SEMI_EULERIAN, result.type());
+        assertTrue(result.path().length > 0);
     }
 
     @Test
-    void testNonEulerian_NotStronglyConnected() {
+    void testSemiEulerian_NotStronglyConnected() {
         DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4,
@@ -226,8 +229,10 @@ class FleuryTest {
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
 
-        assertEquals(EulerianType.NON_EULERIAN, result.type());
-        assertEquals(0, result.path().length);
+        // Graph is weakly connected (sufficient for Eulerian path)
+        // Vertex 1 has out=1,in=0, vertex 4 has in=1,out=0 -> exactly 2 imbalanced
+        assertEquals(EulerianType.SEMI_EULERIAN, result.type());
+        assertTrue(result.path().length > 0);
     }
 
     @Test
@@ -244,7 +249,7 @@ class FleuryTest {
     }
 
     @Test
-    void testNonEulerian_UnequalDegrees() {
+    void testSemiEulerian_UnequalDegrees() {
         DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 3,
@@ -252,8 +257,10 @@ class FleuryTest {
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
 
-        assertEquals(EulerianType.NON_EULERIAN, result.type());
-        assertEquals(0, result.path().length);
+        // 2 imbalanced vertices (2: out=2,in=1 and 3: out=0,in=1)
+        // Weakly connected -> SEMI_EULERIAN
+        assertEquals(EulerianType.SEMI_EULERIAN, result.type());
+        assertTrue(result.path().length > 0);
     }
 
     @Test
@@ -487,7 +494,7 @@ class FleuryTest {
     }
 
     @Test
-    void testNonEulerian_WeaklyConnectedButNotStrongly() {
+    void testSemiEulerian_WeaklyConnectedButNotStrongly() {
         DirectedGraph graph = (DirectedGraph) GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(true),
                 4,
@@ -495,7 +502,9 @@ class FleuryTest {
 
         EulerianPath result = Fleury.findEulerianPath((Graph) graph);
 
-        assertEquals(EulerianType.NON_EULERIAN, result.type());
+        // Graph is weakly connected with exactly 2 imbalanced vertices
+        assertEquals(EulerianType.SEMI_EULERIAN, result.type());
+        assertTrue(result.path().length > 0);
     }
 
     @Test

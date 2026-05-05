@@ -64,10 +64,11 @@ public class Usage {
         System.out.println("  -s, --seed <n>          Random seed for reproducible graphs");
         System.out.println("  --directed              Treat graph as directed (default)");
         System.out.println("  --undirected, -u        Treat graph as undirected");
-        System.out.println("  --connected             Graph is weakly connected (default)");
+        System.out.println("  --connected             Graph is weakly connected (default for directed)");
+        System.out.println("  --strongly              Graph is strongly connected (directed only)");
         System.out.println("  --disconnected          Graph may be disconnected");
-        System.out.println("  --eulerian              Graph has all vertices with even degree");
-        System.out.println("  --semi-eulerian         Graph has exactly two vertices of odd degree");
+        System.out.println("  --eulerian              Graph has all vertices with equal in/out-degree (directed) or even degree (undirected)");
+        System.out.println("  --semi-eulerian         Graph has exactly two vertices with imbalanced in/out-degree (directed) or odd degree (undirected)");
         System.out.println("  --weighted              Generate weighted graph (format: u v w)");
     }
 

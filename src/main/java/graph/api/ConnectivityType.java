@@ -6,6 +6,7 @@ package graph.api;
 public enum ConnectivityType {
   DISCONNECTED,
   CONNECTED,
+  STRONGLY_CONNECTED,
   EULERIAN,
   SEMI_EULERIAN
 }

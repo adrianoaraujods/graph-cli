@@ -69,6 +69,7 @@ public class Fleury {
           specialVertices[1] = v;
 
         } else {
+          type = EulerianType.NON_EULERIAN;
           return;
         }
       }
@@ -189,24 +190,32 @@ public class Fleury {
       return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
     }
 
-    EulerianType type = EulerianType.EULERIAN;
-
-    int m = (int) graph.getEdgesCount();
-
-    DirectedGraph[] components = Kosaraju.findSCCs((DirectedGraph) graph);
-
-    if (components.length > 1) {
-      return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
-    }
-
+    // First check degrees to determine EULERIAN vs SEMI_EULERIAN
     CheckDegreesIterator checkDegreesIterator = new CheckDegreesIterator((Graph) graph);
     graph.iterateGraph(checkDegreesIterator);
 
-    type = checkDegreesIterator.type;
+    EulerianType type = checkDegreesIterator.type;
     if (type == EulerianType.NON_EULERIAN) {
       return new EulerianPath(new int[0], type);
     }
 
+    // For EULERIAN (all vertices balanced): need STRONG connectivity
+    // For SEMI_EULERIAN (2 imbalanced vertices): weak connectivity is sufficient
+    if (type == EulerianType.EULERIAN) {
+      // Check strong connectivity using Kosaraju
+      DirectedGraph[] sccs = Kosaraju.findSCCs((DirectedGraph) graph);
+      if (sccs.length > 1) {
+        return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
+      }
+    } else {
+      // SEMI_EULERIAN: check weak connectivity
+      int componentsCount = ConnectedComponents.getCount((Graph) graph);
+      if (componentsCount > 1) {
+        return new EulerianPath(new int[0], EulerianType.NON_EULERIAN);
+      }
+    }
+
+    int m = (int) graph.getEdgesCount();
     DirectedGraph clone = (DirectedGraph) ((Graph) graph).clone();
 
     int v = checkDegreesIterator.specialVertices == null

@@ -62,13 +62,19 @@ public class GraphGenerator {
   public void setEdges(long m) {
     this.m = m;
     this.density = (double) m / maxEdges();
-    ensureEvenEdges();
+
+    if (!isDirected) {
+      ensureEvenEdges();
+    }
   }
 
   public void setDensity(double density) {
     this.density = density;
     this.m = (long) (isDirected ? maxEdges() * density : (maxEdges() * density) / 2);
-    ensureEvenEdges();
+
+    if (!isDirected) {
+      ensureEvenEdges();
+    }
   }
 
   private void ensureEvenEdges() {
@@ -178,8 +184,7 @@ public class GraphGenerator {
     edges = new HashSet<>(m > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) m);
 
     if (isDirected) {
-      // TODO: implement directed method
-      throw new Exception("[ERROR] Graph generation for directed not supported.");
+      generateDirected();
     } else {
       generateUndirected();
     }
@@ -208,24 +213,49 @@ public class GraphGenerator {
 
   private void generateUndirected() throws Exception {
     if (connectivity == ConnectivityType.DISCONNECTED) {
-      fillWithRandomEdges();
+      fillWithRandomEdges(false);
       return;
     }
 
     if (connectivity == ConnectivityType.EULERIAN) {
-      addPath(true);
-    } else {
-      addPath(false);
-    }
+      addPath(true, false);
+      fillWithRandomCycles(false);
 
-    if (connectivity == ConnectivityType.CONNECTED) {
-      fillWithRandomEdges();
-    } else {
-      fillWithRandomCycles();
+    } else if (connectivity == ConnectivityType.SEMI_EULERIAN) {
+      addPath(false, false);
+      fillWithRandomCycles(false);
+
+    } else if (connectivity == ConnectivityType.CONNECTED) {
+      addPath(false, false);
+      fillWithRandomEdges(false);
     }
   }
 
-  private void addPath(boolean cycle) {
+  private void generateDirected() throws Exception {
+    if (connectivity == ConnectivityType.DISCONNECTED) {
+      fillWithRandomEdges(true);
+      return;
+    }
+
+    if (connectivity == ConnectivityType.CONNECTED) {
+      addPath(false, true);
+      fillWithRandomEdges(true);
+
+    } else if (connectivity == ConnectivityType.STRONGLY_CONNECTED) {
+      addPath(true, true);
+      fillWithRandomEdges(true);
+
+    } else if (connectivity == ConnectivityType.EULERIAN) {
+      addPath(true, true);
+      fillWithRandomCycles(true);
+
+    } else if (connectivity == ConnectivityType.SEMI_EULERIAN) {
+      addPath(false, true);
+      fillWithRandomCycles(true);
+    }
+  }
+
+  private void addPath(boolean cycle, boolean directed) {
     if (edges == null) {
       edges = new HashSet<>(n);
     }
@@ -239,15 +269,15 @@ public class GraphGenerator {
     FisherYates.shuffle(path, random);
 
     for (int i = 0; i < (n - 1); i++) {
-      edges.add(Edges.undirected(path[i], path[i + 1]));
+      edges.add(directed ? Edges.directed(path[i], path[i + 1]) : Edges.undirected(path[i], path[i + 1]));
     }
 
     if (cycle) {
-      edges.add(Edges.undirected(path[n - 1], path[0]));
+      edges.add(directed ? Edges.directed(path[n - 1], path[0]) : Edges.undirected(path[n - 1], path[0]));
     }
   }
 
-  private void fillWithRandomEdges() {
+  private void fillWithRandomEdges(boolean directed) {
     if (edges == null) {
       edges = new HashSet<>(m > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) m);
     }
@@ -259,13 +289,15 @@ public class GraphGenerator {
       int u = random.nextInt(n);
       int v = random.nextInt(n);
 
-      if (u != v)
-        edges.add(Edges.undirected(u, v));
+      if (u != v) {
+        edges.add(directed ? Edges.directed(u, v) : Edges.undirected(u, v));
+      }
+
       attempts++;
     }
   }
 
-  private void fillWithRandomCycles() {
+  private void fillWithRandomCycles(boolean directed) {
     if (edges == null) {
       edges = new HashSet<>(m > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) m);
     }
@@ -281,9 +313,9 @@ public class GraphGenerator {
       int w = random.nextInt(n);
 
       if (u != v && v != w && u != w) {
-        long e1 = Edges.undirected(u, v);
-        long e2 = Edges.undirected(v, w);
-        long e3 = Edges.undirected(w, u);
+        long e1 = directed ? Edges.directed(u, v) : Edges.undirected(u, v);
+        long e2 = directed ? Edges.directed(v, w) : Edges.undirected(v, w);
+        long e3 = directed ? Edges.directed(w, u) : Edges.undirected(w, u);
 
         // Only add the cycle if NONE of the edges already exist,
         // preventing duplicate edge logic from breaking degree parity

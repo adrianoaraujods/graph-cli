@@ -118,6 +118,8 @@ public class CliParser {
                 connectivity = ConnectivityType.EULERIAN;
             } else if (arg.equals("--semi-eulerian")) {
                 connectivity = ConnectivityType.SEMI_EULERIAN;
+            } else if (arg.equals("--strongly")) {
+                connectivity = ConnectivityType.STRONGLY_CONNECTED;
             } else if (arg.equals("--min-weight")) {
                 if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
                     throw new InvalidAlgorithmParameterException("Missing value for --min-weight.");
@@ -161,6 +163,12 @@ public class CliParser {
         if (connectivity == ConnectivityType.EULERIAN && edges < vertices) {
             throw new IllegalArgumentException(
                     "Eulerian graph with " + vertices + " vertices requires at least " + vertices + " edges");
+        }
+        if (connectivity == ConnectivityType.STRONGLY_CONNECTED && !isDirected) {
+            throw new InvalidAlgorithmParameterException("--strongly cannot be used with --undirected (strongly connected is only defined for directed graphs)");
+        }
+        if (connectivity == ConnectivityType.STRONGLY_CONNECTED && isDirected && argsParsedContains(args, "--connected")) {
+            throw new InvalidAlgorithmParameterException("--connected and --strongly are conflicting flags for directed graphs");
         }
 
         CreateConfig config = new CreateConfig(graphPath, vertices, edges, density, seed, connectivity, isDirected,
