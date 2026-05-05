@@ -3,12 +3,15 @@ package graph.algorithms;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 
+import graph.api.DirectedGraph;
+import graph.api.UndirectedGraph;
 import graph.api.WeightedGraph;
 import graph.cli.read.result.ShortestPathResult;
 
 public class Dijkstra {
 
     public static ShortestPathResult compute(WeightedGraph graph, int source, Integer target, boolean findPath) {
+
         // Validate no negative weights
         WeightedGraph.WeightedEdges weightedEdges = graph.getWeightedEdgesSet();
         for (int weight : weightedEdges.weights()) {
@@ -35,27 +38,28 @@ public class Dijkstra {
             int u = current[0];
             int distU = current[1];
 
-            if (distU > distances[u])
+            if (distU > distances[u]) {
                 continue;
+            }
 
-            int[] vertices = graph.getVertices();
-            for (int v : vertices) {
-                if (v == u + 1)
-                    continue;
-                try {
-                    int weight = graph.getEdgeWeight(u + 1, v);
-                    int newDist = distU + weight;
-                    if (newDist < distances[v - 1]) {
-                        distances[v - 1] = newDist;
-                        parents[v - 1] = u;
-                        pq.offer(new int[] { v - 1, newDist });
-                    }
-                } catch (IllegalArgumentException e) {
-                    // no edge
+            int[] neighbors;
+            if (((graph.api.Graph) graph).isDirected) {
+                neighbors = ((DirectedGraph) graph).getSuccessors(u + 1);
+            } else {
+                neighbors = ((UndirectedGraph) graph).getNeighbors(u + 1);
+            }
+
+            for (int v : neighbors) {
+                int weight = graph.getEdgeWeight(u + 1, v);
+                int newDist = distU + weight;
+                if (newDist < distances[v - 1]) {
+                    distances[v - 1] = newDist;
+                    parents[v - 1] = u;
+                    pq.offer(new int[] { v - 1, newDist });
                 }
             }
         }
 
-        return new ShortestPathResult(distances, parents, source, null, false);
+        return new ShortestPathResult(distances, parents, source, target, false);
     }
 }
