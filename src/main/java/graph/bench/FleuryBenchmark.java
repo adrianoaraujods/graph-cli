@@ -25,7 +25,7 @@ import graph.representations.GraphBuilder;
 import graph.representations.adjacencylist.AdjacencyListGraphBuilder;
 import graph.representations.forwardstar.ForwardStarGraphBuilder;
 
-public class Benchmark {
+public class FleuryBenchmark {
 
     private static final int MAX_RETRIES = 3;
 
