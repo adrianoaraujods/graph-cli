@@ -2,6 +2,7 @@ package graph.cli.read;
 
 import graph.algorithms.Fleury.BridgeFinder;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public record AlgorithmRequest(String name, Map<String, Object> params) {
@@ -31,5 +32,13 @@ public record AlgorithmRequest(String name, Map<String, Object> params) {
 
     public static AlgorithmRequest naiveLocalBridges() {
         return new AlgorithmRequest("--naive-local", Map.of());
+    }
+
+    public static AlgorithmRequest dijkstra(int source, Integer target, boolean findPath) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("source", source);
+        params.put("target", target);
+        params.put("findPath", findPath);
+        return new AlgorithmRequest("--dijkstra", params);
     }
 }

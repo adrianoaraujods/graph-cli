@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
-import graph.api.WeightedGraph;
 import graph.util.TestGraphs;
 import graph.util.WeightedTestHelper;
 import graph.representations.adjacencymatrix.AdjacencyMatrixGraphBuilder;

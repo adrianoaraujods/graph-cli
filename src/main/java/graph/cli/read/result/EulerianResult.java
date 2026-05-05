@@ -1,7 +1,5 @@
 package graph.cli.read.result;
 
-import java.util.Arrays;
-
 import graph.algorithms.Fleury.EulerianPath;
 
 public record EulerianResult(

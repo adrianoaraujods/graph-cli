@@ -1,18 +1,22 @@
 package graph.cli.read;
 
 import graph.algorithms.DFS;
+import graph.algorithms.Dijkstra;
 import graph.algorithms.Fleury;
 import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
 import graph.algorithms.Tarjan;
 import graph.api.DirectedGraph;
 import graph.api.Graph;
+import graph.api.GraphBase;
 import graph.api.UndirectedGraph;
+import graph.api.WeightedGraph;
 import graph.cli.read.result.AlgorithmResult;
 import graph.cli.read.result.BridgeResult;
 import graph.cli.read.result.DFSResult;
 import graph.cli.read.result.EulerianResult;
 import graph.cli.read.result.SCCResult;
+import graph.cli.read.result.ShortestPathResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +38,10 @@ public class AlgorithmRunner {
                 case "--tarjan" -> runTarjan(graph);
                 case "--naive-global" -> runNaiveBridges(graph);
                 case "--naive-local" -> runNaiveLocalBridges(graph);
+                case "--dijkstra" -> runDijkstra(graph, request);
                 default -> throw new RuntimeException("Unknown algorithm: " + request.name());
             };
+
             outputs.add(new AlgorithmOutput(request.name(), result));
         }
 
@@ -51,6 +57,7 @@ public class AlgorithmRunner {
             case "--tarjan" -> runTarjan(graph);
             case "--naive-global" -> runNaiveBridges(graph);
             case "--naive-local" -> runNaiveLocalBridges(graph);
+            case "--dijkstra" -> runDijkstra(graph, request);
             default -> throw new RuntimeException("Unknown algorithm: " + request.name());
         };
     }
@@ -134,5 +141,14 @@ public class AlgorithmRunner {
     private static BridgeResult runNaiveLocalBridges(Graph graph) {
         Set<Long> bridges = NaiveBridges.findAll(graph);
         return new BridgeResult("--naive-local", bridges);
+    }
+
+    private static ShortestPathResult runDijkstra(GraphBase graph, AlgorithmRequest request) {
+        int source = (int) request.params().get("source");
+        Integer target = (Integer) request.params().get("target");
+        boolean findPath = (boolean) request.params().get("findPath");
+
+        ShortestPathResult result = Dijkstra.compute((WeightedGraph) graph, source, target, findPath);
+        return new ShortestPathResult(result.distances(), result.parents(), result.source(), target, findPath);
     }
 }

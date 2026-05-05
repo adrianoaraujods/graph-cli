@@ -92,7 +92,11 @@ public class Usage {
         System.out.println("    --tarjan              Run Tarjan to find all bridges");
         System.out.println("    --naive-local         Run Naive Bridges (Local) to find all bridge edges");
         System.out.println("    --naive-global        Run Naive Bridges (Global) to find all bridge edges");
-        System.out.println("  --target <n>, -t        Target vertex (required for --dfs)");
+        System.out.println(
+                "    --dijkstra            Run Dijkstra shortest path (requires --weighted, --source, --target)");
+        System.out.println("  --source <n>            Source vertex (required for --dijkstra)");
+        System.out.println("  --target <n>, -t        Target vertex (required for --dfs, --dijkstra)");
+        System.out.println("  --path                  Show path vertices (used on fleury, dijkstra)");
         System.out.println("  --output <path>, -o     Output file (default: terminal)");
         System.out.println("  --forward-star          Use Forward Star representation (default)");
         System.out.println("  --adjacency-matrix      Use Adjacency Matrix representation");
@@ -105,5 +109,6 @@ public class Usage {
         System.out.println("  graph-cli read graph.txt --dfs -t 5");
         System.out.println("  graph-cli read graph.txt --dfs -t 5 -o output.log");
         System.out.println("  graph-cli read graph.txt --kosaraju --fleury");
+        System.out.println("  graph-cli read graph.txt --weighted --dijkstra --source 1 --target 5");
     }
 }

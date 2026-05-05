@@ -163,7 +163,8 @@ public class CliParser {
                     "Eulerian graph with " + vertices + " vertices requires at least " + vertices + " edges");
         }
 
-        CreateConfig config = new CreateConfig(graphPath, vertices, edges, density, seed, connectivity, isDirected, minWeight, maxWeight);
+        CreateConfig config = new CreateConfig(graphPath, vertices, edges, density, seed, connectivity, isDirected,
+                minWeight, maxWeight);
         return new CreateCommand(config);
     }
 
@@ -171,6 +172,7 @@ public class CliParser {
         boolean isDirected = true;
         String representation = "Forward Star";
         Integer target = null;
+        Integer source = null;
         String outputPath = null;
         List<AlgorithmRequest> algorithms = new ArrayList<>();
         boolean isWeighted = false;
@@ -184,6 +186,8 @@ public class CliParser {
                 isDirected = false;
             } else if (arg.equals("--dfs")) {
                 algorithms.add(AlgorithmRequest.dfs(0)); // target set later
+            } else if (arg.equals("--dijkstra")) {
+                algorithms.add(AlgorithmRequest.dijkstra(0, null, false)); // source/target/findPath set later
             } else if (arg.equals("--kosaraju")) {
                 algorithms.add(AlgorithmRequest.kosaraju());
             } else if (arg.equals("--fleury")) {
@@ -203,6 +207,15 @@ public class CliParser {
                 } catch (NumberFormatException e) {
                     throw new InvalidAlgorithmParameterException("Invalid target: " + args[i]);
                 }
+            } else if (arg.equals("--source")) {
+                if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+                    throw new InvalidAlgorithmParameterException("Missing value for --source.");
+                }
+                try {
+                    source = Integer.parseInt(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid source: " + args[i]);
+                }
             } else if (arg.equals("-o") || arg.equals("--output")) {
                 if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
                     throw new InvalidAlgorithmParameterException("Missing value for -o/--output.");
@@ -216,6 +229,8 @@ public class CliParser {
                 representation = "Adjacency List";
             } else if (arg.equals("--weighted")) {
                 isWeighted = true;
+            } else if (arg.equals("--path")) {
+                // flag for showing path - handled in algorithm request update
             } else {
                 throw new InvalidAlgorithmParameterException("Unknown argument: " + arg);
             }
@@ -238,6 +253,24 @@ public class CliParser {
             }
         }
 
+        // Set source/target for --dijkstra
+        if (algorithms.stream().anyMatch(r -> r.name().equals("--dijkstra"))) {
+            if (!isWeighted) {
+                throw new InvalidAlgorithmParameterException("--dijkstra requires --weighted.");
+            }
+            if (source == null) {
+                throw new InvalidAlgorithmParameterException("--dijkstra requires --source.");
+            }
+
+            boolean findPath = argsParsedContains(args, "--path");
+
+            for (int j = 0; j < algorithms.size(); j++) {
+                if (algorithms.get(j).name().equals("--dijkstra")) {
+                    algorithms.set(j, AlgorithmRequest.dijkstra(source, target, findPath));
+                }
+            }
+        }
+
         // Resolve bridge finder for --fleury
         boolean hasTarjan = algorithms.stream().anyMatch(r -> r.name().equals("--tarjan"));
         boolean hasNaiveGlobalAlgo = algorithms.stream().anyMatch(r -> r.name().equals("--naive-global"));
@@ -255,5 +288,15 @@ public class CliParser {
 
         ReadConfig config = new ReadConfig(graphPath, representation, isDirected, isWeighted, algorithms, outputPath);
         return new ReadCommand(config);
+    }
+
+    private static boolean argsParsedContains(String[] args, String arg) {
+        for (String a : args) {
+            if (a.equals(arg)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
