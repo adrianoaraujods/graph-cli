@@ -8,6 +8,7 @@ import graph.api.Edges;
 import graph.api.Graph;
 import graph.api.GraphBase.IteratorVisitor;
 import graph.api.UndirectedGraph;
+import graph.util.Timer;
 
 public class Fleury {
 
@@ -161,7 +162,7 @@ public class Fleury {
       // Stop after 60 min and return path progress
       long end = System.currentTimeMillis() - start;
       if (end > 3_600_000) {
-        System.out.printf("\n[Warning] Execution aborted after %,d ms. Path length: %,d / %,d.", end, pathIndex,
+        System.out.printf("\n[Warning] Execution aborted after %s. Path length: %,d / %,d.", Timer.formatTime(end), pathIndex,
             path.length);
 
         path = Arrays.copyOf(path, pathIndex); // trim path
@@ -170,7 +171,7 @@ public class Fleury {
 
       if (enableLog && (pathIndex % 100) == 0) {
         System.out.print("\r[Info] Progress " + pathIndex + "/" + path.length);
-        System.out.printf(" (… %d / %d ms) ", end, (end / pathIndex) * path.length);
+        System.out.printf(" (… %s / %s) ", Timer.formatTime(end), Timer.formatTime((end / pathIndex) * path.length));
       }
     }
 
