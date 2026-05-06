@@ -23,8 +23,8 @@ A escolha da estrutura faz parte da tarefa e deverá ser feita levando-se em con
 
 Para testar seu programa você pode utilizar os arquivos abaixo:
 
-- [graph-test-100.txt](../data/graph-test-100.txt)
-- [graph-test-50000.txt](../data/graph-test-50000.txt)
+- [directed-100v778e.txt](/examples/directed-100v778e.txt)
+- [directed-50000v1018039e.txt](/examples/directed-50000v1018039e.txt)
 
 ## Formato do arquivo contendo os dados do grafo
 
