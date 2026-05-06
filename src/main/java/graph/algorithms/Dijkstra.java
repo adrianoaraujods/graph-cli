@@ -24,10 +24,13 @@ public class Dijkstra {
         int n = graph.getVerticesCount();
         int[] distances = new int[n];
         int[] parents = new int[n];
+        int[] edgesCount = new int[n];
 
+        Arrays.fill(edgesCount, Integer.MAX_VALUE);
         Arrays.fill(distances, Integer.MAX_VALUE);
         Arrays.fill(parents, -1);
 
+        edgesCount[source - 1] = 0;
         distances[source - 1] = 0;
 
         PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
@@ -52,10 +55,15 @@ public class Dijkstra {
             for (int v : neighbors) {
                 int weight = graph.getEdgeWeight(u + 1, v);
                 int newDist = distU + weight;
+                int newEdges = edgesCount[u] + 1;
+
                 if (newDist < distances[v - 1]) {
                     distances[v - 1] = newDist;
                     parents[v - 1] = u;
                     pq.offer(new int[] { v - 1, newDist });
+                } else if (newDist == distances[v - 1] && newEdges < edgesCount[v - 1]) {
+                    parents[v - 1] = u;
+                    edgesCount[v - 1] = newEdges;
                 }
             }
         }
