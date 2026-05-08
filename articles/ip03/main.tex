@@ -1,0 +1,197 @@
+\documentclass[12pt]{article}
+
+\usepackage{sbc-template}
+
+\usepackage{graphicx,url}
+\usepackage{pgfplots}
+
+\usepackage[brazil]{babel}
+\usepackage[utf8]{inputenc}
+
+\sloppy
+
+\title{Identificação de Caminhos Mínimos em Grafos Direcionados}
+
+\author{Adriano Araújo Domingos dos Santos\inst{1}}
+
+\address{Instituto de Ciências Exatas e Informática -- Pontifícia Universidade
+    \\ Católica de Minas Gerais (PUC Minas)
+    \\ R. Cláudio Manoel, 1162 -- Savassi - 30.140-100 -- Belo Horizonte -- MG -- Brazil
+    \email{\{adriano.domingos\}@sga.pucminas.br}
+}
+
+\begin{document} 
+
+\maketitle
+
+\section{Implementação}
+
+A solução desenvolvida consiste na implementação do algoritmo de Dijkstra para grafos direcionados e ponderados, garantindo a seleção do caminho mínimo que também contenha o menor número de arestas. A aplicação foi desenvolvida em Java sem nenhuma dependência externa, salvo para os testes unitários que não são necessários para sua execução.
+
+\subsection{Dijkstra} \label{dijkstra}
+
+A busca pelo caminho mínimo foi desenvolvida utilizando o algoritmo de Dijkstra em sua forma clássica, utilizando o critério de desempate baseado na quantidade de arestas no caminho. A exploração do grafo é guiada por uma Fila de Prioridade (\texttt{PriorityQueue}) que utiliza fundamentalmente um \textit{Min-Heap}, garantindo que o vértice com a menor distância acumulada registrada seja sempre o próximo a ser processado.
+
+Durante a exploração da vizinhança de um vértice $u$, o relaxamento da aresta direcionada ao vizinho $v$ com peso $w$ ocorre exclusivamente mediante uma condição estrita de melhora de custo. O algoritmo verifica se a nova distância acumulada é estritamente menor que a distância atualmente mapeada para $v$. Caso verdadeiro, a distância no vetor \texttt{distances} é atualizada, o predecessor no vetor \texttt{parents} é reescrito e o vértice é readicionado à fila de prioridade.
+
+\subsection{Representação \textit{Forward-Star}} \label{forwardstar}
+
+A representação \textit{Forward Star} é uma estrutura de dados baseada em vetores contíguos, que serializa a topologia do grafo em três vetores primitivos unidimensionais: \texttt{pointers}, \texttt{targets} e \texttt{weights}. Ela foi escolhida por conta de seu acesso rápido à adjacência dos vértices e excelente uso da localidade de cache.
+
+Na implementação desenvolvida, a construção do grafo foi estritamente desacoplada de sua representação final através do padrão de projeto \textit{Builder}. Durante a fase de construção, as arestas são inseridas em vetores temporários paralelos. Ao finalizar a instanciação, o construtor ordena as arestas por vértice de origem, compacta os destinos no vetores finais \texttt{targets} e \texttt{weights} de tamanho $|E|$, e preenche o vetor \texttt{pointers} de tamanho $|V| + 1$. Cada índice $v$ em \texttt{pointers} armazena o índice inicial de seus vizinhos no vetor \texttt{targets}, permitindo que a varredura da vizinhança $\Gamma(v)$ ou dos sucessores $\Gamma^+(v)$ de qualquer vértice ou o cálculo do seu grau sejam realizados em tempo $\mathcal{O}(1)$.
+
+\subsection{Gerador de Grafos Sintéticos} \label{gerador}
+
+Para viabilizar a análise de desempenho em cenários massivos e controlados, foi desenvolvida uma ferramenta própria de geração de grafos sintéticos. O gerador é capaz de instanciar topologias direcionadas e não direcionadas, parametrizadas pela quantidade exata de vértices ($|V|$), arestas ($|E|$) e requisitos de conectividade.
+
+A fim de satisfazer a conectividade exigida (Simplesmente ou Fortemente Conexo), a estratégia de construção foi dividida em três etapas fundamentais:
+
+\begin{enumerate}
+    \item \textbf{Garantia de Conectividade Base:} Inicialmente, um vetor contendo todos os identificadores de vértices é embaralhado de forma aleatória utilizando o algoritmo de \textit{Fisher-Yates}. Em seguida, itera-se sobre esse vetor conectando o vértice $i$ ao $i+1$, formando um caminho Hamiltoniano que garante a alcançabilidade de todos os vértices. Para grafos fortemente conexos, uma aresta de fechamento (do último vértice para o primeiro) é adicionada, transformando o caminho em um ciclo.
+    
+    \item \textbf{Preenchimento de Densidade:} Para atingir a cardinalidade $|E|$ desejada, o algoritmo entra em um laço de amostragem uniforme, sorteando pares de vértices $(u, v)$ aleatoriamente. Para assegurar que o grafo resultante seja um grafo simples (sem arestas múltiplas), as conexões geradas são validadas contra um conjunto de dispersão (\texttt{HashSet}), que armazena as arestas para buscas em tempo $\mathcal{O}(1)$ utilizando empacotamento de bits para diminuir o custo de armazenamento.
+    
+    \item \textbf{Ponderação:} Após a definição da topologia, a matriz de pesos é populada. Cada aresta recebe um valor inteiro sorteado mediante uma distribuição uniforme dentro do limite parametrizado pelo usuário.
+\end{enumerate}
+
+Essa abordagem garante que as instâncias geradas para o experimento sejam conexas, livres de laços e arestas paralelas.
+
+\section{Metodologia} \label{metodologia}
+
+Para avaliar a eficácia e a eficiência da implementação, foi desenvolvido um script automatizado de \textit{benchmarking}. O experimento foi desenhado para testar os limites da estrutura e do algoritmo utilizando concorrência (\textit{threads}) para acelerar a execução das múltiplas tentativas.
+
+\subsection{Design do Experimento e Parâmetros}
+
+Para garantir a significância estatística e mitigar anomalias causadas por processos de \textit{background} do sistema operacional ou pelo \textit{Garbage Collector} da JVM, cada cenário único foi executado em 10 repetições independentes. Os parâmetros estabelecidos foram:
+
+\begin{itemize}
+    \item \textbf{Topologia do Grafo:} Foram avaliados grafos sintéticos direcionados sob duas conectividades: \textit{Conexo} (garante conectividade básica) e \textit{Fortemente Conexo} (garante caminhos de ida e volta entre qualquer par de vértices, gerando mais ciclos).
+    
+    \item \textbf{Tamanho do Grafo:} Foram gerados grafos em quatro escalas crescentes de magnitude. Os pares de vértices ($|V|$) e arestas ($|E|$) utilizados foram: $(1.000, 100.000)$, $(10.000, 1.000.000)$, $(100.000, 10.000.000)$ e $(1.000.000, 100.000.000)$.
+\end{itemize}
+
+A combinação ortogonal de todas essas variáveis (2 tipos $\times$ 4 tamanhos) executada 10 vezes resultou em um espaço amostral de 80 execuções documentadas.
+
+\subsection{Fluxo de Execução e Coleta de Dados}
+
+Para cada iteração de teste, o fluxo seguiu um controle rigoroso para isolar os tempos:
+
+\begin{enumerate}
+    \item \textbf{Geração:} Instanciação do grafo sintético definindo aleatoriamente os pesos entre 1 e 100.
+    
+    \item \textbf{Construção da Estrutura:} Transcrição das arestas geradas para a estrutura de dados utilizando a representação \textit{Forward Star}.
+    
+    \item \textbf{Busca dos Distâncias:} Execução isolada do algoritmo de Dijkstra, encontrando o caminho mínimo para todos os vértices dado o vértice inicial aleatório.
+    
+    \item \textbf{Registro:} Coleta e exportação das métricas de desempenho.
+\end{enumerate}
+
+\subsection{Métricas de Avaliação}
+
+As métricas coletadas incluíram o tempo de geração do grafo, o tempo de processamento efetivo do algoritmo de Dijkstra, tamanho do caminho encontrado e o tipo do grafo.
+
+\section{Resultados} \label{resultados}
+
+\begin{table}[ht]
+\centering
+\caption{Desempenho médio do Dijkstra em grafos por tipo de conectividade.}
+\label{tab:resultados}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{cccccc}
+\hline
+$|\textbf{V}|$ & $|\textbf{E}|$ & \textbf{Conectividade} & \textbf{Qtd. Arestas} & \textbf{Custo Médio} & \textbf{Tempo (ms)} \\
+\hline
+1.000     & 100.000     & Simplesmente Conexo & 5.00 & 10.00 & 7.40 \\
+10.000    & 1.000.000   & Simplesmente Conexo & 6.80 & 13.60 & 42.50 \\
+100.000   & 10.000.000  & Simplesmente Conexo & 7.60 & 17.50 & 471.70 \\
+1.000.000 & 100.000.000 & Simplesmente Conexo & 9.70 & 19.50 & 6052.00 \\
+\hline
+1.000     & 100.000     & Fortemente Conexo   & 5.30 & 10.50 & 3.60 \\
+10.000    & 1.000.000   & Fortemente Conexo   & 7.40 & 12.90 & 43.50 \\
+100.000   & 10.000.000  & Fortemente Conexo   & 8.30 & 17.20 & 452.00 \\
+1.000.000 & 100.000.000 & Fortemente Conexo   & 9.00 & 20.60 & 5649.60 \\
+\hline
+\end{tabular}
+}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            ybar,
+            symbolic x coords={$|V| = 1k$, $|V| = 10k$, $|V| = 100k$, $|V| = 1M$},
+            xtick=data,
+            ylabel={Tempo Médio de Execução (ms)},
+            nodes near coords,
+            every node near coord/.append style={font=\footnotesize},
+            bar width=32pt,
+            enlarge x limits=0.2,
+            ymin=0,
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            width=14cm,
+            height=7cm
+        ]
+        
+        \addplot[fill=blue!60] coordinates {($|V| = 1k$, 7.40) ($|V| = 10k$, 42.50) ($|V| = 100k$, 471.70) ($|V| = 1M$, 6052.00)};
+        
+        \addplot[fill=red!60] coordinates {($|V| = 1k$, 3.60) ($|V| = 10k$, 43.50) ($|V| = 100k$, 452.00) ($|V| = 1M$, 5649.60)};
+        
+        \legend{~~Conexo~~, ~~Fortemente Conexo}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Comparação do impacto da conectividade no tempo de execução do Dijkstra.}
+    \label{fig:bar-chart}
+\end{figure}
+
+Os resultados consolidados na Tabela \ref{tab:resultados} atestam a alta eficiência e escalabilidade da solução proposta. A execução do algoritmo para instâncias de tamanho reduzido ($|V|=1.000$ e $|E|=100.000$) ocorreu em tempo da ordem de 7 milissegundos. De forma expressiva, ao escalar a entrada em 1.000 vezes, submetendo o algoritmo a um cenário massivo de 1 milhão de vértices e 100 milhões de arestas, o tempo de execução manteve-se na casa dos 5,8 segundos.
+
+Ao analisar o impacto da conectividade (visualizado na Figura \ref{fig:bar-chart}), observa-se que a densidade de ciclos em grafos Fortemente Conexos não gerou um sobrecusto computacional significativo em relação aos Simplesmente Conexos. Para a instância de maior magnitude, a diferença de tempo foi de apenas $\approx 25$ milissegundos (5.838,60 ms contra 5.863,40 ms), evidenciando que as rotinas de relaxamento e verificação de desempate possuem custo constante robusto o suficiente para lidar com diferentes distribuições de topologia.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xmode=log,
+            ymode=log,
+            xlabel={Número de Vértices ($|V|$) -- Escala Logarítmica},
+            ylabel={Tempo Médio (ms) -- Escala Logarítmica},
+            legend pos=north west,
+            grid=major,
+            grid style={dashed, gray!30},
+            width=\textwidth,
+            height=8cm,
+            log basis x={10},
+            log basis y={10},
+            mark size=2.5pt
+        ]
+        
+        \addplot[color=blue, mark=square*, thick] coordinates {
+            (1000, 7.40)
+            (10000, 42.50)
+            (100000, 471.70)
+            (1000000, 6052.00)
+        };
+        \addlegendentry{Conexo}
+        
+        \addplot[color=red, mark=triangle*, thick] coordinates {
+            (1000, 3.60)
+            (10000, 43.50)
+            (100000, 452.00)
+            (1000000, 5649.60)
+        };
+        \addlegendentry{Fortemente Conexo}
+        
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Crescimento logarítmico do tempo de execução do Dijkstra em relação ao tamanho da entrada.}
+    \label{fig:line-growth}
+\end{figure}
+
+Em relação a quantidade de arestas no caminho mínimo, os resultados indicam que houveram grandes saltos, de modo que mesmo no grafo de 100 milhões de arestas, a média do tamanho do caminho ficou restrita a aproximadamente 9 a 10 saltos. Isso pode ser explicado pelo fato do gerador de grafos criar um caminho inicial contendo todos os vértices.
+
+\section{Conclusão}
+
+Os resultados encontrados demonstraram a robustez da implementação do algoritmo clássico de Dijkstra quando aliado a estruturas de dados eficientes e baixo nível de abstração geométrica na memória. A utilização combinada da representação \textit{Forward Star} confirmou-se eficaz para viabilizar processamentos em larga escala, permitindo que instâncias com dezenas de milhões de arestas fossem varridas e resolvidas na casa dos segundos, refletindo um alto aproveitamento da localidade de cache.
+
+\end{document}
