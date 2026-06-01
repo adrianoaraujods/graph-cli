@@ -18,6 +18,9 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   /** If the graph has weighted edges. */
   private boolean isWeighted;
 
+  /** If the graph has capacity edges. */
+  private boolean hasCapacity;
+
   /** Total number of vertices in the graph. */
   private int n;
 
@@ -26,7 +29,7 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
 
   private int[] sources;
   private int[] targets;
-  private int[] weights;
+  private int[] weightsOrCapacities;
   private Set<Integer> isolatedVertices;
 
   public ForwardStarGraphBuilder(boolean isDirected) {
@@ -43,13 +46,13 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     this.n = n;
     this.m = 0;
     this.isWeighted = weighted;
-    int capacity = (int) (isDirected ? m : m * 2);
-    this.sources = new int[capacity];
-    this.targets = new int[capacity];
+    int maximumEdges = (int) (isDirected ? m : m * 2);
+    this.sources = new int[maximumEdges];
+    this.targets = new int[maximumEdges];
     if (weighted) {
-      this.weights = new int[capacity];
+      this.weightsOrCapacities = new int[maximumEdges];
     } else {
-      this.weights = null;
+      this.weightsOrCapacities = null;
     }
     this.isolatedVertices = new HashSet<>(n);
   }
@@ -72,21 +75,21 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
       sources = Arrays.copyOf(sources, newCapacity);
       targets = Arrays.copyOf(targets, newCapacity);
       if (isWeighted) {
-        weights = Arrays.copyOf(weights, newCapacity);
+        weightsOrCapacities = Arrays.copyOf(weightsOrCapacities, newCapacity);
       }
     }
 
     sources[head] = v;
     targets[head] = w;
     if (isWeighted) {
-      weights[head] = weight;
+      weightsOrCapacities[head] = weight;
     }
 
     if (!isDirected) {
       sources[head + 1] = w;
       targets[head + 1] = v;
       if (isWeighted) {
-        weights[head + 1] = weight;
+        weightsOrCapacities[head + 1] = weight;
       }
     }
 
@@ -98,22 +101,22 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     isolatedVertices.add(v);
   }
 
-    @Override
-    public ForwardStarGraph build() {
-        int edgesCount = (isDirected ? m : m * 2);
+  @Override
+  public ForwardStarGraph build() {
+    int edgesCount = (isDirected ? m : m * 2);
 
-        // Trim the arrays to the final size
-        if (edgesCount != sources.length) {
-            sources = Arrays.copyOf(sources, edgesCount);
-            targets = Arrays.copyOf(targets, edgesCount);
-            if (isWeighted && weights != null) {
-                weights = Arrays.copyOf(weights, edgesCount);
-            }
-        }
+    // Trim the arrays to the final size
+    if (edgesCount != sources.length) {
+      sources = Arrays.copyOf(sources, edgesCount);
+      targets = Arrays.copyOf(targets, edgesCount);
+      if (isWeighted && weightsOrCapacities != null) {
+        weightsOrCapacities = Arrays.copyOf(weightsOrCapacities, edgesCount);
+      }
+    }
 
     if (edgesCount > 0) {
-      if (isWeighted && weights != null) {
-        Sort.quick(sources, targets, weights);
+      if (isWeighted && weightsOrCapacities != null) {
+        Sort.quick(sources, targets, weightsOrCapacities);
       } else {
         Sort.quick(sources, targets);
       }
@@ -142,13 +145,14 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     }
 
     int[] finalTargets = this.targets;
-    int[] finalWeights = this.weights;
+    int[] finalWeights = this.weightsOrCapacities;
 
     // Delete builder reference
     this.sources = null;
     this.targets = null;
-    this.weights = null;
+    this.weightsOrCapacities = null;
 
-    return new ForwardStarGraph(isDirected, n, m, finalTargets, pointers, isolatedVertices, isWeighted, finalWeights);
+    return new ForwardStarGraph(isDirected, n, m, finalTargets, pointers, isolatedVertices, isWeighted, hasCapacity,
+        finalWeights);
   }
 }

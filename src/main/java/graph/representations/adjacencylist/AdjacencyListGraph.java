@@ -25,7 +25,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
   AdjacencyListGraph(boolean isDirected, int n, long m, boolean isWeighted,
       Map<Integer, Set<Integer>> vertices, Map<Integer, Map<Integer, Integer>> weightedVertices,
       Set<Integer> isolatedVertices) {
-    super(isDirected, n, m, isWeighted);
+    super(isDirected, n, m, false, isWeighted);
     this.vertices = vertices;
     this.weightedVertices = weightedVertices != null ? weightedVertices : new HashMap<>();
     this.isolatedVertices = isolatedVertices;
@@ -35,7 +35,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
    * Copy constructor - creates a deep copy for full independence.
    */
   private AdjacencyListGraph(AdjacencyListGraph graph) {
-    super(graph.isDirected, graph.n, graph.m, graph.isWeighted());
+    super(graph.isDirected, graph.n, graph.m, graph.isWeighted(), graph.hasCapacity());
     vertices = new HashMap<>(graph.vertices);
     isolatedVertices = new HashSet<>(graph.isolatedVertices);
 
@@ -183,8 +183,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
     });
     return new WeightedEdges(
         edges.stream().mapToLong(Long::longValue).toArray(),
-        weights.stream().mapToInt(Integer::intValue).toArray()
-    );
+        weights.stream().mapToInt(Integer::intValue).toArray());
   }
 
   @Override

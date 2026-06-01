@@ -65,12 +65,12 @@ public interface GraphBase {
      * Called when visiting a weighted edge.
      * Default implementation calls examineEdge(v, w) for backward compatibility.
      *
-     * @param v The source vertex of the edge.
-     * @param w The target vertex of the edge.
+     * @param v      The source vertex of the edge.
+     * @param w      The target vertex of the edge.
      * @param weight The edge weight.
      */
-    default void examineEdge(int v, int w, int weight) {
-        examineEdge(v, w);
+    default void examineEdge(int v, int w, int weightOrCapacity) {
+      examineEdge(v, w);
     }
 
     /**
@@ -97,7 +97,8 @@ public interface GraphBase {
 
   /**
    * Returns all vertices in the graph, including isolated vertices (no edges).
-   * Unlike {@link #getVertices()}, this returns every vertex present in the graph.
+   * Unlike {@link #getVertices()}, this returns every vertex present in the
+   * graph.
    *
    * @return Array of all vertex IDs in the graph.
    */

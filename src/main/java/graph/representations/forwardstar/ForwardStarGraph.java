@@ -1,12 +1,15 @@
 package graph.representations.forwardstar;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.IntStream;
 
 import graph.api.DirectedGraph;
 import graph.api.Edges;
+import graph.api.FlowGraph;
 import graph.api.Graph;
 import graph.api.UndirectedGraph;
 import graph.api.WeightedGraph;
@@ -15,30 +18,31 @@ import graph.api.WeightedGraph;
  * Concrete and static (immutable) implementation of the Graph using the Forward
  * Star structure.
  */
-public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph, WeightedGraph {
+public class ForwardStarGraph extends Graph implements DirectedGraph, UndirectedGraph, WeightedGraph, FlowGraph {
   private int[] targets;
   private int[] pointers;
-  private int[] weights;
+  private int[] weightsOrCapacities;
   private final Set<Integer> isolatedVertices;
 
   /**
    * Package-private constructor. Should only be called by the
    * {@link ForwardStarGraphBuilder}.
    */
-  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, Set<Integer> isolatedVertices, boolean isWeighted, int[] weights) {
-    super(isDirected, n, m, isWeighted);
+  ForwardStarGraph(boolean isDirected, int n, int m, int[] targets, int[] pointers, Set<Integer> isolatedVertices,
+      boolean isWeighted, boolean hasCapacity, int[] weightsOrCapacities) {
+    super(isDirected, n, m, isWeighted, hasCapacity);
 
     this.targets = targets;
     this.pointers = pointers;
     this.isolatedVertices = isolatedVertices;
-    this.weights = weights;
+    this.weightsOrCapacities = weightsOrCapacities;
   }
 
   /**
    * Copy constructor - creates a deep copy for full independence.
    */
   private ForwardStarGraph(ForwardStarGraph graph) {
-    super(graph.isDirected, graph.n, graph.m, graph.isWeighted());
+    super(graph.isDirected, graph.n, graph.m, graph.isWeighted(), graph.hasCapacity());
 
     this.targets = Arrays.copyOf(graph.targets, graph.targets.length);
     this.pointers = Arrays.copyOf(graph.pointers, graph.pointers.length);
@@ -183,8 +187,8 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
           continue;
         }
 
-        if (isWeighted() && weights != null) {
-          visitor.examineEdge((v + 1), targets[w], weights[w]);
+        if (isWeighted() && weightsOrCapacities != null) {
+          visitor.examineEdge((v + 1), targets[w], weightsOrCapacities[w]);
         } else {
           visitor.examineEdge((v + 1), targets[w]);
         }
@@ -330,8 +334,8 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
     for (int i = start; i < end; i++) {
       if (targets[i] == w) {
-        if (isWeighted() && weights != null) {
-          return weights[i];
+        if (isWeighted() && weightsOrCapacities != null) {
+          return weightsOrCapacities[i];
         }
         return 1; // Unweighted graph default
       }
@@ -341,27 +345,52 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
   }
 
   @Override
+  public int getEdgeCapacity(int v, int w) {
+    return getEdgeWeight(v, w);
+  }
+
+  @Override
   public int[] getWeightsSet() {
-    if (!isWeighted() || weights == null) {
+    if (!isWeighted() || weightsOrCapacities == null) {
       return new int[0];
     }
-    return Arrays.copyOf(weights, weights.length);
+    return Arrays.copyOf(weightsOrCapacities, weightsOrCapacities.length);
+  }
+
+  @Override
+  public int[] getCapacitiesSet() {
+    return getCapacitiesSet();
   }
 
   @Override
   public WeightedEdges getWeightedEdgesSet() {
-    java.util.List<Long> edges = new java.util.ArrayList<>();
-    java.util.List<Integer> weights = new java.util.ArrayList<>();
+    List<Long> edges = new ArrayList<>();
+    List<Integer> weights = new ArrayList<>();
     iterateGraph(new IteratorVisitor() {
-        @Override
-        public void examineEdge(int v, int w, int weight) {
-            edges.add(Edges.directed(v, w));
-            weights.add(weight);
-        }
+      @Override
+      public void examineEdge(int v, int w, int weight) {
+        edges.add(Edges.directed(v, w));
+        weights.add(weight);
+      }
     });
     return new WeightedEdges(
-            edges.stream().mapToLong(Long::longValue).toArray(),
-            weights.stream().mapToInt(Integer::intValue).toArray()
-    );
+        edges.stream().mapToLong(Long::longValue).toArray(),
+        weights.stream().mapToInt(Integer::intValue).toArray());
+  }
+
+  @Override
+  public CapacityEdges getCapacitiesEdgesSet() {
+    List<Long> edges = new ArrayList<>();
+    List<Integer> capacities = new ArrayList<>();
+    iterateGraph(new IteratorVisitor() {
+      @Override
+      public void examineEdge(int v, int w, int capacity) {
+        edges.add(Edges.directed(v, w));
+        capacities.add(capacity);
+      }
+    });
+    return new CapacityEdges(
+        edges.stream().mapToLong(Long::longValue).toArray(),
+        capacities.stream().mapToInt(Integer::intValue).toArray());
   }
 }

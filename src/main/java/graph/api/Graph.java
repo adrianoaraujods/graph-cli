@@ -16,6 +16,9 @@ public abstract class Graph implements GraphBase {
   /** If the graph has weighted edges. */
   protected final boolean isWeighted;
 
+  /** If the graph has capacity edges. */
+  protected boolean hasCapacity;
+
   /** Total number of vertices in the graph. */
   protected int n;
 
@@ -25,18 +28,19 @@ public abstract class Graph implements GraphBase {
   /**
    * Constructor called by the concrete implementations.
    */
-  protected Graph(boolean isDirected, int n, long m, boolean isWeighted) {
+  protected Graph(boolean isDirected, int n, long m, boolean isWeighted, boolean hasCapacity) {
     this.isDirected = isDirected;
     this.n = n;
     this.m = m;
     this.isWeighted = isWeighted;
+    this.hasCapacity = hasCapacity;
   }
 
   /**
    * Constructor called by the concrete implementations.
    */
   protected Graph(boolean isDirected, int n, long m) {
-    this(isDirected, n, m, false);
+    this(isDirected, n, m, false, false);
   }
 
   /**
@@ -46,6 +50,15 @@ public abstract class Graph implements GraphBase {
    */
   public boolean isWeighted() {
     return isWeighted;
+  }
+
+  /**
+   * Returns whether this graph has capacity edges.
+   *
+   * @return true if the graph is capacity, false otherwise.
+   */
+  public boolean hasCapacity() {
+    return hasCapacity;
   }
 
   /**
@@ -76,8 +89,8 @@ public abstract class Graph implements GraphBase {
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
-      public void examineEdge(int source, int target, int weight) {
-        builder.addEdge(target, source, weight);
+      public void examineEdge(int source, int target, int weightOrCapacity) {
+        builder.addEdge(target, source, weightOrCapacity);
       }
 
       @Override
@@ -111,9 +124,9 @@ public abstract class Graph implements GraphBase {
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
-      public void examineEdge(int v, int w, int weight) {
+      public void examineEdge(int v, int w, int weightOrCapacity) {
         if (uniqueVertices.contains(v) && uniqueVertices.contains(w)) {
-          builder.addEdge(v, w, weight);
+          builder.addEdge(v, w, weightOrCapacity);
         }
       }
 
