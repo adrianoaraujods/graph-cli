@@ -18,11 +18,12 @@ public interface GraphBuilder {
   /**
    * Prepares the builder's internal temporary structures.
    *
-   * @param n The total number of vertices.
-   * @param m The total number of edges.
-   * @param weighted If the graph should have weighted edges.
+   * @param n           The total number of vertices.
+   * @param m           The total number of edges.
+   * @param isWeighted  If the graph should have weighted edges.
+   * @param hasCapacity If the graph should have capacity edges.
    */
-  void initialize(int n, long m, boolean weighted);
+  void initialize(int n, long m, boolean isWeighted, boolean hasCapacity);
 
   /**
    * Registers a single directed edge into the builder's temporary state.
@@ -35,8 +36,8 @@ public interface GraphBuilder {
   /**
    * Registers a single weighted edge into the builder's temporary state.
    *
-   * @param v The origin vertex ID.
-   * @param w The destination vertex ID.
+   * @param v      The origin vertex ID.
+   * @param w      The destination vertex ID.
    * @param weight The edge weight.
    */
   void addEdge(int v, int w, int weight);

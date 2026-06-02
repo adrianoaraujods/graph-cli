@@ -85,7 +85,7 @@ public abstract class Graph implements GraphBase {
    * @return The {@link Graph} with the reversed edges.
    */
   protected DirectedGraph getReversed(GraphBuilder builder) {
-    builder.initialize(n, m, isWeighted);
+    builder.initialize(n, m, isWeighted, false);
 
     IteratorVisitor iterator = new IteratorVisitor() {
       @Override
@@ -113,7 +113,7 @@ public abstract class Graph implements GraphBase {
   protected Graph getInducedSubgraph(int[] vertices, GraphBuilder builder) {
     int maxVertex = Arrays.stream(vertices).max().orElse(0);
 
-    builder.initialize(maxVertex, m, isWeighted);
+    builder.initialize(maxVertex, m, isWeighted, hasCapacity);
 
     // Track all specified vertices (including isolated ones)
     for (int v : vertices) {

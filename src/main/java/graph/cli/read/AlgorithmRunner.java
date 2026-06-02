@@ -2,6 +2,8 @@ package graph.cli.read;
 
 import graph.algorithms.DFS;
 import graph.algorithms.Dijkstra;
+import graph.algorithms.Dinic;
+import graph.algorithms.DisjointPaths;
 import graph.algorithms.Fleury;
 import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
@@ -15,6 +17,7 @@ import graph.cli.read.result.AlgorithmResult;
 import graph.cli.read.result.BridgeResult;
 import graph.cli.read.result.DFSResult;
 import graph.cli.read.result.EulerianResult;
+import graph.cli.read.result.MaximumFlowResult;
 import graph.cli.read.result.SCCResult;
 import graph.cli.read.result.ShortestPathResult;
 
@@ -39,6 +42,8 @@ public class AlgorithmRunner {
                 case "--naive-global" -> runNaiveBridges(graph);
                 case "--naive-local" -> runNaiveLocalBridges(graph);
                 case "--dijkstra" -> runDijkstra(graph, request);
+                case "--disjoint-paths" -> runDisjointPaths(graph, request);
+                case "--dinic" -> runDinic(graph, request);
                 default -> throw new RuntimeException("Unknown algorithm: " + request.name());
             };
 
@@ -58,8 +63,24 @@ public class AlgorithmRunner {
             case "--naive-global" -> runNaiveBridges(graph);
             case "--naive-local" -> runNaiveLocalBridges(graph);
             case "--dijkstra" -> runDijkstra(graph, request);
+            case "--disjoint-paths" -> runDisjointPaths(graph, request);
+            case "--dinic" -> runDinic(graph, request);
             default -> throw new RuntimeException("Unknown algorithm: " + request.name());
         };
+    }
+
+    private static MaximumFlowResult runDinic(Graph graph, AlgorithmRequest request) {
+        int source = (int) request.params().get("source");
+        int target = (int) request.params().get("target");
+
+        return Dinic.compute(graph, source, target);
+    }
+
+    private static MaximumFlowResult runDisjointPaths(Graph graph, AlgorithmRequest request) {
+        int source = (int) request.params().get("source");
+        int target = (int) request.params().get("target");
+
+        return DisjointPaths.compute((DirectedGraph) graph, source, target);
     }
 
     private static DFSResult runDFS(Graph graph, AlgorithmRequest request) {

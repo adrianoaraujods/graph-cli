@@ -38,18 +38,19 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
 
   @Override
   public void initialize(int n, long m) {
-    initialize(n, m, false);
+    initialize(n, m, false, false);
   }
 
   @Override
-  public void initialize(int n, long m, boolean weighted) {
+  public void initialize(int n, long m, boolean isWeighted, boolean hasCapacity) {
     this.n = n;
     this.m = 0;
-    this.isWeighted = weighted;
+    this.isWeighted = isWeighted;
+    this.hasCapacity = hasCapacity;
     int maximumEdges = (int) (isDirected ? m : m * 2);
     this.sources = new int[maximumEdges];
     this.targets = new int[maximumEdges];
-    if (weighted) {
+    if (isWeighted || hasCapacity) {
       this.weightsOrCapacities = new int[maximumEdges];
     } else {
       this.weightsOrCapacities = null;
@@ -74,21 +75,21 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
       int newCapacity = Math.max(4, sources.length * 2);
       sources = Arrays.copyOf(sources, newCapacity);
       targets = Arrays.copyOf(targets, newCapacity);
-      if (isWeighted) {
+      if (isWeighted || hasCapacity) {
         weightsOrCapacities = Arrays.copyOf(weightsOrCapacities, newCapacity);
       }
     }
 
     sources[head] = v;
     targets[head] = w;
-    if (isWeighted) {
+    if (isWeighted || hasCapacity) {
       weightsOrCapacities[head] = weight;
     }
 
     if (!isDirected) {
       sources[head + 1] = w;
       targets[head + 1] = v;
-      if (isWeighted) {
+      if (isWeighted || hasCapacity) {
         weightsOrCapacities[head + 1] = weight;
       }
     }
@@ -109,13 +110,13 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     if (edgesCount != sources.length) {
       sources = Arrays.copyOf(sources, edgesCount);
       targets = Arrays.copyOf(targets, edgesCount);
-      if (isWeighted && weightsOrCapacities != null) {
+      if ((isWeighted || hasCapacity) && weightsOrCapacities != null) {
         weightsOrCapacities = Arrays.copyOf(weightsOrCapacities, edgesCount);
       }
     }
 
     if (edgesCount > 0) {
-      if (isWeighted && weightsOrCapacities != null) {
+      if ((isWeighted || hasCapacity) && weightsOrCapacities != null) {
         Sort.quick(sources, targets, weightsOrCapacities);
       } else {
         Sort.quick(sources, targets);

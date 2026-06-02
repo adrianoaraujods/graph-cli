@@ -15,6 +15,7 @@ class ReadHandlerIntegrationTest {
                 "forwardstar",
                 false, // undirected
                 true, // weighted
+                false, // hasCapacity
                 List.of(AlgorithmRequest.tarjan()),
                 null);
 
@@ -32,6 +33,7 @@ class ReadHandlerIntegrationTest {
                 "forwardstar",
                 false, // undirected
                 true, // weighted
+                false, // hasCapacity
                 List.of(AlgorithmRequest.naiveBridges()),
                 null);
 
@@ -49,6 +51,7 @@ class ReadHandlerIntegrationTest {
                 "forwardstar",
                 false, // undirected
                 true, // weighted
+                false, // hasCapacity
                 List.of(AlgorithmRequest.fleury(null)),
                 null);
 
@@ -66,6 +69,7 @@ class ReadHandlerIntegrationTest {
                 "forwardstar",
                 false, // undirected
                 false, // unweighted (should still work)
+                false, // hasCapacity
                 List.of(AlgorithmRequest.tarjan()),
                 null);
 

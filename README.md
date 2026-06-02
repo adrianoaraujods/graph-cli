@@ -14,7 +14,7 @@ Grafos sintéticos podem ser gerados com conectividade controlada, e algoritmos 
   - **Forward Star** (_default_) — compacta, cache-friendly, alta performance
   - **Lista de Adjacência** — dinâmica, boa para mutações
   - **Matriz de Adjacência** — simples, mas consome mais memória
-- **6 algoritmos**: DFS, Kosaraju, Fleury, Tarjan, Pontes Ingênuas, Dijkstra
+- **7 algoritmos**: DFS, Kosaraju, Fleury, Tarjan, Pontes Ingênuas, Dijkstra, Dinic (Fluxo Máximo / Caminhos Disjuntos)
 - **Benchmarks automatizados** para Dijkstra e Fleury com suporte a execução paralela
 
 ## Requisitos
@@ -91,6 +91,12 @@ Lê um arquivo de grafo e executa algoritmos.
 # DFS a partir do vértice 5
 java -jar target/graph-cli-0.1.0.jar read graph.txt --dfs -t 5
 
+# Especificar representação
+java -jar target/graph-cli-0.1.0.jar read graph.txt -u --adjacency-list --fleury --tarjan
+
+# Salvar saída em arquivo
+java -jar target/graph-cli-0.1.0.jar read graph.txt --dfs -t 5 -o result.log
+
 # Kosaraju + Fleury
 java -jar target/graph-cli-0.1.0.jar read graph.txt --kosaraju --fleury
 
@@ -98,44 +104,52 @@ java -jar target/graph-cli-0.1.0.jar read graph.txt --kosaraju --fleury
 java -jar target/graph-cli-0.1.0.jar read graph.txt --tarjan
 
 # Dijkstra em grafo com peso
-java -jar target/graph-cli-0.1.0.jar read weighted.txt --weighted --dijkstra --source 1 --target 5 --path
+java -jar target/graph-cli-0.1.0.jar read ./examples/weighted-8v16e.txt --weighted --dijkstra --source 5
 
-# Especificar representação
-java -jar target/graph-cli-0.1.0.jar read graph.txt -u --adjacency-list --fleury --tarjan
+# Dijkstra em grafo com peso mostrando o caminho
+java -jar target/graph-cli-0.1.0.jar read ./examples/weighted-8v16e.txt --weighted --dijkstra --source 5 --path
 
-# Salvar saída em arquivo
-java -jar target/graph-cli-0.1.0.jar read graph.txt --dfs -t 5 -o resultado.log
+# Caminhos disjuntos em arestas (Dinic)
+java -jar target/graph-cli-0.1.0.jar read ./examples/flow-11v17e.txt --capacities --disjoint-paths --source 1 --target 11
+
+# Fluxo máximo (Dinic) com capacidades
+java -jar target/graph-cli-0.1.0.jar read ./examples/flow-11v17e.txt --capacities --dinic --source 1 --target 11
 ```
 
-| Flag                 | Descrição                                                    |
-| -------------------- | ------------------------------------------------------------ |
-| `--dfs`              | Busca em profundidade (requer `-t`)                          |
-| `--kosaraju`         | Componentes fortemente conexos                               |
-| `--fleury`           | Caminho/Ciclo Euleriano                                      |
-| `--tarjan`           | Pontes (Tarjan)                                              |
-| `--naive-local`      | Pontes Ingênuas (Local)                                      |
-| `--naive-global`     | Pontes Ingênuas (Global)                                     |
-| `--dijkstra`         | Caminho mínimo (requer `--weighted`, `--source`, `--target`) |
-| `--source`           | Vértice de origem                                            |
-| `-t`, `--target`     | Vértice de destino                                           |
-| `--path`             | Exibir caminho                                               |
-| `-o`, `--output`     | Arquivo de saída                                             |
-| `--forward-star`     | Forward Star (_default_)                                     |
-| `--adjacency-matrix` | Matriz de Adjacência                                         |
-| `--adjacency-list`   | Lista de Adjacência                                          |
-| `--weighted`         | Grafo com peso (formato: `u v w`)                            |
+| Flag                 | Descrição                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| `--dfs`              | Busca em profundidade (requer `-t`)                                                                |
+| `--kosaraju`         | Componentes fortemente conexos                                                                     |
+| `--fleury`           | Caminho/Ciclo Euleriano                                                                            |
+| `--tarjan`           | Pontes (Tarjan)                                                                                    |
+| `--naive-local`      | Pontes Ingênuas (Local)                                                                            |
+| `--naive-global`     | Pontes Ingênuas (Global)                                                                           |
+| `--dijkstra`         | Caminho mínimo (requer `--weighted`, `--source`, `--target`)                                       |
+| `--disjoint-paths`   | Caminhos disjuntos em arestas via fluxo máximo (Dinic, requer `--source`, `--target`, direcionado) |
+| `--dinic`            | Fluxo máximo (Dinic, requer `--capacities`, `--source`, `--target`, direcionado)                   |
+| `--capacities`       | Capacidades nas arestas (formato: `u v capacity`, mutuamente exclusivo com `--weighted`)           |
+| `--source`           | Vértice de origem (obrigatório para `--dijkstra`, `--disjoint-paths`, `--dinic`)                   |
+| `-t`, `--target`     | Vértice de destino (obrigatório para `--dfs`, `--dijkstra`, `--disjoint-paths`, `--dinic`)         |
+| `--path`             | Exibir caminho                                                                                     |
+| `-o`, `--output`     | Arquivo de saída                                                                                   |
+| `--forward-star`     | Forward Star (_default_)                                                                           |
+| `--adjacency-matrix` | Matriz de Adjacência                                                                               |
+| `--adjacency-list`   | Lista de Adjacência                                                                                |
+| `--weighted`         | Grafo com peso (formato: `u v w`)                                                                  |
 
 ## Algoritmos
 
-| Algoritmo                | Flag             | Descrição                                                     | Direcionado | Peso |
-| ------------------------ | ---------------- | ------------------------------------------------------------- | :---------: | :--: |
-| DFS                      | `--dfs`          | Busca em profundidade com classificação de arestas            |     Sim     | Não  |
-| Kosaraju                 | `--kosaraju`     | Componentes fortemente conexos (2-passagens DFS)              |     Sim     | Não  |
-| Fleury                   | `--fleury`       | Caminho ou ciclo Euleriano (usa Tarjan ou Pontes Ingênuas)    |     Sim     | Não  |
-| Tarjan                   | `--tarjan`       | Encontra todas as pontes (DFS + low-link, O(V+E))             |     Não     | Não  |
-| Pontes Ingênuas (Global) | `--naive-global` | Encontra pontes testando cada aresta (Union-Find, paralelo)   |     Não     | Não  |
-| Pontes Ingênuas (Local)  | `--naive-local`  | Verificação sob demanda durante Fleury (short-circuit)        |     Não     | Não  |
-| Dijkstra                 | `--dijkstra`     | Caminho mínimo (pesos positivos, desempate por menos arestas) |     Sim     | Sim  |
+| Algoritmo                  | Flag               | Descrição                                                     | Direcionado | Peso |
+| -------------------------- | ------------------ | ------------------------------------------------------------- | :---------: | :--: |
+| DFS                        | `--dfs`            | Busca em profundidade com classificação de arestas            |     Sim     | Não  |
+| Kosaraju                   | `--kosaraju`       | Componentes fortemente conexos (2-passagens DFS)              |     Sim     | Não  |
+| Fleury                     | `--fleury`         | Caminho ou ciclo Euleriano (usa Tarjan ou Pontes Ingênuas)    |     Sim     | Não  |
+| Tarjan                     | `--tarjan`         | Encontra todas as pontes (DFS + low-link, O(V+E))             |     Não     | Não  |
+| Pontes Ingênuas (Global)   | `--naive-global`   | Encontra pontes testando cada aresta (Union-Find, paralelo)   |     Não     | Não  |
+| Pontes Ingênuas (Local)    | `--naive-local`    | Verificação sob demanda durante Fleury (short-circuit)        |     Não     | Não  |
+| Dijkstra                   | `--dijkstra`       | Caminho mínimo (pesos positivos, desempate por menos arestas) |     Sim     | Sim  |
+| Dinic / Caminhos Disjuntos | `--disjoint-paths` | Caminhos disjuntos em arestas via fluxo máximo                |     Sim     | Não  |
+| Dinic (Fluxo Máximo)       | `--dinic`          | Fluxo máximo em redes com capacidades nas arestas             |     Sim     | Não  |
 
 ## Formato do Arquivo de Grafo
 
@@ -147,12 +161,20 @@ Arquivo texto simples. A primeira linha contém o número de vértices e arestas
 <u> <v>
 ```
 
-Para grafos com peso, adiciona-se um terceiro campo:
+Para grafos com peso nas arestas (utilizando `-weighted`), adiciona-se um terceiro campo:
 
 ```
 <V> <E>
 <u> <v> <peso>
 <u> <v> <peso>
+```
+
+Para grafos com capacidade nas arestas (utilizando `--capacities`), o formato segue o mesmo padrão de 3 campos:
+
+```
+<V> <E>
+<u> <v> <capacidade>
+<u> <v> <capacidade>
 ```
 
 Arquivos de exemplo disponíveis em [`examples/`](examples/).

@@ -359,7 +359,10 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
   @Override
   public int[] getCapacitiesSet() {
-    return getCapacitiesSet();
+    if (!hasCapacity() || weightsOrCapacities == null) {
+      return new int[0];
+    }
+    return Arrays.copyOf(weightsOrCapacities, weightsOrCapacities.length);
   }
 
   @Override

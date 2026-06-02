@@ -11,7 +11,7 @@ public class WeightedTestHelper {
         long m = edgesWithWeights.length;
 
         GraphBuilder builder = builderSupplier.get();
-        builder.initialize(n, m, true);
+        builder.initialize(n, m, true, false);
 
         for (int[] edge : edgesWithWeights) {
             builder.addEdge(edge[0], edge[1], edge[2]);
@@ -24,7 +24,7 @@ public class WeightedTestHelper {
         long m = edgesWithWeights.length;
 
         GraphBuilder builder = builderSupplier.get();
-        builder.initialize(n, m, true);
+        builder.initialize(n, m, true, false);
 
         for (int[] edge : edgesWithWeights) {
             builder.addEdge(edge[0], edge[1], edge[2]);

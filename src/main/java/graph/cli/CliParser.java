@@ -184,6 +184,7 @@ public class CliParser {
         String outputPath = null;
         List<AlgorithmRequest> algorithms = new ArrayList<>();
         boolean isWeighted = false;
+        boolean hasCapacity = false;
 
         for (int i = 2; i < args.length; i++) {
             String arg = args[i];
@@ -237,6 +238,12 @@ public class CliParser {
                 representation = "Adjacency List";
             } else if (arg.equals("--weighted")) {
                 isWeighted = true;
+            } else if (arg.equals("--disjoint-paths")) {
+                algorithms.add(AlgorithmRequest.disjointPaths(0, 0));
+            } else if (arg.equals("--dinic")) {
+                algorithms.add(AlgorithmRequest.dinic(0, 0));
+            } else if (arg.equals("--capacities")) {
+                hasCapacity = true;
             } else if (arg.equals("--path")) {
                 // flag for showing path - handled in algorithm request update
             } else {
@@ -279,6 +286,61 @@ public class CliParser {
             }
         }
 
+        // Validate --capacities vs --weighted mutual exclusion
+        if (hasCapacity && isWeighted) {
+            throw new InvalidAlgorithmParameterException(
+                    "--capacities and --weighted are mutually exclusive.");
+        }
+
+        // Set source/target for --disjoint-paths
+        if (algorithms.stream().anyMatch(r -> r.name().equals("--disjoint-paths"))) {
+            if (isWeighted) {
+                throw new InvalidAlgorithmParameterException(
+                        "--disjoint-paths cannot be used with --weighted.");
+            }
+            if (source == null) {
+                throw new InvalidAlgorithmParameterException("--disjoint-paths requires --source.");
+            }
+            if (target == null) {
+                throw new InvalidAlgorithmParameterException("--disjoint-paths requires -t/--target.");
+            }
+
+            for (int j = 0; j < algorithms.size(); j++) {
+                if (algorithms.get(j).name().equals("--disjoint-paths")) {
+                    algorithms.set(j, AlgorithmRequest.disjointPaths(source, target));
+                }
+            }
+
+            if (!isDirected) {
+                throw new InvalidAlgorithmParameterException(
+                        "--disjoint-paths requires a directed graph.");
+            }
+        }
+
+        // Set source/target for --dinic
+        if (algorithms.stream().anyMatch(r -> r.name().equals("--dinic"))) {
+            if (!hasCapacity) {
+                throw new InvalidAlgorithmParameterException(
+                        "--dinic requires --capacities.");
+            }
+            if (source == null) {
+                throw new InvalidAlgorithmParameterException("--dinic requires --source.");
+            }
+            if (target == null) {
+                throw new InvalidAlgorithmParameterException("--dinic requires -t/--target.");
+            }
+            if (!isDirected) {
+                throw new InvalidAlgorithmParameterException(
+                        "--dinic requires a directed graph.");
+            }
+
+            for (int j = 0; j < algorithms.size(); j++) {
+                if (algorithms.get(j).name().equals("--dinic")) {
+                    algorithms.set(j, AlgorithmRequest.dinic(source, target));
+                }
+            }
+        }
+
         // Resolve bridge finder for --fleury
         boolean hasTarjan = algorithms.stream().anyMatch(r -> r.name().equals("--tarjan"));
         boolean hasNaiveGlobalAlgo = algorithms.stream().anyMatch(r -> r.name().equals("--naive-global"));
@@ -294,7 +356,7 @@ public class CliParser {
             }
         }
 
-        ReadConfig config = new ReadConfig(graphPath, representation, isDirected, isWeighted, algorithms, outputPath);
+        ReadConfig config = new ReadConfig(graphPath, representation, isDirected, isWeighted, hasCapacity, algorithms, outputPath);
         return new ReadCommand(config);
     }
 

@@ -180,7 +180,7 @@ class AdjacencyListGraphTest {
     @Test
     void testWeightedGraphIsWeighted() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         Graph graph = builder.build();
@@ -191,7 +191,7 @@ class AdjacencyListGraphTest {
     @Test
     void testGetEdgeWeightReturnsCorrectWeight() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         WeightedGraph graph = (WeightedGraph) builder.build();
@@ -203,7 +203,7 @@ class AdjacencyListGraphTest {
     @Test
     void testGetEdgeWeightThrowsForMissingEdge() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
-        builder.initialize(3, 1, true);
+        builder.initialize(3, 1, true, false);
         builder.addEdge(1, 2, 5);
         WeightedGraph graph = (WeightedGraph) builder.build();
 
@@ -214,7 +214,7 @@ class AdjacencyListGraphTest {
     @Test
     void testIterateGraphPassesWeightsToVisitor() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         WeightedGraph graph = (WeightedGraph) builder.build();
@@ -235,7 +235,7 @@ class AdjacencyListGraphTest {
     @Test
     void testGetWeightsSetReturnsWeightArray() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         WeightedGraph graph = (WeightedGraph) builder.build();
@@ -248,7 +248,7 @@ class AdjacencyListGraphTest {
     @Test
     void testGetWeightedEdgesSetReturnsEdgesAndWeights() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         WeightedGraph graph = (WeightedGraph) builder.build();
@@ -263,7 +263,7 @@ class AdjacencyListGraphTest {
     @Test
     void testGetReversedPreservesWeights() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         DirectedGraph graph = (DirectedGraph) builder.build();
@@ -278,7 +278,7 @@ class AdjacencyListGraphTest {
     @Test
     void testGetInducedSubgraphPreservesWeights() {
         AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(true);
-        builder.initialize(4, 3, true);
+        builder.initialize(4, 3, true, false);
         builder.addEdge(1, 2, 5);
         builder.addEdge(2, 3, 10);
         builder.addEdge(3, 4, 15);

@@ -7,6 +7,7 @@ public record ReadConfig(
         String representation,
         boolean isDirected,
         boolean isWeighted,
+        boolean hasCapacity,
         List<AlgorithmRequest> algorithms,
         String outputPath) {
 }

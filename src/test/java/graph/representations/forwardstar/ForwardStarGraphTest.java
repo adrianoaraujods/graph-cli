@@ -334,7 +334,7 @@ class ForwardStarGraphTest {
     @Test
     void testIsWeightedWeightedGraph() {
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true); // directed
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 10);
         builder.addEdge(2, 3, 20);
         Graph graph = builder.build();
@@ -345,7 +345,7 @@ class ForwardStarGraphTest {
     @Test
     void testGetEdgeWeight() {
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 10);
         builder.addEdge(2, 3, 20);
         Graph graph = builder.build();
@@ -372,7 +372,7 @@ class ForwardStarGraphTest {
     @Test
     void testIterateGraphWithWeights() {
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 10);
         builder.addEdge(2, 3, 20);
         Graph graph = builder.build();
@@ -393,7 +393,7 @@ class ForwardStarGraphTest {
     @Test
     void testGetWeightsSet() {
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true); // directed
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 10);
         builder.addEdge(2, 3, 20);
         Graph graph = builder.build();
@@ -410,7 +410,7 @@ class ForwardStarGraphTest {
     @Test
     void testGetWeightedEdgesSet() {
         ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true); // directed
-        builder.initialize(3, 2, true);
+        builder.initialize(3, 2, true, false);
         builder.addEdge(1, 2, 10);
         builder.addEdge(2, 3, 20);
         Graph graph = builder.build();

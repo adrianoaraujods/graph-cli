@@ -25,7 +25,7 @@ public class AdjacencyListGraph extends Graph implements DirectedGraph, Undirect
   AdjacencyListGraph(boolean isDirected, int n, long m, boolean isWeighted,
       Map<Integer, Set<Integer>> vertices, Map<Integer, Map<Integer, Integer>> weightedVertices,
       Set<Integer> isolatedVertices) {
-    super(isDirected, n, m, false, isWeighted);
+    super(isDirected, n, m, isWeighted, false);
     this.vertices = vertices;
     this.weightedVertices = weightedVertices != null ? weightedVertices : new HashMap<>();
     this.isolatedVertices = isolatedVertices;

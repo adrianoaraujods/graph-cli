@@ -34,16 +34,16 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
 
   @Override
   public void initialize(int n, long m) {
-    initialize(n, m, false);
+    initialize(n, m, false, false);
   }
 
   @Override
-  public void initialize(int n, long m, boolean weighted) {
+  public void initialize(int n, long m, boolean isWeighted, boolean hasCapacity) {
     this.n = n;
     this.m = 0;
-    this.isWeighted = weighted;
+    this.isWeighted = isWeighted;
     this.adjacency = new HashMap<>(n);
-    this.weightedAdjacency = weighted ? new HashMap<>(n) : null;
+    this.weightedAdjacency = isWeighted ? new HashMap<>(n) : null;
     this.isolatedVertices = new HashSet<>(n);
   }
 

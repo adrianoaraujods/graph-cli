@@ -41,4 +41,18 @@ public record AlgorithmRequest(String name, Map<String, Object> params) {
         params.put("findPath", findPath);
         return new AlgorithmRequest("--dijkstra", params);
     }
+
+    public static AlgorithmRequest disjointPaths(int source, int target) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("source", source);
+        params.put("target", target);
+        return new AlgorithmRequest("--disjoint-paths", params);
+    }
+
+    public static AlgorithmRequest dinic(int source, int target) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("source", source);
+        params.put("target", target);
+        return new AlgorithmRequest("--dinic", params);
+    }
 }

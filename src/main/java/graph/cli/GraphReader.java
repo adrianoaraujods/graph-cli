@@ -24,14 +24,16 @@ public class GraphReader {
    * The file format expects: first line with "n m" (number of vertices and edges),
    * followed by m lines each containing "source target" edge pairs.
    * If isWeighted is true, expects "source target weight" format.
+   * If hasCapacity is true, expects "source target capacity" format.
    *
    * @param pathName The path to the graph file.
    * @param builder  The GraphBuilder to populate with edges.
    * @param isWeighted If true, parse third int as weight.
+   * @param hasCapacity If true, parse third int as capacity.
    * @throws IOException If the file cannot be read.
    * @throws Exception    If the file format is invalid.
    */
-  public static void readFile(String pathName, GraphBuilder builder, boolean isWeighted) throws IOException, Exception {
+  public static void readFile(String pathName, GraphBuilder builder, boolean isWeighted, boolean hasCapacity) throws IOException, Exception {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {
 
@@ -45,23 +47,25 @@ public class GraphReader {
         n = readNextInt(channel, buffer);
         m = readNextInt(channel, buffer);
 
-        builder.initialize(n, m, isWeighted);
+        builder.initialize(n, m, isWeighted, hasCapacity);
       } else {
         throw new Exception("The input file is empty.");
       }
 
+      boolean readThirdColumn = isWeighted || hasCapacity;
+
       for (int i = 0; i < m; i++) {
         Integer source = readNextInt(channel, buffer);
         Integer target = readNextInt(channel, buffer);
-        Integer weight = isWeighted ? readNextInt(channel, buffer) : null;
+        Integer thirdValue = readThirdColumn ? readNextInt(channel, buffer) : null;
 
         if (source == null || target == null) {
           System.err.println("Warning: End of the file reached before reading all 'm' edges.");
           break;
         }
 
-        if (isWeighted && weight != null) {
-          builder.addEdge(source, target, weight);
+        if (thirdValue != null) {
+          builder.addEdge(source, target, thirdValue);
         } else {
           builder.addEdge(source, target);
         }
@@ -80,8 +84,12 @@ public class GraphReader {
    * @throws IOException If the file cannot be read.
    * @throws Exception    If the file format is invalid.
    */
+  public static void readFile(String pathName, GraphBuilder builder, boolean isWeighted) throws IOException, Exception {
+    readFile(pathName, builder, isWeighted, false);
+  }
+
   public static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
-    readFile(pathName, builder, false);
+    readFile(pathName, builder, false, false);
   }
 
   /**

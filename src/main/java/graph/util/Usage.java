@@ -95,8 +95,12 @@ public class Usage {
         System.out.println("    --naive-global        Run Naive Bridges (Global) to find all bridge edges");
         System.out.println(
                 "    --dijkstra            Run Dijkstra shortest path (requires --weighted, --source, --target)");
-        System.out.println("  --source <n>            Source vertex (required for --dijkstra)");
-        System.out.println("  --target <n>, -t        Target vertex (required for --dfs, --dijkstra)");
+        System.out.println(
+                "    --disjoint-paths      Run Dinic to find edge-disjoint paths (requires --source, --target, directed)");
+        System.out.println(
+                "    --dinic               Run Dinic maximum flow (requires --capacities, --source, --target, directed)");
+        System.out.println("  --source <n>            Source vertex (required for --dijkstra, --disjoint-paths, --dinic)");
+        System.out.println("  --target <n>, -t        Target vertex (required for --dfs, --dijkstra, --disjoint-paths, --dinic)");
         System.out.println("  --path                  Show path vertices (used on fleury, dijkstra)");
         System.out.println("  --output <path>, -o     Output file (default: terminal)");
         System.out.println("  --forward-star          Use Forward Star representation (default)");
@@ -104,6 +108,7 @@ public class Usage {
         System.out.println("  --directed              Treat graph as directed (default)");
         System.out.println("  --undirected, -u        Treat graph as undirected");
         System.out.println("  --weighted              Read weighted graph file (format: u v w)");
+        System.out.println("  --capacities            Read capacity graph file (format: u v capacity)");
     }
 
     public static void printReadExamples() {

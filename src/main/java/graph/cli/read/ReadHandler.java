@@ -58,7 +58,7 @@ public class ReadHandler {
 
         int step = 0;
         System.out.printf("\n[%d/%d] Reading File...", ++step, totalSteps);
-        Graph graph = GraphLoader.load(config.graphPath(), config.representation(), config.isDirected(), config.isWeighted());
+        Graph graph = GraphLoader.load(config.graphPath(), config.representation(), config.isDirected(), config.isWeighted(), config.hasCapacity());
 
         System.out.printf("\n[%d/%d] Building Graph...", ++step, totalSteps);
         // Graph is already built by GraphLoader
@@ -105,6 +105,8 @@ public class ReadHandler {
             case "--tarjan" -> "Tarjan";
             case "--naive-local" -> "Naive Bridges (Local)";
             case "--naive-global" -> "Naive Bridges (Global)";
+            case "--disjoint-paths" -> "Disjoint Paths";
+            case "--dinic" -> "Dinic";
             default -> algorithm;
         };
     }
