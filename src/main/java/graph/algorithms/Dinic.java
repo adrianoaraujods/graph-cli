@@ -52,9 +52,9 @@ public class Dinic {
     int[] flo = new int[extendedM];
     int[] to = new int[extendedM];
 
-    List<Integer>[] adj = new List[n + 1];
-    for (int v = 1; v <= n; v++) {
-      adj[v] = new ArrayList<>();
+    List<List<Integer>> adj = new ArrayList<>(n + 1);
+    for (int v = 0; v <= n; v++) {
+      adj.add(new ArrayList<>());
     }
 
     for (int i = 0; i < m; i++) {
@@ -65,12 +65,12 @@ public class Dinic {
       int forwardIdx = 2 * i;
       int reverseIdx = 2 * i + 1;
 
-      adj[v].add(forwardIdx);
+      adj.get(v).add(forwardIdx);
       cap[forwardIdx] = capVal;
       flo[forwardIdx] = 0;
       to[forwardIdx] = w;
 
-      adj[w].add(reverseIdx);
+      adj.get(w).add(reverseIdx);
       cap[reverseIdx] = 0;
       flo[reverseIdx] = 0;
       to[reverseIdx] = v;
@@ -104,7 +104,7 @@ public class Dinic {
   }
 
   private static boolean bfs(int source, int target, int n,
-      List<Integer>[] adj, int[] cap, int[] flo, int[] to, int[] level) {
+      List<List<Integer>> adj, int[] cap, int[] flo, int[] to, int[] level) {
     Arrays.fill(level, -1);
     Queue<Integer> queue = new ArrayDeque<>();
     level[source] = 0;
@@ -112,7 +112,7 @@ public class Dinic {
 
     while (!queue.isEmpty()) {
       int u = queue.poll();
-      for (int e : adj[u]) {
+      for (int e : adj.get(u)) {
         if (cap[e] - flo[e] > 0) {
           int v = to[e];
           if (level[v] == -1) {
@@ -126,11 +126,11 @@ public class Dinic {
   }
 
   private static boolean dfs(int u, int target, int[] cap, int[] flo, int[] to,
-      int[] level, int[] it, int[] parent, List<Integer>[] adj) {
+      int[] level, int[] it, int[] parent, List<List<Integer>> adj) {
     if (u == target)
       return true;
-    for (; it[u] < adj[u].size(); it[u]++) {
-      int e = adj[u].get(it[u]);
+    for (; it[u] < adj.get(u).size(); it[u]++) {
+      int e = adj.get(u).get(it[u]);
       if (cap[e] - flo[e] > 0) {
         int v = to[e];
         if (level[v] == level[u] + 1) {

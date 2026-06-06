@@ -15,7 +15,7 @@ Grafos sintéticos podem ser gerados com conectividade controlada, e algoritmos 
   - **Lista de Adjacência** — dinâmica, boa para mutações
   - **Matriz de Adjacência** — simples, mas consome mais memória
 - **7 algoritmos**: DFS, Kosaraju, Fleury, Tarjan, Pontes Ingênuas, Dijkstra, Dinic (Fluxo Máximo / Caminhos Disjuntos)
-- **Benchmarks automatizados** para Dijkstra e Fleury com suporte a execução paralela
+- **Benchmarks automatizados** para Dijkstra, Fleury e Caminhos Disjuntos com suporte a execução paralela
 
 ## Requisitos
 
@@ -190,7 +190,7 @@ graph-cli/
 │       ├── algorithms/          # Implementações dos algoritmos
 │       ├── representations/     # Forward Star, Lista, Matriz
 │       ├── cli/                 # Parser, handlers, leitura/escrita
-│       ├── bench/               # Benchmarks (Dijkstra, Fleury)
+│       ├── bench/               # Benchmarks (Dijkstra, Fleury, DisjointPaths)
 │       └── util/                # Utilitários (Timer, Sort, Usage)
 ├── examples/                    # Grafos de exemplo
 └── articles/                    # Artigos acadêmicos (LaTeX + PDF + resultados)
@@ -198,7 +198,7 @@ graph-cli/
 
 ## Benchmarks
 
-O projeto inclui dois harnesses de benchmark para executar experimentos de desempenho:
+O projeto inclui três harnesses de benchmark para executar experimentos de desempenho:
 
 ### Dijkstra Benchmark
 
@@ -206,13 +206,13 @@ Testa o algoritmo de Dijkstra em grafos de diferentes tamanhos e conectividades.
 
 ```bash
 # Sequencial
-java graph.bench.DijkstraBenchmark
+java -cp target/classes graph.bench.DijkstraBenchmark
 
 # Paralelo com 8 threads
-java graph.bench.DijkstraBenchmark --parallel --max-threads 8
+java -cp target/classes graph.bench.DijkstraBenchmark --parallel --max-threads 8
 
 # Configurar número de tentativas e saída
-java graph.bench.DijkstraBenchmark --attempts 5 --output resultados.csv
+java -cp target/classes graph.bench.DijkstraBenchmark --attempts 5 --output resultados.csv
 ```
 
 ### Fleury Benchmark
@@ -221,20 +221,35 @@ Testa o algoritmo de Fleury com diferentes estratégias de detecção de pontes 
 
 ```bash
 # Sequencial
-java graph.bench.FleuryBenchmark
+java -cp target/classes graph.bench.FleuryBenchmark
 
 # Paralelo
-java graph.bench.FleuryBenchmark --parallel --max-threads 8
+java -cp target/classes graph.bench.FleuryBenchmark --parallel --max-threads 8
 
 # Saída personalizada
-java graph.bench.FleuryBenchmark --attempts 4 --output resultados.csv
+java -cp target/classes graph.bench.FleuryBenchmark --attempts 4 --output resultados.csv
+```
+
+### Disjoint Paths Benchmark
+
+Testa o algoritmo de Caminhos Disjuntos (via fluxo máximo/Dinic) em grafos direcionados de diferentes tamanhos e conectividades.
+
+```bash
+# Sequencial
+java -cp target/classes graph.bench.DisjointPathsBenchmark
+
+# Paralelo com 8 threads
+java -cp target/classes graph.bench.DisjointPathsBenchmark --parallel --max-threads 8
+
+# Configurar número de tentativas e saída
+java -cp target/classes graph.bench.DisjointPathsBenchmark --attempts 3 --output resultados.csv
 ```
 
 **Flags comuns:**
 
 | Flag            | Descrição                             |          Default           |
 | --------------- | ------------------------------------- | :------------------------: |
-| `--attempts`    | Número de tentativas por configuração | 10 (Dijkstra) / 4 (Fleury) |
+| `--attempts`    | Número de tentativas por configuração | 10 (Dijkstra) / 4 (Fleury) / 4 (DisjointPaths) |
 | `--parallel`    | Execução paralela                     |            off             |
 | `--max-threads` | Número máximo de threads              |             24             |
 | `--output`      | Arquivo CSV de saída                  |        results.csv         |
@@ -246,7 +261,7 @@ Os resultados são exportados em formato CSV para análise em planilhas ou scrip
 Para grafos grandes, recomenda-se configurar a JVM com mais memória:
 
 ```bash
-java -Xmx16g -XX:+UseG1GC -jar target/graph-cli-0.1.0.jar ...
+java -cp target/classes -Xmx16g -XX:+UseG1GC -jar target/graph-cli-0.1.0.jar
 ```
 
 Grafos com mais de **50 milhões de arestas** exibem uma confirmação antes de prosseguir (pode ser desabilitada em benchmarks via `setSkipConfirmation(true)`).
