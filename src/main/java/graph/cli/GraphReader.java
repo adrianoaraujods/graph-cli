@@ -105,6 +105,7 @@ public class GraphReader {
   private static Integer readNextInt(FileChannel channel, ByteBuffer buffer) throws IOException {
     int result = 0;
     boolean foundDigit = false;
+    boolean negative = false;
 
     while (true) {
       // If empty, refill the buffer with the next chunk
@@ -114,7 +115,7 @@ public class GraphReader {
 
         // Check for file end
         if (bytesRead == -1) {
-          return foundDigit ? result : null;
+          return foundDigit ? (negative ? -result : result) : null;
         }
 
         buffer.flip(); // Switch bucket to reading mode
@@ -122,15 +123,18 @@ public class GraphReader {
 
       byte b = buffer.get();
 
-      // Check for valid digit
-      if (b >= '0' && b <= '9') {
+      if (b == '-' && !foundDigit) {
+        negative = true;
+      } else if (b >= '0' && b <= '9') {
         result = (result * 10) + (b - '0');
         foundDigit = true;
       } else {
         // Next digit not found, so the number is complete
         if (foundDigit) {
-          return result;
+          return negative ? -result : result;
         }
+        // '-' followed by non-digit is not a negative number; reset
+        negative = false;
       }
     }
   }
