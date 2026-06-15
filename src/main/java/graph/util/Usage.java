@@ -99,6 +99,8 @@ public class Usage {
                 "    --disjoint-paths      Run Dinic to find edge-disjoint paths (requires --source, --target, directed)");
         System.out.println(
                 "    --dinic               Run Dinic maximum flow (requires --capacities, --source, --target, directed)");
+        System.out.println(
+                "    --floyd-warshall      Run Floyd-Warshall all-pairs shortest path (requires --weighted)");
         System.out.println("  --source <n>            Source vertex (required for --dijkstra, --disjoint-paths, --dinic)");
         System.out.println("  --target <n>, -t        Target vertex (required for --dfs, --dijkstra, --disjoint-paths, --dinic)");
         System.out.println("  --path                  Show path vertices (used on fleury, dijkstra)");

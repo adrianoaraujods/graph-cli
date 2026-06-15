@@ -5,6 +5,7 @@ import graph.algorithms.Dijkstra;
 import graph.algorithms.Dinic;
 import graph.algorithms.DisjointPaths;
 import graph.algorithms.Fleury;
+import graph.algorithms.FloydWarshall;
 import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
 import graph.algorithms.Tarjan;
@@ -14,6 +15,7 @@ import graph.api.GraphBase;
 import graph.api.UndirectedGraph;
 import graph.api.WeightedGraph;
 import graph.cli.read.result.AlgorithmResult;
+import graph.cli.read.result.AllPairsShortestPathResult;
 import graph.cli.read.result.BridgeResult;
 import graph.cli.read.result.DFSResult;
 import graph.cli.read.result.EulerianResult;
@@ -44,6 +46,7 @@ public class AlgorithmRunner {
                 case "--dijkstra" -> runDijkstra(graph, request);
                 case "--disjoint-paths" -> runDisjointPaths(graph, request);
                 case "--dinic" -> runDinic(graph, request);
+                case "--floyd-warshall" -> runFloydWarshall(graph);
                 default -> throw new RuntimeException("Unknown algorithm: " + request.name());
             };
 
@@ -65,6 +68,7 @@ public class AlgorithmRunner {
             case "--dijkstra" -> runDijkstra(graph, request);
             case "--disjoint-paths" -> runDisjointPaths(graph, request);
             case "--dinic" -> runDinic(graph, request);
+            case "--floyd-warshall" -> runFloydWarshall(graph);
             default -> throw new RuntimeException("Unknown algorithm: " + request.name());
         };
     }
@@ -162,6 +166,10 @@ public class AlgorithmRunner {
     private static BridgeResult runNaiveLocalBridges(Graph graph) {
         Set<Long> bridges = NaiveBridges.findAll(graph);
         return new BridgeResult("--naive-local", bridges);
+    }
+
+    private static AllPairsShortestPathResult runFloydWarshall(GraphBase graph) {
+        return FloydWarshall.compute((WeightedGraph) graph);
     }
 
     private static ShortestPathResult runDijkstra(GraphBase graph, AlgorithmRequest request) {

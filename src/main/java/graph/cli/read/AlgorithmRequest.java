@@ -55,4 +55,8 @@ public record AlgorithmRequest(String name, Map<String, Object> params) {
         params.put("target", target);
         return new AlgorithmRequest("--dinic", params);
     }
+
+    public static AlgorithmRequest floydWarshall() {
+        return new AlgorithmRequest("--floyd-warshall", Map.of());
+    }
 }

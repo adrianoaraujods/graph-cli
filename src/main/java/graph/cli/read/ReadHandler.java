@@ -107,6 +107,7 @@ public class ReadHandler {
             case "--naive-global" -> "Naive Bridges (Global)";
             case "--disjoint-paths" -> "Disjoint Paths";
             case "--dinic" -> "Dinic";
+            case "--floyd-warshall" -> "Floyd-Warshall";
             default -> algorithm;
         };
     }

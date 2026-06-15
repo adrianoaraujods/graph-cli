@@ -242,6 +242,8 @@ public class CliParser {
                 algorithms.add(AlgorithmRequest.disjointPaths(0, 0));
             } else if (arg.equals("--dinic")) {
                 algorithms.add(AlgorithmRequest.dinic(0, 0));
+            } else if (arg.equals("--floyd-warshall")) {
+                algorithms.add(AlgorithmRequest.floydWarshall());
             } else if (arg.equals("--capacities")) {
                 hasCapacity = true;
             } else if (arg.equals("--path")) {
@@ -265,6 +267,13 @@ public class CliParser {
                 if (algorithms.get(j).name().equals("--dfs")) {
                     algorithms.set(j, AlgorithmRequest.dfs(target));
                 }
+            }
+        }
+
+        // Validate --floyd-warshall requires --weighted
+        if (algorithms.stream().anyMatch(r -> r.name().equals("--floyd-warshall"))) {
+            if (!isWeighted) {
+                throw new InvalidAlgorithmParameterException("--floyd-warshall requires --weighted.");
             }
         }
 
