@@ -165,10 +165,13 @@ public class CliParser {
                     "Eulerian graph with " + vertices + " vertices requires at least " + vertices + " edges");
         }
         if (connectivity == ConnectivityType.STRONGLY_CONNECTED && !isDirected) {
-            throw new InvalidAlgorithmParameterException("--strongly cannot be used with --undirected (strongly connected is only defined for directed graphs)");
+            throw new InvalidAlgorithmParameterException(
+                    "--strongly cannot be used with --undirected (strongly connected is only defined for directed graphs)");
         }
-        if (connectivity == ConnectivityType.STRONGLY_CONNECTED && isDirected && argsParsedContains(args, "--connected")) {
-            throw new InvalidAlgorithmParameterException("--connected and --strongly are conflicting flags for directed graphs");
+        if (connectivity == ConnectivityType.STRONGLY_CONNECTED && isDirected
+                && argsParsedContains(args, "--connected")) {
+            throw new InvalidAlgorithmParameterException(
+                    "--connected and --strongly are conflicting flags for directed graphs");
         }
 
         CreateConfig config = new CreateConfig(graphPath, vertices, edges, density, seed, connectivity, isDirected,
@@ -181,6 +184,7 @@ public class CliParser {
         String representation = "Forward Star";
         Integer target = null;
         Integer source = null;
+        Integer k = null;
         String outputPath = null;
         List<AlgorithmRequest> algorithms = new ArrayList<>();
         boolean isWeighted = false;
@@ -244,10 +248,28 @@ public class CliParser {
                 algorithms.add(AlgorithmRequest.dinic(0, 0));
             } else if (arg.equals("--floyd-warshall")) {
                 algorithms.add(AlgorithmRequest.floydWarshall());
+            } else if (arg.equals("--gonzalez")) {
+                algorithms.add(AlgorithmRequest.gonzalez(0));
+            } else if (arg.equals("--fastmap")) {
+                algorithms.add(AlgorithmRequest.fastmap(0));
+            } else if (arg.equals("--wva-ig")) {
+                algorithms.add(AlgorithmRequest.wvaIg(0));
+            } else if (arg.equals("--exact")) {
+                algorithms.add(AlgorithmRequest.exact(0));
+            } else if (arg.equals("-k") || arg.equals("--centers")) {
+                if (i + 1 >= args.length || args[i + 1].startsWith("-")) {
+                    throw new InvalidAlgorithmParameterException("Missing value for -k/--centers.");
+                }
+                try {
+                    k = Integer.parseInt(args[++i]);
+                } catch (NumberFormatException e) {
+                    throw new InvalidAlgorithmParameterException("Invalid k: " + args[i]);
+                }
             } else if (arg.equals("--capacities")) {
                 hasCapacity = true;
             } else if (arg.equals("--path")) {
                 // flag for showing path - handled in algorithm request update
+            } else if (arg.equals("--k-centers")) {
             } else {
                 throw new InvalidAlgorithmParameterException("Unknown argument: " + arg);
             }
@@ -365,7 +387,39 @@ public class CliParser {
             }
         }
 
-        ReadConfig config = new ReadConfig(graphPath, representation, isDirected, isWeighted, hasCapacity, algorithms, outputPath);
+        // Validate KCenter
+        boolean hasKCentersFlag = argsParsedContains(args, "--k-centers");
+
+        if (algorithms.stream().anyMatch(r -> r.name().equals("--gonzalez") || r.name().equals("--fastmap")
+                || r.name().equals("--wva-ig") || r.name().equals("--exact"))) {
+            if (!isWeighted) {
+                throw new InvalidAlgorithmParameterException("k-Center algorithms require --weighted.");
+            }
+            // Require -k ONLY IF --k-centers is not provided
+            if (k == null && !hasKCentersFlag) {
+                throw new InvalidAlgorithmParameterException(
+                        "k-Center algorithms require -k/--centers or the --k-centers file flag.");
+            }
+
+            // If we have a 'k' from the CLI, set it. Otherwise, put a dummy 0 (ReadHandler
+            // will overwrite it with the file's flag)
+            int finalK = (k != null) ? k : 0;
+
+            for (int j = 0; j < algorithms.size(); j++) {
+                String name = algorithms.get(j).name();
+                if (name.equals("--gonzalez"))
+                    algorithms.set(j, AlgorithmRequest.gonzalez(finalK));
+                else if (name.equals("--fastmap"))
+                    algorithms.set(j, AlgorithmRequest.fastmap(finalK));
+                else if (name.equals("--wva-ig"))
+                    algorithms.set(j, AlgorithmRequest.wvaIg(finalK));
+                else if (name.equals("--exact"))
+                    algorithms.set(j, AlgorithmRequest.exact(finalK));
+            }
+        }
+
+        ReadConfig config = new ReadConfig(graphPath, representation, isDirected, isWeighted, hasCapacity, algorithms,
+                outputPath);
         return new ReadCommand(config);
     }
 

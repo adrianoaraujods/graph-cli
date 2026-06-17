@@ -59,4 +59,20 @@ public record AlgorithmRequest(String name, Map<String, Object> params) {
     public static AlgorithmRequest floydWarshall() {
         return new AlgorithmRequest("--floyd-warshall", Map.of());
     }
+
+    public static AlgorithmRequest gonzalez(int k) {
+        return new AlgorithmRequest("--gonzalez", Map.of("k", k));
+    }
+
+    public static AlgorithmRequest fastmap(int k) {
+        return new AlgorithmRequest("--fastmap", Map.of("k", k));
+    }
+
+    public static AlgorithmRequest wvaIg(int k) {
+        return new AlgorithmRequest("--wva-ig", Map.of("k", k));
+    }
+
+    public static AlgorithmRequest exact(int k) {
+        return new AlgorithmRequest("--exact", Map.of("k", k));
+    }
 }

@@ -21,8 +21,16 @@ public class ReadHandler {
         boolean hasNaiveLocal = config.algorithms().stream().anyMatch(r -> r.name().equals("--naive-local"));
         boolean hasNaiveGlobal = config.algorithms().stream().anyMatch(r -> r.name().equals("--naive-global"));
 
-        boolean readFlag = config.algorithms().stream().anyMatch(r -> r.name().equals("--k-centers"));
-
+        boolean readFlag = false;
+        for (AlgorithmRequest req : config.algorithms()) {
+            if (req.name().equals("--gonzalez") || req.name().equals("--fastmap") ||
+                    req.name().equals("--wva-ig") || req.name().equals("--exact")) {
+                if ((int) req.params().get("k") == 0) {
+                    readFlag = true;
+                    break;
+                }
+            }
+        }
         // Display algorithms with bridge finder info
         System.out.printf("  Algorithms: %s\n",
                 config.algorithms().stream()
@@ -69,7 +77,7 @@ public class ReadHandler {
                 readFlag);
 
         Graph graph = loader.graph();
-        int flag = loader.flag(); // TODO
+        int kFromFile = loader.flag();
 
         StringBuilder allResults = new StringBuilder();
         List<AlgorithmOutput> outputs = new ArrayList<>();
@@ -77,6 +85,14 @@ public class ReadHandler {
         // Run algorithms one at a time, printing "Running..." before each
         for (AlgorithmRequest request : config.algorithms()) {
             String algorithmName = getAlgorithmDisplayName(request.name());
+
+            // Inject the 'k' value from the file if this is a k-center algorithm and
+            // --k-centers was used
+            if (readFlag && (request.name().equals("--gonzalez") || request.name().equals("--fastmap") ||
+                    request.name().equals("--wva-ig") || request.name().equals("--exact"))) {
+                // Rebuild the request with the file's k value
+                request = new AlgorithmRequest(request.name(), java.util.Map.of("k", kFromFile));
+            }
 
             // Skip bridge finder if fleury is present (it's shown as part of Fleury)
             if (request.name().equals("--tarjan") && hasFleury) {
@@ -116,6 +132,10 @@ public class ReadHandler {
             case "--disjoint-paths" -> "Disjoint Paths";
             case "--dinic" -> "Dinic";
             case "--floyd-warshall" -> "Floyd-Warshall";
+            case "--gonzalez" -> "González's Farthest-First Traversal (2-Approximation)";
+            case "--fastmap" -> "Spectral / Embedding-Based Initialization";
+            case "--wva-ig" -> "Worst-Vertex-Anchored Iterated Greedy";
+            case "--exact" -> "KCenter - Brute Force (Exact)";
             default -> algorithm;
         };
     }

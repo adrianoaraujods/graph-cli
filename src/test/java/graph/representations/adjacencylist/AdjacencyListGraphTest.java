@@ -297,7 +297,7 @@ class AdjacencyListGraphTest {
         String content = "3 2\n1 2 5\n2 3 10\n";
         java.nio.file.Files.writeString(tempFile, content);
 
-        Graph graph = GraphLoader.load(tempFile.toString(), "Adjacency List", true, true);
+        Graph graph = GraphLoader.load(tempFile.toString(), "Adjacency List", true, true).graph();
 
         assertTrue(graph.isWeighted());
         WeightedGraph weightedGraph = (WeightedGraph) graph;
@@ -327,21 +327,21 @@ class AdjacencyListGraphTest {
         Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),
                 7,
-                new int[][] { 
-                    { 1, 2 }, { 1, 3 }, { 2, 3 }, { 2, 4 }, { 2, 5 }, 
-                    { 3, 4 }, { 3, 6 }, { 4, 5 }, { 4, 6 }, { 5, 6 }, 
-                    { 5, 7 }, { 6, 7 } });
-        
+                new int[][] {
+                        { 1, 2 }, { 1, 3 }, { 2, 3 }, { 2, 4 }, { 2, 5 },
+                        { 3, 4 }, { 3, 6 }, { 4, 5 }, { 4, 6 }, { 5, 6 },
+                        { 5, 7 }, { 6, 7 } });
+
         UndirectedGraph clone = (UndirectedGraph) graph.clone();
-        
+
         System.out.println("Original edges before: " + graph.getEdgesCount());
         System.out.println("Clone edges before: " + clone.getEdgesCount());
-        
+
         clone.removeEdge(1, 2);
-        
+
         System.out.println("Original edges after: " + graph.getEdgesCount());
         System.out.println("Clone edges after: " + clone.getEdgesCount());
-        
+
         assertEquals(12, graph.getEdgesCount());
         assertEquals(11, clone.getEdgesCount());
     }

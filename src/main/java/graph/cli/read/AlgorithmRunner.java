@@ -6,6 +6,7 @@ import graph.algorithms.Dinic;
 import graph.algorithms.DisjointPaths;
 import graph.algorithms.Fleury;
 import graph.algorithms.FloydWarshall;
+import graph.algorithms.KCenter;
 import graph.algorithms.Kosaraju;
 import graph.algorithms.NaiveBridges;
 import graph.algorithms.Tarjan;
@@ -47,6 +48,10 @@ public class AlgorithmRunner {
                 case "--disjoint-paths" -> runDisjointPaths(graph, request);
                 case "--dinic" -> runDinic(graph, request);
                 case "--floyd-warshall" -> runFloydWarshall(graph);
+                case "--gonzalez" -> runKCenter(graph, request, "Gonzalez");
+                case "--fastmap" -> runKCenter(graph, request, "FastMap");
+                case "--wva-ig" -> runKCenter(graph, request, "WVA-IG");
+                case "--exact" -> runKCenter(graph, request, "Exact");
                 default -> throw new RuntimeException("Unknown algorithm: " + request.name());
             };
 
@@ -69,6 +74,10 @@ public class AlgorithmRunner {
             case "--disjoint-paths" -> runDisjointPaths(graph, request);
             case "--dinic" -> runDinic(graph, request);
             case "--floyd-warshall" -> runFloydWarshall(graph);
+            case "--gonzalez" -> runKCenter(graph, request, "Gonzalez");
+            case "--fastmap" -> runKCenter(graph, request, "FastMap");
+            case "--wva-ig" -> runKCenter(graph, request, "WVA-IG");
+            case "--exact" -> runKCenter(graph, request, "Exact");
             default -> throw new RuntimeException("Unknown algorithm: " + request.name());
         };
     }
@@ -179,5 +188,29 @@ public class AlgorithmRunner {
 
         ShortestPathResult result = Dijkstra.compute((WeightedGraph) graph, source, target, findPath);
         return new ShortestPathResult(result.distances(), result.parents(), result.source(), target, findPath);
+    }
+
+    private static graph.cli.read.result.KCenterResult runKCenter(GraphBase graph, AlgorithmRequest request,
+            String mode) {
+        if (!(graph instanceof WeightedGraph)) {
+            throw new IllegalArgumentException("k-Center requires a weighted graph. Use --weighted.");
+        }
+
+        int k = (int) request.params().get("k");
+        int n = graph.getVerticesCount();
+
+        AllPairsShortestPathResult apsp = FloydWarshall.compute((WeightedGraph) graph);
+        int[][] dist = apsp.distances();
+
+        int[] centers = switch (mode) {
+            case "Gonzalez" -> KCenter.solveGonzalez(dist, n, k);
+            case "FastMap" -> KCenter.solveFastMapKMeans(dist, n, k, System.currentTimeMillis());
+            case "WVA-IG" -> KCenter.solveWvaIg(dist, n, k, System.currentTimeMillis());
+            case "Exact" -> KCenter.solveExact(dist, n, k);
+            default -> throw new IllegalArgumentException("Unknown k-Center mode: " + mode);
+        };
+
+        int radius = KCenter.evaluateRadius(dist, n, k, centers);
+        return new graph.cli.read.result.KCenterResult(mode, k, radius, centers);
     }
 }

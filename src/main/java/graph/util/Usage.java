@@ -67,8 +67,10 @@ public class Usage {
         System.out.println("  --connected             Graph is weakly connected (default for directed)");
         System.out.println("  --strongly              Graph is strongly connected (directed only)");
         System.out.println("  --disconnected          Graph may be disconnected");
-        System.out.println("  --eulerian              Graph has all vertices with equal in/out-degree (directed) or even degree (undirected)");
-        System.out.println("  --semi-eulerian         Graph has exactly two vertices with imbalanced in/out-degree (directed) or odd degree (undirected)");
+        System.out.println(
+                "  --eulerian              Graph has all vertices with equal in/out-degree (directed) or even degree (undirected)");
+        System.out.println(
+                "  --semi-eulerian         Graph has exactly two vertices with imbalanced in/out-degree (directed) or odd degree (undirected)");
         System.out.println("  --weighted              Generate weighted graph (format: u v w)");
     }
 
@@ -101,8 +103,10 @@ public class Usage {
                 "    --dinic               Run Dinic maximum flow (requires --capacities, --source, --target, directed)");
         System.out.println(
                 "    --floyd-warshall      Run Floyd-Warshall all-pairs shortest path (requires --weighted)");
-        System.out.println("  --source <n>            Source vertex (required for --dijkstra, --disjoint-paths, --dinic)");
-        System.out.println("  --target <n>, -t        Target vertex (required for --dfs, --dijkstra, --disjoint-paths, --dinic)");
+        System.out.println(
+                "  --source <n>            Source vertex (required for --dijkstra, --disjoint-paths, --dinic)");
+        System.out.println(
+                "  --target <n>, -t        Target vertex (required for --dfs, --dijkstra, --disjoint-paths, --dinic)");
         System.out.println("  --path                  Show path vertices (used on fleury, dijkstra)");
         System.out.println("  --output <path>, -o     Output file (default: terminal)");
         System.out.println("  --forward-star          Use Forward Star representation (default)");
@@ -111,6 +115,13 @@ public class Usage {
         System.out.println("  --undirected, -u        Treat graph as undirected");
         System.out.println("  --weighted              Read weighted graph file (format: u v w)");
         System.out.println("  --capacities            Read capacity graph file (format: u v capacity)");
+        System.out.println(
+                "    --gonzalez            Run Gonzalez 2-Approximation for k-Center (requires --weighted, -k)");
+        System.out.println("    --fastmap             Run FastMap + K-Means++ for k-Center (requires --weighted, -k)");
+        System.out.println("    --wva-ig              Run WVA-IG Heuristic for k-Center (requires --weighted, -k)");
+        System.out.println(
+                "    --exact               Run Exact Bitmask B&B for k-Center (requires --weighted, -k, max 128 vertices)");
+        System.out.println("  -k, --centers <n>       Number of centers to place (required for k-Center algorithms)");
     }
 
     public static void printReadExamples() {
