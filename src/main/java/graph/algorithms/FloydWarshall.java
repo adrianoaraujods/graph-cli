@@ -1,8 +1,6 @@
 package graph.algorithms;
 
-import graph.api.DirectedGraph;
 import graph.api.Graph;
-import graph.api.UndirectedGraph;
 import graph.api.WeightedGraph;
 import graph.cli.read.result.AllPairsShortestPathResult;
 
@@ -36,9 +34,11 @@ public class FloydWarshall {
 
         for (int k = 0; k < n; k++) {
             for (int i = 0; i < n; i++) {
-                if (dist[i][k] == Integer.MAX_VALUE) continue;
+                if (dist[i][k] == Integer.MAX_VALUE)
+                    continue;
                 for (int j = 0; j < n; j++) {
-                    if (dist[k][j] == Integer.MAX_VALUE) continue;
+                    if (dist[k][j] == Integer.MAX_VALUE)
+                        continue;
                     long newDist = (long) dist[i][k] + (long) dist[k][j];
                     if (newDist < dist[i][j]) {
                         dist[i][j] = (int) newDist;

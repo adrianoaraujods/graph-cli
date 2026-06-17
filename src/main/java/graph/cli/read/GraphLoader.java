@@ -1,6 +1,5 @@
 package graph.cli.read;
 
-import graph.api.Graph;
 import graph.cli.GraphReader;
 import graph.representations.GraphBuilder;
 import graph.representations.adjacencylist.AdjacencyListGraphBuilder;

@@ -201,7 +201,6 @@ public class DisjointPathsBenchmark {
         int maxFlow = -1;
         int target = -1;
         String tempFile = null;
-        long createdEdges = 0;
 
         for (int retry = 0; retry < MAX_RETRIES; retry++) {
             try {
@@ -215,7 +214,6 @@ public class DisjointPathsBenchmark {
                 generator.setSkipConfirmation(true);
 
                 long startGenerate = System.currentTimeMillis();
-                createdEdges = generator.create();
                 generationTime = System.currentTimeMillis() - startGenerate;
 
                 ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(true);
