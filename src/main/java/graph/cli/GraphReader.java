@@ -11,7 +11,8 @@ import graph.representations.GraphBuilder;
  * Provides graph file reading capabilities.
  * <p>
  * This class reads graph files in the standard format: first line contains
- * "n m" (vertices and edge count), followed by m lines of "source target" pairs.
+ * "n m" (vertices and edge count), followed by m lines of "source target"
+ * pairs.
  * Uses buffered I/O with direct ByteBuffer for efficient large file processing.
  */
 public class GraphReader {
@@ -21,31 +22,36 @@ public class GraphReader {
   /**
    * Reads a graph from a file and populates the provided builder.
    * <p>
-   * The file format expects: first line with "n m" (number of vertices and edges),
-   * followed by m lines each containing "source target" edge pairs.
+   * The file format expects: first line with "n m" (number of vertices and
+   * edges), followed by m lines each containing "source target" edge pairs.
    * If isWeighted is true, expects "source target weight" format.
    * If hasCapacity is true, expects "source target capacity" format.
    *
-   * @param pathName The path to the graph file.
-   * @param builder  The GraphBuilder to populate with edges.
-   * @param isWeighted If true, parse third int as weight.
+   * @param pathName    The path to the graph file.
+   * @param builder     The GraphBuilder to populate with edges.
+   * @param isWeighted  If true, parse third int as weight.
    * @param hasCapacity If true, parse third int as capacity.
    * @throws IOException If the file cannot be read.
-   * @throws Exception    If the file format is invalid.
+   * @throws Exception   If the file format is invalid.
    */
-  public static void readFile(String pathName, GraphBuilder builder, boolean isWeighted, boolean hasCapacity) throws IOException, Exception {
+  public static int readFile(String pathName, GraphBuilder builder, boolean isWeighted, boolean hasCapacity,
+      boolean hasFlag) throws IOException, Exception {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {
 
       ByteBuffer buffer = ByteBuffer.allocateDirect(CHUNK_SIZE);
 
       // Recover the first chunk and process header
-      int n, m;
+      int n, m, flag = -1;
       if (channel.read(buffer) != -1) {
         buffer.flip(); // Switch bucket to reading mode
 
         n = readNextInt(channel, buffer);
         m = readNextInt(channel, buffer);
+
+        if (hasFlag) {
+          flag = readNextInt(channel, buffer);
+        }
 
         builder.initialize(n, m, isWeighted, hasCapacity);
       } else {
@@ -70,26 +76,28 @@ public class GraphReader {
           builder.addEdge(source, target);
         }
       }
+
+      return flag;
     }
   }
 
   /**
    * Reads a graph from a file and populates the provided builder.
    * <p>
-   * The file format expects: first line with "n m" (number of vertices and edges),
-   * followed by m lines each containing "source target" edge pairs.
+   * The file format expects: first line with "n m" (number of vertices and
+   * edges), followed by m lines each containing "source target" edge pairs.
    *
    * @param pathName The path to the graph file.
    * @param builder  The GraphBuilder to populate with edges.
    * @throws IOException If the file cannot be read.
-   * @throws Exception    If the file format is invalid.
+   * @throws Exception   If the file format is invalid.
    */
   public static void readFile(String pathName, GraphBuilder builder, boolean isWeighted) throws IOException, Exception {
-    readFile(pathName, builder, isWeighted, false);
+    readFile(pathName, builder, isWeighted, false, false);
   }
 
   public static void readFile(String pathName, GraphBuilder builder) throws IOException, Exception {
-    readFile(pathName, builder, false, false);
+    readFile(pathName, builder, false, false, false);
   }
 
   /**

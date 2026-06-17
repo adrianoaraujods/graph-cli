@@ -21,6 +21,8 @@ public class ReadHandler {
         boolean hasNaiveLocal = config.algorithms().stream().anyMatch(r -> r.name().equals("--naive-local"));
         boolean hasNaiveGlobal = config.algorithms().stream().anyMatch(r -> r.name().equals("--naive-global"));
 
+        boolean readFlag = config.algorithms().stream().anyMatch(r -> r.name().equals("--k-centers"));
+
         // Display algorithms with bridge finder info
         System.out.printf("  Algorithms: %s\n",
                 config.algorithms().stream()
@@ -57,11 +59,17 @@ public class ReadHandler {
         }
 
         int step = 0;
-        System.out.printf("\n[%d/%d] Reading File...", ++step, totalSteps);
-        Graph graph = GraphLoader.load(config.graphPath(), config.representation(), config.isDirected(), config.isWeighted(), config.hasCapacity());
+        System.out.printf("\n[%d/%d] Building graph from the file...", ++step, totalSteps);
+        GraphLoaderReturn loader = GraphLoader.load(
+                config.graphPath(),
+                config.representation(),
+                config.isDirected(),
+                config.isWeighted(),
+                config.hasCapacity(),
+                readFlag);
 
-        System.out.printf("\n[%d/%d] Building Graph...", ++step, totalSteps);
-        // Graph is already built by GraphLoader
+        Graph graph = loader.graph();
+        int flag = loader.flag(); // TODO
 
         StringBuilder allResults = new StringBuilder();
         List<AlgorithmOutput> outputs = new ArrayList<>();
