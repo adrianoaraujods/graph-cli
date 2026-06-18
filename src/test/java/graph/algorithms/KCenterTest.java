@@ -1,5 +1,7 @@
 package graph.algorithms;
 
+import graph.algorithms.KCenterExactSolver;
+import graph.util.KCenterUtils;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
@@ -15,10 +17,10 @@ class KCenterTest {
             { 5, 0 }
         };
 
-        int[] centers = KCenter.solveExact(dist, n, k);
+        int[] centers = KCenterExactSolver.solveExact(dist, n, k);
         assertEquals(k, centers.length);
 
-        int radius = KCenter.evaluateRadius(dist, n, k, centers);
+        int radius = KCenterUtils.evaluateRadius(dist, n, k, centers);
         assertEquals(5, radius);
     }
 
@@ -32,10 +34,10 @@ class KCenterTest {
             { 2, 1, 0 }
         };
 
-        int[] centers = KCenter.solveExact(dist, n, k);
+        int[] centers = KCenterExactSolver.solveExact(dist, n, k);
         assertEquals(k, centers.length);
 
-        int radius = KCenter.evaluateRadius(dist, n, k, centers);
+        int radius = KCenterUtils.evaluateRadius(dist, n, k, centers);
         assertEquals(1, radius);
 
         assertTrue(centers[0] == 1,
@@ -53,10 +55,10 @@ class KCenterTest {
             { 3, 2, 1, 0 }
         };
 
-        int[] centers = KCenter.solveExact(dist, n, k);
+        int[] centers = KCenterExactSolver.solveExact(dist, n, k);
         assertEquals(k, centers.length);
 
-        int radius = KCenter.evaluateRadius(dist, n, k, centers);
+        int radius = KCenterUtils.evaluateRadius(dist, n, k, centers);
         assertEquals(1, radius,
                 "Optimal radius for 4-vertex line with k=2 should be 1");
     }

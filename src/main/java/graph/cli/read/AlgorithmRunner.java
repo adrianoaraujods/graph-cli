@@ -7,7 +7,9 @@ import graph.algorithms.DisjointPaths;
 import graph.algorithms.Fleury;
 import graph.algorithms.FloydWarshall;
 import graph.algorithms.KCenter;
+import graph.algorithms.KCenterExactSolver;
 import graph.algorithms.Kosaraju;
+import graph.util.KCenterUtils;
 import graph.algorithms.NaiveBridges;
 import graph.algorithms.Tarjan;
 import graph.api.DirectedGraph;
@@ -206,11 +208,11 @@ public class AlgorithmRunner {
             case "Gonzalez" -> KCenter.solveGonzalez(dist, n, k);
             case "FastMap" -> KCenter.solveFastMapKMeans(dist, n, k, System.currentTimeMillis());
             case "WVA-IG" -> KCenter.solveWvaIg(dist, n, k, System.currentTimeMillis());
-            case "Exact"    -> KCenter.solveExact(dist, n, k, true);
+            case "Exact"    -> KCenterExactSolver.solveExact(dist, n, k, true);
             default -> throw new IllegalArgumentException("Unknown k-Center mode: " + mode);
         };
 
-        int radius = KCenter.evaluateRadius(dist, n, k, centers);
+        int radius = KCenterUtils.evaluateRadius(dist, n, k, centers);
         return new graph.cli.read.result.KCenterResult(mode, k, radius, centers);
     }
 }
