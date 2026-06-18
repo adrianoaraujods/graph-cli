@@ -206,7 +206,7 @@ public class AlgorithmRunner {
             case "Gonzalez" -> KCenter.solveGonzalez(dist, n, k);
             case "FastMap" -> KCenter.solveFastMapKMeans(dist, n, k, System.currentTimeMillis());
             case "WVA-IG" -> KCenter.solveWvaIg(dist, n, k, System.currentTimeMillis());
-            case "Exact" -> KCenter.solveExact(dist, n, k);
+            case "Exact"    -> KCenter.solveExact(dist, n, k, true);
             default -> throw new IllegalArgumentException("Unknown k-Center mode: " + mode);
         };
 
