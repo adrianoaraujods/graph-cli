@@ -306,7 +306,7 @@ class KosarajuTest {
         long[] edges = graph.getEdgesSet();
 
         assertNotNull(edges);
-        assertEquals(3, edges.length, "Should have 3 edges (undirected counts each edge once)");
+        assertEquals(6, edges.length, "Should have 6 directed entries (2 per undirected edge for per-direction weights)");
     }
 
     @Test
@@ -321,8 +321,8 @@ class KosarajuTest {
         WeightedGraph.WeightedEdges result = wg.getWeightedEdgesSet();
 
         assertNotNull(result);
-        assertEquals(3, result.edges().length, "Should have 3 edges");
-        assertEquals(3, result.weights().length, "Should have 3 weights");
+        assertEquals(6, result.edges().length, "Should have 6 directed entries (2 per undirected edge)");
+        assertEquals(6, result.weights().length, "Should have 6 weights");
 
         // Verify edges and weights are aligned
         for (int i = 0; i < result.edges().length; i++) {

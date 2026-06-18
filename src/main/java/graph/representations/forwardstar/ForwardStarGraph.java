@@ -182,8 +182,9 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
           continue;
         }
 
-        // Skip reverse direction for undirected edges
-        if (!isDirected && (v + 1) > targets[w]) {
+        // Skip reverse direction for unweighted undirected edges
+        // (weighted/capacitated undirected stores per-direction weights)
+        if (!isDirected && !isWeighted() && !hasCapacity() && (v + 1) > targets[w]) {
           continue;
         }
 
@@ -334,7 +335,7 @@ public class ForwardStarGraph extends Graph implements DirectedGraph, Undirected
 
     for (int i = start; i < end; i++) {
       if (targets[i] == w) {
-        if (isWeighted() && weightsOrCapacities != null) {
+        if ((isWeighted() || hasCapacity()) && weightsOrCapacities != null) {
           return weightsOrCapacities[i];
         }
         return 1; // Unweighted graph default

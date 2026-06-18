@@ -130,6 +130,24 @@ class GraphReaderTest {
     }
 
     @Test
+    void testReadUndirectedWeightedFileWithOppositeDirectionEdges() throws Exception {
+        Path inputPath = tempDir.resolve("undirected_weighted_opposite.txt");
+        String content = "2 2\n1 2 5\n2 1 10\n";
+        Files.writeString(inputPath, content);
+
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        GraphReader.readFile(inputPath.toString(), builder, true, false, false);
+        Graph graph = builder.build();
+
+        assertEquals(2, graph.getVerticesCount());
+        assertEquals(1, graph.getEdgesCount());
+
+        graph.api.WeightedGraph wg = (graph.api.WeightedGraph) graph;
+        assertEquals(5, wg.getEdgeWeight(1, 2));
+        assertEquals(10, wg.getEdgeWeight(2, 1));
+    }
+
+    @Test
     void testReadMultipleSpacesBetweenNumbers() throws Exception {
         Path inputPath = tempDir.resolve("whitespace.txt");
         String content = "4   3\n   1   2  \n2    3\n3     4\n";

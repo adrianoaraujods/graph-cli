@@ -309,6 +309,41 @@ class AdjacencyListGraphTest {
     }
 
     @Test
+    void testUndirectedWeightedPerDirectionWeights() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
+        builder.initialize(3, 2, true, false);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 1, 10);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        assertEquals(1, graph.getEdgesCount());
+        assertEquals(5, graph.getEdgeWeight(1, 2));
+        assertEquals(10, graph.getEdgeWeight(2, 1));
+    }
+
+    @Test
+    void testUndirectedWeightedSameDirectionDuplicate() {
+        AdjacencyListGraphBuilder builder = new AdjacencyListGraphBuilder(false);
+        builder.initialize(3, 2, true, false);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(1, 2, 10);
+        WeightedGraph graph = (WeightedGraph) builder.build();
+
+        assertEquals(1, graph.getEdgesCount());
+        assertEquals(10, graph.getEdgeWeight(1, 2));
+    }
+
+    @Test
+    void testUndirectedUnweightedOppositeDirectionsDedup() {
+        Graph graph = GraphTestHelper.build(
+                () -> new AdjacencyListGraphBuilder(false),
+                2,
+                new int[][] { { 1, 2 }, { 2, 1 } });
+
+        assertEquals(1, graph.getEdgesCount());
+    }
+
+    @Test
     void testFleuryEulerianCircuit() {
         Graph graph = GraphTestHelper.build(
                 () -> new AdjacencyListGraphBuilder(false),

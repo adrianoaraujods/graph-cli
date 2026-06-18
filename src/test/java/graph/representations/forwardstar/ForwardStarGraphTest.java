@@ -322,6 +322,82 @@ class ForwardStarGraphTest {
     }
 
     @Test
+    void testUndirectedWeightedPerDirectionWeights() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 2, true, false);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 1, 10);
+        Graph graph = builder.build();
+
+        assertEquals(1, graph.getEdgesCount());
+        graph.api.WeightedGraph wg = (graph.api.WeightedGraph) graph;
+        assertEquals(5, wg.getEdgeWeight(1, 2));
+        assertEquals(10, wg.getEdgeWeight(2, 1));
+    }
+
+    @Test
+    void testUndirectedWeightedIterationYieldsBothDirections() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 2, true, false);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 1, 10);
+        Graph graph = builder.build();
+
+        java.util.Map<String, Integer> visited = new java.util.HashMap<>();
+        graph.iterateGraph(new graph.api.GraphBase.IteratorVisitor() {
+            @Override
+            public void examineEdge(int v, int w, int weight) {
+                visited.put(v + "->" + w, weight);
+            }
+        });
+
+        assertEquals(2, visited.size());
+        assertEquals(5, visited.get("1->2").intValue());
+        assertEquals(10, visited.get("2->1").intValue());
+    }
+
+    @Test
+    void testUndirectedWeightedSameDirectionDuplicate() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 2, true, false);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(1, 2, 10);
+        Graph graph = builder.build();
+
+        assertEquals(1, graph.getEdgesCount());
+        graph.api.WeightedGraph wg = (graph.api.WeightedGraph) graph;
+        assertEquals(10, wg.getEdgeWeight(1, 2));
+    }
+
+    @Test
+    void testUndirectedWeightedSingleDirection() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 1, true, false);
+        builder.addEdge(1, 2, 5);
+        Graph graph = builder.build();
+
+        assertEquals(1, graph.getEdgesCount());
+        graph.api.WeightedGraph wg = (graph.api.WeightedGraph) graph;
+        assertEquals(5, wg.getEdgeWeight(1, 2));
+        assertEquals(5, wg.getEdgeWeight(2, 1));
+    }
+
+    @Test
+    void testUndirectedCapacityPerDirectionCapacities() {
+        ForwardStarGraphBuilder builder = new ForwardStarGraphBuilder(false);
+        builder.initialize(3, 2, false, true);
+        builder.addEdge(1, 2, 5);
+        builder.addEdge(2, 1, 10);
+        Graph graph = builder.build();
+
+        assertEquals(1, graph.getEdgesCount());
+        assertTrue(graph.hasCapacity());
+        graph.api.FlowGraph fg = (graph.api.FlowGraph) graph;
+        assertEquals(5, fg.getEdgeCapacity(1, 2));
+        assertEquals(10, fg.getEdgeCapacity(2, 1));
+    }
+
+    @Test
     void testIsWeightedUnweightedGraph() {
         Graph graph = GraphTestHelper.build(
                 () -> new ForwardStarGraphBuilder(false),

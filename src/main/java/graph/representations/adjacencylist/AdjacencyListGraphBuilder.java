@@ -74,6 +74,9 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
 
     if (isDirected) {
       if (vAdjacency.contains(w)) {
+        if (isWeighted && weightedAdjacency != null) {
+          weightedAdjacency.computeIfAbsent(v, k -> new HashMap<>()).put(w, weight);
+        }
         return;
       }
     } else {
@@ -85,6 +88,9 @@ public class AdjacencyListGraphBuilder implements GraphBuilder {
       }
 
       if (wAdjacency.contains(v)) {
+        if (isWeighted && weightedAdjacency != null) {
+          weightedAdjacency.computeIfAbsent(v, k -> new HashMap<>()).put(w, weight);
+        }
         return;
       }
 

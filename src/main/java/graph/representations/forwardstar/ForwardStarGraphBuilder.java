@@ -1,7 +1,9 @@
 package graph.representations.forwardstar;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import graph.representations.GraphBuilder;
@@ -32,6 +34,9 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
   private int[] weightsOrCapacities;
   private Set<Integer> isolatedVertices;
 
+  /** Maps undirected edge (min,max) → {indexForMinMax, indexForMaxMin} for quick weight updates. */
+  private Map<Long, int[]> undirectedEdgeIndices;
+
   public ForwardStarGraphBuilder(boolean isDirected) {
     this.isDirected = isDirected;
   }
@@ -56,6 +61,11 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
       this.weightsOrCapacities = null;
     }
     this.isolatedVertices = new HashSet<>(n);
+    if (!isDirected && (isWeighted || hasCapacity)) {
+      this.undirectedEdgeIndices = new HashMap<>();
+    } else {
+      this.undirectedEdgeIndices = null;
+    }
   }
 
   @Override
@@ -68,6 +78,22 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
     // Remove from isolated if present (now has an edge)
     isolatedVertices.remove(v);
     isolatedVertices.remove(w);
+
+    // For undirected weighted/capacitated graphs, check if this edge already
+    // exists structurally and update the weight for the current direction.
+    if (!isDirected && undirectedEdgeIndices != null) {
+      int min = Math.min(v, w);
+      int max = Math.max(v, w);
+      long key = ((long) min << 32) | max;
+      int[] indices = undirectedEdgeIndices.get(key);
+      if (indices != null) {
+        int idx = (v < w) ? indices[0] : indices[1];
+        if (isWeighted || hasCapacity) {
+          weightsOrCapacities[idx] = weight;
+        }
+        return;
+      }
+    }
 
     int head = (int) (isDirected ? m : m * 2);
 
@@ -91,6 +117,15 @@ public class ForwardStarGraphBuilder implements GraphBuilder {
       targets[head + 1] = v;
       if (isWeighted || hasCapacity) {
         weightsOrCapacities[head + 1] = weight;
+      }
+
+      if (undirectedEdgeIndices != null) {
+        long key = ((long) Math.min(v, w) << 32) | Math.max(v, w);
+        if (v < w) {
+          undirectedEdgeIndices.put(key, new int[] { head, head + 1 });
+        } else {
+          undirectedEdgeIndices.put(key, new int[] { head + 1, head });
+        }
       }
     }
 
