@@ -91,17 +91,20 @@ public class KCenterExactSolver {
 
         boolean solveRecursive(int depth, long[] cov) {
             nodesExplored++;
-            if (verbose && (nodesExplored & 1_048_575) == 0)
+            if (verbose && (nodesExplored & 1_048_575) == 0) {
                 printProgress();
+            }
 
             if (Arrays.equals(cov, fullMask)) {
                 System.arraycopy(currentSelection, 0, bestSelection, 0, depth);
-                for (int i = depth; i < k; i++)
+                for (int i = depth; i < k; i++) {
                     bestSelection[i] = 0;
+                }
                 return true;
             }
-            if (depth == k)
+            if (depth == k) {
                 return false;
+            }
 
             int bestU = -1;
             int minCandidates = Integer.MAX_VALUE;
@@ -221,10 +224,15 @@ public class KCenterExactSolver {
             buildCoverMasks(R, dist);
             pruneDominatedCenters();
             buildCandidateLists();
-            if (anyVertexUncovered())
+
+            if (anyVertexUncovered()) {
                 return false;
-            if (greedyCheck())
+            }
+
+            if (greedyCheck()) {
                 return true;
+            }
+
             long[] initialCov = stateMask[0];
             Arrays.fill(initialCov, 0L);
             return solveRecursive(0, initialCov);
@@ -317,7 +325,8 @@ public class KCenterExactSolver {
         if (verbose) {
             long totalTime = System.currentTimeMillis() - startTime;
             System.out.println("[Info] Exact solver complete. Best radius="
-                    + KCenterUtils.evaluateRadius(dist, n, k, finalBestCenters) + " (total " + Timer.formatTime(totalTime) + ")");
+                    + KCenterUtils.evaluateRadius(dist, n, k, finalBestCenters) + " (total "
+                    + Timer.formatTime(totalTime) + ")");
         }
 
         return finalBestCenters;
