@@ -39,24 +39,33 @@ public class GraphReader {
     try (RandomAccessFile file = new RandomAccessFile(pathName, "r");
         FileChannel channel = file.getChannel()) {
 
-      ByteBuffer buffer = ByteBuffer.allocateDirect(CHUNK_SIZE);
-
-      // Recover the first chunk and process header
-      int n, m, flag = -1;
-      if (channel.read(buffer) != -1) {
-        buffer.flip(); // Switch bucket to reading mode
-
-        n = readNextInt(channel, buffer);
-        m = readNextInt(channel, buffer);
-
-        if (hasFlag) {
-          flag = readNextInt(channel, buffer);
+      // Parse header (n, m, optional k) from the first line(s). Handles both
+      // single-line ("n m k") and multi-line ("n\nm") header formats.
+      int needed = hasFlag ? 3 : 2;
+      int[] headerValues = new int[needed];
+      int valuesRead = 0;
+      while (valuesRead < needed) {
+        String line = file.readLine();
+        if (line == null) {
+          throw new Exception("The input file is empty.");
         }
-
-        builder.initialize(n, m, isWeighted, hasCapacity);
-      } else {
-        throw new Exception("The input file is empty.");
+        String[] parts = line.trim().split("\\s+");
+        for (String part : parts) {
+          if (valuesRead < needed) {
+            headerValues[valuesRead++] = Integer.parseInt(part);
+          }
+        }
       }
+      int n = headerValues[0];
+      int m = headerValues[1];
+      int flag = hasFlag ? headerValues[2] : -1;
+
+      builder.initialize(n, m, isWeighted, hasCapacity);
+
+      ByteBuffer buffer = ByteBuffer.allocateDirect(CHUNK_SIZE);
+      // Fill buffer with remaining data after the header line(s)
+      channel.read(buffer);
+      buffer.flip();
 
       boolean readThirdColumn = isWeighted || hasCapacity;
 
