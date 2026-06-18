@@ -140,6 +140,95 @@ public class KCenterExactSolver {
 
             return false;
         }
+
+        void buildCoverMasks(int R, int[][] dist) {
+            for (int i = 0; i < n; i++) {
+                Arrays.fill(covers[i], 0L);
+                for (int j = 0; j < n; j++) {
+                    if (dist[i][j] <= R) {
+                        covers[i][j / 64] |= (1L << (j % 64));
+                    }
+                }
+            }
+        }
+
+        void pruneDominatedCenters() {
+            dominatedCenter = new boolean[n];
+            for (int i = 0; i < n; i++) {
+                if (dominatedCenter[i])
+                    continue;
+                for (int j = i + 1; j < n; j++) {
+                    if (dominatedCenter[j])
+                        continue;
+                    boolean iSubsetJ = true;
+                    boolean jSubsetI = true;
+                    for (int w = 0; w < words; w++) {
+                        if ((covers[i][w] & ~covers[j][w]) != 0L)
+                            iSubsetJ = false;
+                        if ((covers[j][w] & ~covers[i][w]) != 0L)
+                            jSubsetI = false;
+                    }
+                    if (iSubsetJ && jSubsetI) {
+                        dominatedCenter[j] = true;
+                    } else if (iSubsetJ) {
+                        dominatedCenter[i] = true;
+                        break;
+                    } else if (jSubsetI) {
+                        dominatedCenter[j] = true;
+                    }
+                }
+            }
+        }
+
+        void buildCandidateLists() {
+            centersCovering = new int[n][];
+            for (int i = 0; i < n; i++) {
+                Integer[] temp = new Integer[n];
+                int count = 0;
+                for (int j = 0; j < n; j++) {
+                    if (dominatedCenter[j])
+                        continue;
+                    boolean jCoversI = (covers[j][i / 64] & (1L << (i % 64))) != 0;
+                    if (jCoversI) {
+                        temp[count++] = j;
+                    }
+                }
+                Integer[] validCandidates = Arrays.copyOf(temp, count);
+                Arrays.sort(validCandidates, (a, b) -> {
+                    int ca = 0, cb = 0;
+                    for (int w = 0; w < words; w++) {
+                        ca += Long.bitCount(covers[a][w]);
+                        cb += Long.bitCount(covers[b][w]);
+                    }
+                    return Integer.compare(cb, ca);
+                });
+                centersCovering[i] = new int[count];
+                for (int c = 0; c < count; c++) {
+                    centersCovering[i][c] = validCandidates[c];
+                }
+            }
+        }
+
+        boolean anyVertexUncovered() {
+            for (int i = 0; i < n; i++) {
+                if (centersCovering[i].length == 0)
+                    return true;
+            }
+            return false;
+        }
+
+        boolean checkFeasibility(int R, int[][] dist) {
+            buildCoverMasks(R, dist);
+            pruneDominatedCenters();
+            buildCandidateLists();
+            if (anyVertexUncovered())
+                return false;
+            if (greedyCheck())
+                return true;
+            long[] initialCov = stateMask[0];
+            Arrays.fill(initialCov, 0L);
+            return solveRecursive(0, initialCov);
+        }
     }
 
     public static int[] solveExact(int[][] dist, int n, int k) {
@@ -204,99 +293,7 @@ public class KCenterExactSolver {
                 solver.printProgress();
             }
 
-            for (int i = 0; i < n; i++) {
-                Arrays.fill(solver.covers[i], 0L);
-                for (int j = 0; j < n; j++) {
-                    if (dist[i][j] <= R) {
-                        solver.covers[i][j / 64] |= (1L << (j % 64));
-                    }
-                }
-            }
-
-            solver.dominatedCenter = new boolean[n];
-            for (int i = 0; i < n; i++) {
-                if (solver.dominatedCenter[i])
-                    continue;
-
-                for (int j = i + 1; j < n; j++) {
-                    if (solver.dominatedCenter[j])
-                        continue;
-
-                    boolean iSubsetJ = true;
-                    boolean jSubsetI = true;
-
-                    for (int w = 0; w < solver.words; w++) {
-                        if ((solver.covers[i][w] & ~solver.covers[j][w]) != 0L) {
-                            iSubsetJ = false;
-                        }
-                        if ((solver.covers[j][w] & ~solver.covers[i][w]) != 0L) {
-                            jSubsetI = false;
-                        }
-                    }
-
-                    if (iSubsetJ && jSubsetI) {
-                        solver.dominatedCenter[j] = true;
-                    } else if (iSubsetJ) {
-                        solver.dominatedCenter[i] = true;
-                        break;
-                    } else if (jSubsetI) {
-                        solver.dominatedCenter[j] = true;
-                    }
-                }
-            }
-
-            solver.centersCovering = new int[n][];
-            for (int i = 0; i < n; i++) {
-                Integer[] temp = new Integer[n];
-                int count = 0;
-                for (int j = 0; j < n; j++) {
-                    if (solver.dominatedCenter[j])
-                        continue;
-                    boolean jCoversI = (solver.covers[j][i / 64] & (1L << (i % 64))) != 0;
-                    if (jCoversI) {
-                        temp[count++] = j;
-                    }
-                }
-
-                Integer[] validCandidates = Arrays.copyOf(temp, count);
-                Arrays.sort(validCandidates, (a, b) -> {
-                    int ca = 0, cb = 0;
-                    for (int w = 0; w < solver.words; w++) {
-                        ca += Long.bitCount(solver.covers[a][w]);
-                        cb += Long.bitCount(solver.covers[b][w]);
-                    }
-                    return Integer.compare(cb, ca);
-                });
-
-                solver.centersCovering[i] = new int[count];
-                for (int c = 0; c < count; c++) {
-                    solver.centersCovering[i][c] = validCandidates[c];
-                }
-            }
-
-            boolean impossible = false;
-            for (int i = 0; i < n; i++) {
-                if (solver.centersCovering[i].length == 0) {
-                    impossible = true;
-                    break;
-                }
-            }
-
-            boolean feasible;
-            if (impossible) {
-                feasible = false;
-            } else if (solver.greedyCheck()) {
-                feasible = true;
-
-            } else {
-                long[] initialCov = solver.stateMask[0];
-                Arrays.fill(initialCov, 0L);
-                if (solver.solveRecursive(0, initialCov)) {
-                    feasible = true;
-                } else {
-                    feasible = false;
-                }
-            }
+            boolean feasible = solver.checkFeasibility(R, dist);
 
             if (feasible) {
                 if (verbose) {
