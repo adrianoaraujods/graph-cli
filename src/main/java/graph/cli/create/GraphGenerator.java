@@ -203,7 +203,7 @@ public class GraphGenerator {
         int[] weights = new int[edges.size()];
         int index = 0;
 
-        for (long _ : edges) {
+        for (long unused : edges) {
           weights[index++] = minWeight + random.nextInt(maxWeight - minWeight + 1);
         }
 
