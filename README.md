@@ -14,8 +14,8 @@ Grafos sintéticos podem ser gerados com conectividade controlada, e algoritmos 
   - **Forward Star** (_default_) — compacta, cache-friendly, alta performance
   - **Lista de Adjacência** — dinâmica, boa para mutações
   - **Matriz de Adjacência** — simples, mas consome mais memória
-- **7 algoritmos**: DFS, Kosaraju, Fleury, Tarjan, Pontes Ingênuas, Dijkstra, Dinic (Fluxo Máximo / Caminhos Disjuntos)
-- **Benchmarks automatizados** para Dijkstra, Fleury e Caminhos Disjuntos com suporte a execução paralela
+- **12 algoritmos**: DFS, Kosaraju, Fleury, Tarjan, Pontes Ingênuas, Dijkstra, Dinic (Fluxo Máximo / Caminhos Disjuntos), Floyd-Warshall, González (k-Center), FastMap (k-Center), WVA-IG (k-Center), Exact (k-Center)
+- **Benchmarks automatizados** para Dijkstra, Fleury, Caminhos Disjuntos e k-Center com suporte a execução paralela
 
 ## Requisitos
 
@@ -114,28 +114,53 @@ java -jar target/graph-cli-0.1.0.jar read ./examples/flow-11v17e.txt --capacitie
 
 # Fluxo máximo (Dinic) com capacidades
 java -jar target/graph-cli-0.1.0.jar read ./examples/flow-11v17e.txt --capacities --dinic --source 1 --target 11
+
+# k-Center: González 2-approximation
+java -jar target/graph-cli-0.1.0.jar read examples/pmed/pmed1.txt --weighted --gonzalez -k 5
+
+# k-Center: González lendo k do cabeçalho do arquivo (formato PMED: n m k)
+java -jar target/graph-cli-0.1.0.jar read examples/pmed/pmed1.txt --weighted --gonzalez --k-centers
+
+# k-Center: FastMap + K-Means++
+java -jar target/graph-cli-0.1.0.jar read examples/pmed/pmed1.txt --weighted --fastmap --k-centers
+
+# k-Center: WVA-IG Heuristic
+java -jar target/graph-cli-0.1.0.jar read examples/pmed/pmed1.txt --weighted --wva-ig --k-centers
+
+# k-Center: Exact bitmask B&B (max ~128 vértices)
+java -jar target/graph-cli-0.1.0.jar read examples/pmed/pmed1.txt --weighted --exact --k-centers
+
+# Floyd-Warshall all-pairs shortest path
+java -jar target/graph-cli-0.1.0.jar read examples/weighted-8v16e.txt --weighted --floyd-warshall
 ```
 
-| Flag                 | Descrição                                                                                          |
-| -------------------- | -------------------------------------------------------------------------------------------------- |
-| `--dfs`              | Busca em profundidade (requer `-t`)                                                                |
-| `--kosaraju`         | Componentes fortemente conexos                                                                     |
-| `--fleury`           | Caminho/Ciclo Euleriano                                                                            |
-| `--tarjan`           | Pontes (Tarjan)                                                                                    |
-| `--naive-local`      | Pontes Ingênuas (Local)                                                                            |
-| `--naive-global`     | Pontes Ingênuas (Global)                                                                           |
-| `--dijkstra`         | Caminho mínimo (requer `--weighted`, `--source`, `--target`)                                       |
-| `--disjoint-paths`   | Caminhos disjuntos em arestas via fluxo máximo (Dinic, requer `--source`, `--target`, direcionado) |
-| `--dinic`            | Fluxo máximo (Dinic, requer `--capacities`, `--source`, `--target`, direcionado)                   |
-| `--capacities`       | Capacidades nas arestas (formato: `u v capacity`, mutuamente exclusivo com `--weighted`)           |
-| `--source`           | Vértice de origem (obrigatório para `--dijkstra`, `--disjoint-paths`, `--dinic`)                   |
-| `-t`, `--target`     | Vértice de destino (obrigatório para `--dfs`, `--dijkstra`, `--disjoint-paths`, `--dinic`)         |
-| `--path`             | Exibir caminho                                                                                     |
-| `-o`, `--output`     | Arquivo de saída                                                                                   |
-| `--forward-star`     | Forward Star (_default_)                                                                           |
-| `--adjacency-matrix` | Matriz de Adjacência                                                                               |
-| `--adjacency-list`   | Lista de Adjacência                                                                                |
-| `--weighted`         | Grafo com peso (formato: `u v w`)                                                                  |
+| Flag                    | Descrição                                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `--dfs`                 | Busca em profundidade (requer `-t`)                                                                |
+| `--kosaraju`            | Componentes fortemente conexos                                                                     |
+| `--fleury`              | Caminho/Ciclo Euleriano                                                                            |
+| `--tarjan`              | Pontes (Tarjan)                                                                                    |
+| `--naive-local`         | Pontes Ingênuas (Local)                                                                            |
+| `--naive-global`        | Pontes Ingênuas (Global)                                                                           |
+| `--dijkstra`            | Caminho mínimo (requer `--weighted`, `--source`, `--target`)                                       |
+| `--disjoint-paths`      | Caminhos disjuntos em arestas via fluxo máximo (Dinic, requer `--source`, `--target`, direcionado) |
+| `--dinic`               | Fluxo máximo (Dinic, requer `--capacities`, `--source`, `--target`, direcionado)                   |
+| `--floyd-warshall`      | Floyd-Warshall all-pairs shortest path (requer `--weighted`)                                       |
+| `--gonzalez`            | González 2-approximation para k-Center (requer `--weighted`, `-k` ou `--k-centers`)                |
+| `--fastmap`             | FastMap embedding + K-Means++ para k-Center (requer `--weighted`, `-k` ou `--k-centers`)           |
+| `--wva-ig`              | WVA-IG Heuristic para k-Center (requer `--weighted`, `-k` ou `--k-centers`)                        |
+| `--exact`               | Exact Bitmask B&B para k-Center (requer `--weighted`, `-k` ou `--k-centers`, max 128 vértices)     |
+| `--capacities`          | Capacidades nas arestas (formato: `u v capacity`, mutuamente exclusivo com `--weighted`)           |
+| `--source`              | Vértice de origem (obrigatório para `--dijkstra`, `--disjoint-paths`, `--dinic`)                   |
+| `-t`, `--target`        | Vértice de destino (obrigatório para `--dfs`, `--dijkstra`, `--disjoint-paths`, `--dinic`)         |
+| `--path`                | Exibir caminho                                                                                     |
+| `-k`, `--centers`       | Número de centros (obrigatório para algoritmos k-Center)                                           |
+| `--k-centers`           | Ler k do cabeçalho do arquivo (formato: `n m k`, alternativa a `-k`)                               |
+| `-o`, `--output`        | Arquivo de saída                                                                                   |
+| `--forward-star`        | Forward Star (_default_)                                                                           |
+| `--adjacency-matrix`    | Matriz de Adjacência                                                                               |
+| `--adjacency-list`      | Lista de Adjacência                                                                                |
+| `--weighted`            | Grafo com peso (formato: `u v w`)                                                                  |
 
 ## Algoritmos
 
@@ -148,8 +173,13 @@ java -jar target/graph-cli-0.1.0.jar read ./examples/flow-11v17e.txt --capacitie
 | Pontes Ingênuas (Global)   | `--naive-global`   | Encontra pontes testando cada aresta (Union-Find, paralelo)   |     Não     | Não  |
 | Pontes Ingênuas (Local)    | `--naive-local`    | Verificação sob demanda durante Fleury (short-circuit)        |     Não     | Não  |
 | Dijkstra                   | `--dijkstra`       | Caminho mínimo (pesos positivos, desempate por menos arestas) |     Sim     | Sim  |
+| Floyd-Warshall             | `--floyd-warshall` | Caminhos mínimos entre todos os pares (programação dinâmica)  |     Sim     | Sim  |
 | Dinic / Caminhos Disjuntos | `--disjoint-paths` | Caminhos disjuntos em arestas via fluxo máximo                |     Sim     | Não  |
 | Dinic (Fluxo Máximo)       | `--dinic`          | Fluxo máximo em redes com capacidades nas arestas             |     Sim     | Não  |
+| González (k-Center)        | `--gonzalez`       | 2-aproximação via farthest-first traversal, O(kn)             |     Sim     | Sim  |
+| FastMap (k-Center)         | `--fastmap`        | Embedding 2D espectral + K-Means++                            |     Sim     | Sim  |
+| WVA-IG (k-Center)          | `--wva-ig`         | Worst-Vertex-Anchored Iterated Greedy com busca local         |     Sim     | Sim  |
+| Exact (k-Center)           | `--exact`          | Bitmask B&B exato (busca binária no raio), O(2^n)             |     Sim     | Sim  |
 
 ## Formato do Arquivo de Grafo
 
@@ -177,7 +207,17 @@ Para grafos com capacidade nas arestas (utilizando `--capacities`), o formato se
 <u> <v> <capacidade>
 ```
 
-Arquivos de exemplo disponíveis em [`examples/`](examples/).
+Para o formato PMED utilizado pelos algoritmos k-Center com `--k-centers`, a primeira linha contém três números:
+
+```
+<V> <E> <k>
+<u> <v> <peso>
+<u> <v> <peso>
+```
+
+As 40 instâncias PMED da OR-Library estão em [`examples/pmed/`](examples/pmed/).
+
+Arquivos de exemplo adicionais disponíveis em [`examples/`](examples/).
 
 ## Estrutura do Projeto
 
@@ -190,7 +230,7 @@ graph-cli/
 │       ├── algorithms/          # Implementações dos algoritmos
 │       ├── representations/     # Forward Star, Lista, Matriz
 │       ├── cli/                 # Parser, handlers, leitura/escrita
-│       ├── bench/               # Benchmarks (Dijkstra, Fleury, DisjointPaths)
+│       ├── bench/               # Benchmarks (Dijkstra, Fleury, DisjointPaths, KCenter)
 │       └── util/                # Utilitários (Timer, Sort, Usage)
 ├── examples/                    # Grafos de exemplo
 └── articles/                    # Artigos acadêmicos (LaTeX + PDF + resultados)
@@ -198,7 +238,7 @@ graph-cli/
 
 ## Benchmarks
 
-O projeto inclui três harnesses de benchmark para executar experimentos de desempenho:
+O projeto inclui quatro harnesses de benchmark para executar experimentos de desempenho:
 
 ### Dijkstra Benchmark
 
@@ -245,11 +285,44 @@ java -cp target/classes graph.bench.DisjointPathsBenchmark --parallel --max-thre
 java -cp target/classes graph.bench.DisjointPathsBenchmark --attempts 3 --output resultados.csv
 ```
 
-**Flags comuns:**
+### K-Center Benchmark
+
+Testa os 4 algoritmos de k-Center (González, FastMap, WVA-IG, Exact) nas 40 instâncias PMED da OR-Library.
+
+```bash
+# Sequencial (todas as 40 instâncias, 5 tentativas cada)
+java -cp target/classes graph.bench.KCenterBenchmark
+
+# Paralelo com 8 threads
+java -cp target/classes graph.bench.KCenterBenchmark --parallel --max-threads 8
+
+# Filtrar instâncias e algoritmos específicos
+java -cp target/classes graph.bench.KCenterBenchmark --instances 1,2,3 --algorithms Gonzalez,WVA-IG
+
+# Customizar diretório PMED, tentativas, e limite para Exact
+java -cp target/classes graph.bench.KCenterBenchmark --pmed-dir examples/pmed --attempts 3 --max-n-exact 100 --output kcenter.csv
+```
+
+**Flags específicas do K-Center Benchmark:**
+
+| Flag | Descrição | Default |
+| ---- | --------- | :-----: |
+| `--attempts` | Tentativas por configuração | 5 |
+| `--parallel` | Execução paralela | off |
+| `--max-threads` | Número máximo de threads | 24 |
+| `--output` | Arquivo CSV de saída | results.csv |
+| `--pmed-dir` | Diretório das instâncias PMED | examples/pmed |
+| `--max-n-exact` | Máx. vértices para rodar Exact | 300 |
+| `--instances` | Filtrar por índices (ex: `1,2,3`) | todas |
+| `--algorithms` | Filtrar por algoritmo (ex: `Gonzalez,FastMap`) | todos |
+
+Colunas do CSV: `instance,n,k,algorithm,attempt,floyd_ms,algo_ms,radius,optimal_radius,gap_pct`.
+
+**Flags comuns aos benchmarks:**
 
 | Flag            | Descrição                             |          Default           |
 | --------------- | ------------------------------------- | :------------------------: |
-| `--attempts`    | Número de tentativas por configuração | 10 (Dijkstra) / 4 (Fleury) / 4 (DisjointPaths) |
+| `--attempts`    | Número de tentativas por configuração | 10 (Dijkstra) / 4 (Fleury) / 4 (DisjointPaths) / 5 (k-Center) |
 | `--parallel`    | Execução paralela                     |            off             |
 | `--max-threads` | Número máximo de threads              |             24             |
 | `--output`      | Arquivo CSV de saída                  |        results.csv         |
