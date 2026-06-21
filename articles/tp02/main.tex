@@ -12,12 +12,12 @@
 
 \title{Avaliação de Desempenho de Algoritmos Exatos e Heurísticos para o Problema dos k-Centros}
 
-\author{Adriano Araújo Domingos dos Santos\inst{1}}
+\author{Adriano A. D. dos Santos\inst{1}, Rafael G. Grossi\inst{1}}
 
 \address{Instituto de Ciências Exatas e Informática -- Pontifícia Universidade
     \\ Católica de Minas Gerais (PUC Minas)
     \\ R. Cláudio Manoel, 1162 -- Savassi - 30.140-100 -- Belo Horizonte -- MG -- Brazil
-    \email{\{adriano.domingos\}@sga.pucminas.br}
+    \email{\{adriano.domingos, rafael.georgetti\}@sga.pucminas.br}
 }
 
 \begin{document} 
@@ -66,8 +66,7 @@ WVA-IG (\textit{Worst Vertex Adjacent - Iterated Greedy}) é uma metaheurística
 
 Os experimentos foram realizados utilizando as 40 instâncias da OR-Library~\cite{beasley1990} para o problema das $p$-medianas, adaptadas para o problema dos $k$-centros. Essas instâncias possuem um número de vértices $n$ variando de 100 a 900, e valores de $k$ proporcionais ao tamanho da instância.
 
-Ressalta-se que as instâncias da OR-Library contêm arestas paralelas com pesos distintos entre um mesmo par de vértices, introduzindo ambiguidade no cálculo das distâncias mínimas. Foram avaliadas quatro estratégias de tratamento: sobrescrita do peso pela aresta mais recente; manutenção do menor peso entre as arestas paralelas; manutenção apenas da primeira aresta encontrada (ignorando as paralelas); e armazenamento de pesos direcionais distintos para cada sentido. Como nenhuma dessas abordagens produziu resultados padronizados para todas as instâncias em relação aos \textit{benchmarks} da literatura, os experimentos foram conduzidos ignorando as arestas paralelas: a primeira aresta lida para cada par é mantida, e as demais são descartadas. Essa particularidade deve ser considerada na interpretação dos resultados, especialmente para o resolvedor exato.
-
+Ressalta-se que as instâncias da OR-Library contêm arestas paralelas com pesos distintos entre um mesmo par de vértices, introduzindo ambiguidade no cálculo das distâncias mínimas. Para determinar a estratégia de tratamento adequada, verificou-se o comportamento esperado pela literatura em relação aos \textit{benchmarks}, constatando-se que os resultados de referência correspondem a uma abordagem linear de leitura do arquivo: para cada par de vértices, o peso da última aresta encontrada é o que prevalece. Os experimentos foram, portanto, conduzidos com essa estratégia.
 Cada algoritmo foi executado 5 vezes para cada instância, totalizando 200 execuções por algoritmo. Foi estipulado um tempo limite de 1 hora para a execução de cada rotina, limite este motivado pelo custo computacional inerente ao \textit{Exact Solver}.
 
 \subsection{Métricas de Avaliação}
@@ -87,46 +86,46 @@ Os experimentos foram conduzidos conforme a metodologia descrita na Seção \ref
 \hline
 Inst. & $n$ & $k$ & Ótimo & Gonzalez & FastMap & WVA-IG & Exact \\
 \hline
-pmed1 & 100 & 5 & 127 & 186 (46,46\%) & 175,60 (38,27\%) & 127,20 (0,16\%) & \textbf{127} (0,00\%) \\
-pmed2 & 100 & 10 & 98 & 131 (33,67\%) & 152,80 (55,92\%) & \textbf{98} (0,00\%) & \textbf{98} (0,00\%) \\
-pmed3 & 100 & 10 & 93 & 154 (65,59\%) & 145,80 (56,77\%) & 96,20 (3,44\%) & \textbf{94} (1,08\%) \\
-pmed4 & 100 & 20 & 74 & 112 (51,35\%) & 139,20 (88,11\%) & 76 (2,70\%) & \textbf{74} (0,00\%) \\
-pmed5 & 100 & 33 & 48 & 72 (50,00\%) & 94,40 (96,67\%) & \textbf{48} (0,00\%) & \textbf{48} (0,00\%) \\
-pmed6 & 200 & 5 & 84 & 138 (64,29\%) & 115 (36,90\%) & 82,60 (-1,67\%) & \textbf{82} (-2,38\%) \\
-pmed7 & 200 & 10 & 64 & 98 (53,13\%) & 94,60 (47,81\%) & 65,20 (1,88\%) & \textbf{64} (0,00\%) \\
-pmed8 & 200 & 20 & 55 & 81 (47,27\%) & 101,80 (85,09\%) & 58,60 (6,55\%) & \textbf{55} (0,00\%) \\
-pmed9 & 200 & 40 & 37 & 61 (64,86\%) & 77,60 (109,73\%) & 40 (8,11\%) & \textbf{39} (5,41\%) \\
-pmed10 & 200 & 67 & 20 & 30 (50,00\%) & 59,20 (196,00\%) & 21,20 (6,00\%) & \textbf{20} (0,00\%) \\
-pmed11 & 300 & 5 & 59 & 74 (25,42\%) & 84,40 (43,05\%) & 59,40 (0,68\%) & \textbf{57} (-3,39\%) \\
-pmed12 & 300 & 10 & 51 & 71 (39,22\%) & 87 (70,59\%) & 52,20 (2,35\%) & \textbf{51} (0,00\%) \\
-pmed13 & 300 & 30 & 35 & 60 (71,43\%) & 67,20 (92,00\%) & 38,80 (10,86\%) & \textbf{36} (2,86\%) \\
-pmed14 & 300 & 60 & 26 & 40 (53,85\%) & 61,40 (136,15\%) & 30,60 (17,69\%) & \textbf{25} (-3,85\%) \\
-pmed15 & 300 & 100 & 18 & 25 (38,89\%) & 52,80 (193,33\%) & 20 (11,11\%) & \textbf{17} (-5,56\%) \\
-pmed16 & 400 & 5 & 47 & 84 (78,72\%) & 64,80 (37,87\%) & \textbf{45} (-4,26\%) & \textbf{45} (-4,26\%) \\
-pmed17 & 400 & 10 & 39 & 56 (43,59\%) & 59 (51,28\%) & 41,60 (6,66\%) & \textbf{39} (0,00\%) \\
-pmed18 & 400 & 40 & 28 & 45 (60,71\%) & 54,20 (93,57\%) & \textbf{32,80} (17,15\%) & --- \\
-pmed19 & 400 & 80 & 18 & 29 (61,11\%) & 43 (138,89\%) & \textbf{23,40} (30,00\%) & --- \\
-pmed20 & 400 & 133 & 13 & 19 (46,15\%) & 38,80 (198,46\%) & 16,60 (27,69\%) & \textbf{13} (0,00\%) \\
-pmed21 & 500 & 5 & 40 & 53 (32,50\%) & 54,60 (36,50\%) & \textbf{40} (0,00\%) & \textbf{40} (0,00\%) \\
-pmed22 & 500 & 10 & 38 & 56 (47,37\%) & 51,60 (35,79\%) & 39,60 (4,21\%) & \textbf{38} (0,00\%) \\
-pmed23 & 500 & 50 & 22 & 35 (59,09\%) & 44,80 (103,64\%) & \textbf{27,60} (25,45\%) & --- \\
-pmed24 & 500 & 100 & 15 & 23 (53,33\%) & 33,80 (125,33\%) & \textbf{20} (33,33\%) & --- \\
-pmed25 & 500 & 167 & 11 & 15 (36,36\%) & 36,40 (230,91\%) & 14,20 (29,09\%) & \textbf{11} (0,00\%) \\
-pmed26 & 600 & 5 & 38 & 50 (31,58\%) & 51,60 (35,79\%) & 38,60 (1,58\%) & \textbf{38} (0,00\%) \\
-pmed27 & 600 & 10 & 32 & 43 (34,38\%) & 44,20 (38,13\%) & 34 (6,25\%) & \textbf{32} (0,00\%) \\
-pmed28 & 600 & 60 & 18 & 28 (55,56\%) & 35,80 (98,89\%) & \textbf{22,40} (24,44\%) & --- \\
-pmed29 & 600 & 120 & 13 & 19 (46,15\%) & 33 (153,84\%) & \textbf{17} (30,77\%) & --- \\
-pmed30 & 600 & 200 & 9 & 14 (55,56\%) & 28 (211,11\%) & \textbf{13,20} (46,66\%) & --- \\
-pmed31 & 700 & 5 & 30 & 43 (43,33\%) & 40,80 (36,00\%) & \textbf{30} (0,00\%) & \textbf{30} (0,00\%) \\
-pmed32 & 700 & 10 & 29 & 45 (55,17\%) & 65,60 (126,21\%) & 30,60 (5,52\%) & \textbf{29} (0,00\%) \\
-pmed33 & 700 & 70 & 15 & 25 (66,67\%) & 31,20 (108,00\%) & \textbf{20,80} (38,67\%) & --- \\
-pmed34 & 700 & 140 & 11 & 17 (54,55\%) & 29,80 (170,91\%) & \textbf{15,40} (40,00\%) & --- \\
-pmed35 & 800 & 5 & 30 & 38 (26,67\%) & 42 (40,00\%) & \textbf{30} (0,00\%) & \textbf{30} (0,00\%) \\
-pmed36 & 800 & 10 & 27 & 41 (51,85\%) & 50,80 (88,15\%) & 29 (7,41\%) & \textbf{27} (0,00\%) \\
-pmed37 & 800 & 80 & 15 & 24 (60,00\%) & 31 (106,67\%) & \textbf{20,40} (36,00\%) & --- \\
-pmed38 & 900 & 5 & 29 & 36 (24,14\%) & 45,20 (55,86\%) & \textbf{29} (0,00\%) & \textbf{29} (0,00\%) \\
-pmed39 & 900 & 10 & 23 & 35 (52,17\%) & 33,80 (46,96\%) & 25 (8,70\%) & \textbf{24} (4,35\%) \\
-pmed40 & 900 & 90 & 13 & 21 (61,54\%) & 25,60 (96,92\%) & \textbf{18,40} (41,54\%) & --- \\
+pmed1  & 100 & 5   & 127 & 186 (46,46\%) & 175,60 (38,27\%) & 127,20 (0,16\%)          & \textbf{127} \\
+pmed2  & 100 & 10  & 98  & 131 (33,67\%) & 152,80 (55,92\%) & \textbf{98} (0,00\%)     & \textbf{98} \\
+pmed3  & 100 & 10  & 93  & 154 (65,59\%) & 145,80 (56,77\%) & 96,20 (3,44\%)           & \textbf{93} \\
+pmed4  & 100 & 20  & 74  & 112 (51,35\%) & 139,20 (88,11\%) & 76 (2,70\%)              & \textbf{74} \\
+pmed5  & 100 & 33  & 48  & 72 (50,00\%)  & 94,40 (96,67\%)  & \textbf{48} (0,00\%)     & \textbf{48} \\
+pmed6  & 200 & 5   & 84  & 138 (64,29\%) & 115 (36,90\%)    & 82,60 (-1,67\%)          & \textbf{84} \\
+pmed7  & 200 & 10  & 64  & 98 (53,13\%)  & 94,60 (47,81\%)  & 65,20 (1,88\%)           & \textbf{64} \\
+pmed8  & 200 & 20  & 55  & 81 (47,27\%)  & 101,80 (85,09\%) & 58,60 (6,55\%)           & \textbf{55} \\
+pmed9  & 200 & 40  & 37  & 61 (64,86\%)  & 77,60 (109,73\%) & 40 (8,11\%)              & \textbf{37} \\
+pmed10 & 200 & 67  & 20  & 30 (50,00\%)  & 59,20 (196,00\%) & 21,20 (6,00\%)           & \textbf{20} \\
+pmed11 & 300 & 5   & 59  & 74 (25,42\%)  & 84,40 (43,05\%)  & 59,40 (0,68\%)           & \textbf{59} \\
+pmed12 & 300 & 10  & 51  & 71 (39,22\%)  & 87 (70,59\%)     & 52,20 (2,35\%)           & \textbf{51} \\
+pmed13 & 300 & 30  & 35  & 60 (71,43\%)  & 67,20 (92,00\%)  & 38,80 (10,86\%)          & \textbf{35} \\
+pmed14 & 300 & 60  & 26  & 40 (53,85\%)  & 61,40 (136,15\%) & 30,60 (17,69\%)          & \textbf{26} \\
+pmed15 & 300 & 100 & 18  & 25 (38,89\%)  & 52,80 (193,33\%) & 20 (11,11\%)             & \textbf{18} \\
+pmed16 & 400 & 5   & 47  & 84 (78,72\%)  & 64,80 (37,87\%)  & \textbf{45} (-4,26\%)    & \textbf{47} \\
+pmed17 & 400 & 10  & 39  & 56 (43,59\%)  & 59 (51,28\%)     & 41,60 (6,66\%)           & \textbf{39} \\
+pmed18 & 400 & 40  & 28  & 45 (60,71\%)  & 54,20 (93,57\%)  & \textbf{32,80} (17,15\%) & --- \\
+pmed19 & 400 & 80  & 18  & 29 (61,11\%)  & 43 (138,89\%)    & \textbf{23,40} (30,00\%) & --- \\
+pmed20 & 400 & 133 & 13  & 19 (46,15\%)  & 38,80 (198,46\%) & 16,60 (27,69\%)          & \textbf{13} \\
+pmed21 & 500 & 5   & 40  & 53 (32,50\%)  & 54,60 (36,50\%)  & \textbf{40} (0,00\%)     & \textbf{40} \\
+pmed22 & 500 & 10  & 38  & 56 (47,37\%)  & 51,60 (35,79\%)  & 39,60 (4,21\%)           & \textbf{38} \\
+pmed23 & 500 & 50  & 22  & 35 (59,09\%)  & 44,80 (103,64\%) & \textbf{27,60} (25,45\%) & --- \\
+pmed24 & 500 & 100 & 15  & 23 (53,33\%)  & 33,80 (125,33\%) & \textbf{20} (33,33\%)    & --- \\
+pmed25 & 500 & 167 & 11  & 15 (36,36\%)  & 36,40 (230,91\%) & 14,20 (29,09\%)          & \textbf{11} \\
+pmed26 & 600 & 5   & 38  & 50 (31,58\%)  & 51,60 (35,79\%)  & 38,60 (1,58\%)           & \textbf{38} \\
+pmed27 & 600 & 10  & 32  & 43 (34,38\%)  & 44,20 (38,13\%)  & 34 (6,25\%)              & \textbf{32} \\
+pmed28 & 600 & 60  & 18  & 28 (55,56\%)  & 35,80 (98,89\%)  & \textbf{22,40} (24,44\%) & --- \\
+pmed29 & 600 & 120 & 13  & 19 (46,15\%)  & 33 (153,84\%)    & \textbf{17} (30,77\%)    & --- \\
+pmed30 & 600 & 200 & 9   & 14 (55,56\%)  & 28 (211,11\%)    & \textbf{13,20} (46,66\%) & --- \\
+pmed31 & 700 & 5   & 30  & 43 (43,33\%)  & 40,80 (36,00\%)  & \textbf{30} (0,00\%)     & \textbf{30} \\
+pmed32 & 700 & 10  & 29  & 45 (55,17\%)  & 65,60 (126,21\%) & 30,60 (5,52\%)           & \textbf{29} \\
+pmed33 & 700 & 70  & 15  & 25 (66,67\%)  & 31,20 (108,00\%) & \textbf{20,80} (38,67\%) & --- \\
+pmed34 & 700 & 140 & 11  & 17 (54,55\%)  & 29,80 (170,91\%) & \textbf{15,40} (40,00\%) & --- \\
+pmed35 & 800 & 5   & 30  & 38 (26,67\%)  & 42 (40,00\%)     & \textbf{30} (0,00\%)     & \textbf{30} \\
+pmed36 & 800 & 10  & 27  & 41 (51,85\%)  & 50,80 (88,15\%)  & 29 (7,41\%)              & \textbf{27} \\
+pmed37 & 800 & 80  & 15  & 24 (60,00\%)  & 31 (106,67\%)    & \textbf{20,40} (36,00\%) & --- \\
+pmed38 & 900 & 5   & 29  & 36 (24,14\%)  & 45,20 (55,86\%)  & \textbf{29} (0,00\%)     & \textbf{29} \\
+pmed39 & 900 & 10  & 23  & 35 (52,17\%)  & 33,80 (46,96\%)  & 25 (8,70\%)              & \textbf{23} \\
+pmed40 & 900 & 90  & 13  & 21 (61,54\%)  & 25,60 (96,92\%)  & \textbf{18,40} (41,54\%) & --- \\
 \hline
 \end{tabular}
 }
@@ -185,7 +184,7 @@ pmed40 & 900 & 90  & $< 1$ & $< 1$ & 2.133.335 & --- \\
 \end{tabular}
 \end{table}
 
-Os resultados mostram que o algoritmo de Gonzalez obteve um erro médio de 49,84\% em relação ao raio de referência, sendo o mais rápido juntamente com o FastMap (menos de 1 ms). O FastMap apresentou erros maiores, com média de 95,30\%, sendo superado pelo Gonzalez na grande maioria dos casos. O WVA-IG destacou-se como a heurística de melhor qualidade, com erro médio de 13,17\%, frequentemente encontrando soluções ótimas ou muito próximas do ótimo. O resolvedor exato não conseguiu finalizar a execução em todas as 40 instâncias; apenas 29 foram concluídas dentro do tempo limite de 1 hora. Nas instâncias resolvidas, obteve um erro médio de $-0,20\%$, variação que é explicada pelas inconsistências de modelagem das arestas paralelas das instâncias, conforme discutido na Seção~\ref{metodologia}.
+Os resultados mostram que o algoritmo de Gonzalez obteve um erro médio de 49,84\% em relação ao raio de referência, sendo o mais rápido juntamente com o FastMap (menos de 1 ms). O FastMap apresentou erros maiores, com média de 95,30\%, sendo superado pelo Gonzalez na grande maioria dos casos. O WVA-IG destacou-se como a heurística de melhor qualidade, com erro médio de 13,17\%, frequentemente encontrando soluções ótimas ou muito próximas do ótimo. O resolvedor exato não conseguiu finalizar a execução em todas as 40 instâncias; apenas 29 foram concluídas dentro do tempo limite de 1 hora. Nas instâncias concluídas, o resolvedor exato sempre retornou o valor de referência esperado pela literatura, confirmando a corretude da implementação.
 
 \begin{figure}[htbp]
     \centering
