@@ -18,6 +18,7 @@ public class KCenterExactSolver {
         int[] bestSelection;
         long[][] stateMask;
         boolean[] dominatedCenter;
+        int[] sortedCenterSizes;
 
         int nodesExplored;
         int currentIter, maxIter;
@@ -94,22 +95,45 @@ public class KCenterExactSolver {
             if (verbose && (nodesExplored & 1_048_575) == 0)
                 printProgress();
 
-            if (Arrays.equals(cov, fullMask)) {
+            // 1. Calculate Uncovered Count using Bitwise ops
+            int uncoveredCount = 0;
+            for (int w = 0; w < words; w++) {
+                uncoveredCount += Long.bitCount(~cov[w] & fullMask[w]);
+            }
+
+            if (uncoveredCount == 0) {
                 System.arraycopy(currentSelection, 0, bestSelection, 0, depth);
                 for (int i = depth; i < k; i++)
                     bestSelection[i] = 0;
                 return true;
             }
+
             if (depth == k)
                 return false;
+
+            // 2. VOLUME PRUNING: Can we mathematically cover the rest?
+            int maxPossibleGain = 0;
+            int remainingPicks = k - depth;
+            for (int i = 0; i < remainingPicks && i < n; i++) {
+                maxPossibleGain += sortedCenterSizes[i];
+            }
+            if (maxPossibleGain < uncoveredCount) {
+                return false; // Prune this entire branch!
+            }
 
             int bestU = -1;
             int minCandidates = Integer.MAX_VALUE;
 
-            for (int i = 0; i < n; i++) {
-                boolean isCovered = (cov[i / 64] & (1L << (i % 64))) != 0;
+            // 3. O(1) BITWISE MRV JUMPS
+            for (int w = 0; w < words; w++) {
+                // Invert the cover mask and mask against fullMask to get ONLY uncovered bits
+                long uncoveredBits = ~cov[w] & fullMask[w];
 
-                if (!isCovered) {
+                while (uncoveredBits != 0) {
+                    // Find the index of the first uncovered bit
+                    int bit = Long.numberOfTrailingZeros(uncoveredBits);
+                    int i = w * 64 + bit;
+
                     int candidates = centersCovering[i].length;
 
                     if (candidates < minCandidates) {
@@ -118,7 +142,12 @@ public class KCenterExactSolver {
                         if (minCandidates <= 1)
                             break;
                     }
+
+                    // Clear the lowest set bit to move to the next uncovered vertex
+                    uncoveredBits &= (uncoveredBits - 1);
                 }
+                if (minCandidates <= 1)
+                    break;
             }
 
             if (minCandidates == 0)
@@ -206,6 +235,22 @@ public class KCenterExactSolver {
                 for (int c = 0; c < count; c++) {
                     centersCovering[i][c] = validCandidates[c];
                 }
+            }
+
+            sortedCenterSizes = new int[n];
+            for (int i = 0; i < n; i++) {
+                if (!dominatedCenter[i]) {
+                    for (int w = 0; w < words; w++) {
+                        sortedCenterSizes[i] += Long.bitCount(covers[i][w]);
+                    }
+                }
+            }
+
+            Arrays.sort(sortedCenterSizes);
+            for (int i = 0; i < n / 2; i++) {
+                int temp = sortedCenterSizes[i];
+                sortedCenterSizes[i] = sortedCenterSizes[n - 1 - i];
+                sortedCenterSizes[n - 1 - i] = temp;
             }
         }
 
@@ -317,7 +362,8 @@ public class KCenterExactSolver {
         if (verbose) {
             long totalTime = System.currentTimeMillis() - startTime;
             System.out.println("[Info] Exact solver complete. Best radius="
-                    + KCenterUtils.evaluateRadius(dist, n, k, finalBestCenters) + " (total " + Timer.formatTime(totalTime) + ")");
+                    + KCenterUtils.evaluateRadius(dist, n, k, finalBestCenters) + " (total "
+                    + Timer.formatTime(totalTime) + ")");
         }
 
         return finalBestCenters;
