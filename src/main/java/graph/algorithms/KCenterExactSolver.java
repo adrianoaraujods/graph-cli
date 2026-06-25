@@ -10,6 +10,7 @@ public class KCenterExactSolver {
         int words;
         long[] fullMask;
         long[][] covers;
+        int[] coverSize;
         int[][] centersCovering;
         int n, k;
 
@@ -181,6 +182,17 @@ public class KCenterExactSolver {
             }
         }
 
+        void computeCoverSizes() {
+            coverSize = new int[n];
+            for (int i = 0; i < n; i++) {
+                int s = 0;
+                for (int w = 0; w < words; w++) {
+                    s += Long.bitCount(covers[i][w]);
+                }
+                coverSize[i] = s;
+            }
+        }
+
         void pruneDominatedCenters() {
             dominatedCenter = new boolean[n];
             for (int i = 0; i < n; i++) {
@@ -211,38 +223,51 @@ public class KCenterExactSolver {
 
         void buildCandidateLists() {
             centersCovering = new int[n][];
+            int[] countingBucket = new int[n + 1];
+            int[] countingPos = new int[n];
+
             for (int i = 0; i < n; i++) {
-                Integer[] temp = new Integer[n];
+                int[] temp = new int[n];
                 int count = 0;
                 for (int j = 0; j < n; j++) {
                     if (dominatedCenter[j])
                         continue;
-                    boolean jCoversI = (covers[j][i / 64] & (1L << (i % 64))) != 0;
-                    if (jCoversI) {
+                    if ((covers[j][i / 64] & (1L << (i % 64))) != 0) {
                         temp[count++] = j;
                     }
                 }
-                Integer[] validCandidates = Arrays.copyOf(temp, count);
-                Arrays.sort(validCandidates, (a, b) -> {
-                    int ca = 0, cb = 0;
-                    for (int w = 0; w < words; w++) {
-                        ca += Long.bitCount(covers[a][w]);
-                        cb += Long.bitCount(covers[b][w]);
-                    }
-                    return Integer.compare(cb, ca);
-                });
-                centersCovering[i] = new int[count];
-                for (int c = 0; c < count; c++) {
-                    centersCovering[i][c] = validCandidates[c];
+                if (count == 0) {
+                    centersCovering[i] = new int[0];
+                    continue;
                 }
+
+                int maxSize = 0;
+                for (int t = 0; t < count; t++) {
+                    int sz = coverSize[temp[t]];
+                    if (sz > maxSize) maxSize = sz;
+                    countingBucket[sz]++;
+                }
+
+                int pos = 0;
+                for (int s = maxSize; s >= 0; s--) {
+                    int freq = countingBucket[s];
+                    countingBucket[s] = pos;
+                    pos += freq;
+                }
+
+                for (int t = 0; t < count; t++) {
+                    int sz = coverSize[temp[t]];
+                    countingPos[countingBucket[sz]++] = temp[t];
+                }
+
+                centersCovering[i] = Arrays.copyOf(countingPos, count);
+                Arrays.fill(countingBucket, 0, maxSize + 1, 0);
             }
 
             sortedCenterSizes = new int[n];
             for (int i = 0; i < n; i++) {
                 if (!dominatedCenter[i]) {
-                    for (int w = 0; w < words; w++) {
-                        sortedCenterSizes[i] += Long.bitCount(covers[i][w]);
-                    }
+                    sortedCenterSizes[i] = coverSize[i];
                 }
             }
 
@@ -264,6 +289,7 @@ public class KCenterExactSolver {
 
         boolean checkFeasibility(int R, int[][] dist) {
             buildCoverMasks(R, dist);
+            computeCoverSizes();
             pruneDominatedCenters();
             buildCandidateLists();
             if (anyVertexUncovered())
